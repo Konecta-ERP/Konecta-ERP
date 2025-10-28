@@ -24,7 +24,7 @@ pom.xml.next
 release.properties
 dependency-reduced-pom.xml
 build/
-.mvn/wrapper/maven-wrapper.jar
+.mvn*
 # Specific to Maven surefire and Failsafe reports
 surefire-reports/
 failsafe-reports/
