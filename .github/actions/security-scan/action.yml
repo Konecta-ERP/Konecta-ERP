@@ -9,7 +9,7 @@ inputs:
     description: "Image reference to scan with Trivy (optional)."
     required: false
   scan_type:
-    description: "Trivy scan type: 'image' (default) or 'config'"
+    description: "Trivy scan type: 'image' (default) or config"
     required: false
     default: "image"
   scan_ref:
