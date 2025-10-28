@@ -1,0 +1,53 @@
+name: Security scan (TruffleHog + Trivy)
+description: |
+  Runs TruffleHog secret scan and Trivy scan (image or config).
+inputs:
+  path:
+    description: "Path to run TruffleHog on (optional)."
+    required: false
+  image_ref:
+    description: "Image reference to scan with Trivy (optional)."
+    required: false
+  scan_type:
+    description: "Trivy scan type: 'image' (default) or 'config'"
+    required: false
+    default: "image"
+  scan_ref:
+    description: "When scan_type=config, the path or ref to scan (optional)."
+    required: false
+  fail:
+    description: "Fail the step on finding secrets/vulns (true|false)."
+    required: false
+    default: "true"
+runs:
+  using: "composite"
+  steps:
+    - name: Run TruffleHog secret scan (if path provided)
+      if: ${{ inputs.path != '' }}
+      uses: trufflesecurity/trufflehog@3b8d23cf19d8b42dd34428025cfab097b45e3a8e
+      with:
+        path: ${{ inputs.path }}
+        json: false
+        fail: ${{ inputs.fail }}
+
+    - name: Run Trivy (image) scan (if image_ref provided and scan_type == 'image')
+      if: ${{ inputs.image_ref != '' && inputs.scan_type == 'image' }}
+      uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8
+      with:
+        image-ref: ${{ inputs.image_ref }}
+        format: table
+        severity: HIGH,CRITICAL
+        ignore-unfixed: true
+        exit-code: ${{ inputs.fail == 'true' && '1' || '0' }}
+
+    - name: Run Trivy IaC scan (if scan_type == 'config')
+      if: ${{ inputs.scan_type == 'config' }}
+      uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8
+      with:
+        scan-type: config
+        scan-ref: ${{ inputs.scan_ref || '.' }}
+        hide-progress: true
+        format: table
+        severity: HIGH,CRITICAL
+        ignore-unfixed: true
+        exit-code: ${{ inputs.fail == 'true' && '1' || '0' }}
