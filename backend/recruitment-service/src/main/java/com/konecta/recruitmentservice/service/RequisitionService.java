@@ -83,7 +83,7 @@ public class RequisitionService {
     if (req.getJobPosts() != null) {
       dto.setJobPosts(
           req.getJobPosts().stream()
-              .map(jobPost -> jobPostService.convertToDto(jobPost))
+              .map(jobPostService::convertToDto)
               .collect(Collectors.toList()));
     }
     return dto;
