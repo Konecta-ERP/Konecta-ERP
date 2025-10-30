@@ -1,5 +1,20 @@
 package com.konecta.recruitmentservice.controller;
 
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.konecta.recruitmentservice.dto.ApplicantDto;
 import com.konecta.recruitmentservice.dto.ApplyForJobDto;
 import com.konecta.recruitmentservice.dto.CreateJobPostDto;
@@ -7,13 +22,8 @@ import com.konecta.recruitmentservice.dto.JobPostDto;
 import com.konecta.recruitmentservice.dto.response.ApiResponse;
 import com.konecta.recruitmentservice.service.ApplicantService;
 import com.konecta.recruitmentservice.service.JobPostService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/job-posts")
@@ -30,7 +40,7 @@ public class JobPostController {
 
   @PostMapping
   public ResponseEntity<ApiResponse<JobPostDto>> createJobPost(
-      @RequestBody CreateJobPostDto dto) {
+      @Valid @RequestBody CreateJobPostDto dto) {
     JobPostDto newPost = jobPostService.createJobPost(dto);
     ApiResponse<JobPostDto> response = ApiResponse.success(
         newPost,
@@ -90,7 +100,7 @@ public class JobPostController {
   @PostMapping("/{postId}/apply")
   public ResponseEntity<ApiResponse<ApplicantDto>> applyForJob(
       @PathVariable Integer postId,
-      @RequestBody ApplyForJobDto dto) {
+      @Valid @RequestBody ApplyForJobDto dto) {
 
     ApplicantDto newApplicant = applicantService.applyForJob(postId, dto);
     ApiResponse<ApplicantDto> response = ApiResponse.success(

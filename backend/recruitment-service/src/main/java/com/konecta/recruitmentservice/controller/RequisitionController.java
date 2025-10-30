@@ -1,17 +1,27 @@
 package com.konecta.recruitmentservice.controller;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.konecta.recruitmentservice.dto.CreateRequisitionDto;
 import com.konecta.recruitmentservice.dto.JobRequisitionDto;
 import com.konecta.recruitmentservice.dto.UpdateRequisitionDto;
 import com.konecta.recruitmentservice.dto.response.ApiResponse;
 import com.konecta.recruitmentservice.model.enums.RequisitionStatus;
 import com.konecta.recruitmentservice.service.RequisitionService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/job-requisitions")
@@ -26,7 +36,7 @@ public class RequisitionController {
 
   @PostMapping
   public ResponseEntity<ApiResponse<JobRequisitionDto>> createRequisition(
-      @RequestBody CreateRequisitionDto dto) {
+      @Valid @RequestBody CreateRequisitionDto dto) {
     JobRequisitionDto newReq = requisitionService.createRequisition(dto);
     ApiResponse<JobRequisitionDto> response = ApiResponse.success(
         newReq,
@@ -65,7 +75,7 @@ public class RequisitionController {
   @PatchMapping("/{id}")
   public ResponseEntity<ApiResponse<JobRequisitionDto>> updateRequisition(
       @PathVariable Integer id,
-      @RequestBody UpdateRequisitionDto dto) {
+      @Valid @RequestBody UpdateRequisitionDto dto) {
 
     JobRequisitionDto updatedReq = requisitionService.updateRequisition(id, dto);
     ApiResponse<JobRequisitionDto> response = ApiResponse.success(

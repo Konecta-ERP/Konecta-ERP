@@ -1,13 +1,19 @@
 package com.konecta.recruitmentservice.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.konecta.recruitmentservice.dto.InterviewDto;
 import com.konecta.recruitmentservice.dto.ScheduleInterviewDto;
 import com.konecta.recruitmentservice.dto.response.ApiResponse;
 import com.konecta.recruitmentservice.service.InterviewService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+
+import jakarta.validation.Valid;
 
 @RestController
 public class InterviewController {
@@ -22,7 +28,7 @@ public class InterviewController {
   @PostMapping("/applicants/{applicantId}/interviews")
   public ResponseEntity<ApiResponse<InterviewDto>> scheduleInterview(
       @PathVariable Integer applicantId,
-      @RequestBody ScheduleInterviewDto dto) {
+      @Valid @RequestBody ScheduleInterviewDto dto) {
 
     InterviewDto newInterview = interviewService.scheduleInterview(applicantId, dto);
     ApiResponse<InterviewDto> response = ApiResponse.success(

@@ -1,13 +1,20 @@
 package com.konecta.recruitmentservice.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.konecta.recruitmentservice.dto.ApplicantDto;
 import com.konecta.recruitmentservice.dto.UpdateApplicantStatusDto;
 import com.konecta.recruitmentservice.dto.response.ApiResponse;
 import com.konecta.recruitmentservice.service.ApplicantService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+
+import jakarta.validation.Valid;
 
 @RestController
 public class ApplicantController {
@@ -35,7 +42,7 @@ public class ApplicantController {
   @PatchMapping("/applicants/{applicantId}/status")
   public ResponseEntity<ApiResponse<ApplicantDto>> updateApplicantStatus(
       @PathVariable Integer applicantId,
-      @RequestBody UpdateApplicantStatusDto dto) {
+      @Valid @RequestBody UpdateApplicantStatusDto dto) {
 
     ApplicantDto updatedApplicant = applicantService.updateApplicantStatus(applicantId, dto);
     ApiResponse<ApplicantDto> response = ApiResponse.success(

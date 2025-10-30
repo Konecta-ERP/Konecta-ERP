@@ -2,8 +2,14 @@ package com.konecta.recruitmentservice.exception;
 
 import com.konecta.recruitmentservice.dto.response.ApiResponse;
 import jakarta.persistence.EntityNotFoundException;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -41,5 +47,28 @@ public class GlobalExceptionHandler {
         ex.getMessage(),
         "An unexpected error occurred. Please try again later.");
     return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
+  // Handles validation errors for @Valid annotated request bodies
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<ApiResponse<Object>> handleValidationExceptions(
+      MethodArgumentNotValidException ex) {
+
+    int status = HttpStatus.BAD_REQUEST.value();
+
+    // Collect all validation errors
+    Map<String, String> errors = new HashMap<>();
+    ex.getBindingResult().getAllErrors().forEach((error) -> {
+      String fieldName = ((FieldError) error).getField();
+      String errorMessage = error.getDefaultMessage();
+      errors.put(fieldName, errorMessage);
+    });
+
+    ApiResponse<Object> response = ApiResponse.error(
+        status,
+        errors.toString(),
+        "Validation failed. Please check your data.");
+
+    return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
   }
 }
