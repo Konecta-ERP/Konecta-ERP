@@ -74,7 +74,7 @@ public class JobPostService {
     return convertToDto(savedPost);
   }
 
-  public JobPostDto convertToDto(JobPost post) {
+  JobPostDto convertToDto(JobPost post) {
     JobPostDto dto = new JobPostDto();
     dto.setId(post.getId());
     dto.setTitle(post.getTitle());
