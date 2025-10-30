@@ -1,7 +1,7 @@
 package com.konecta.identity_service.service;
 
 import com.konecta.identity_service.dto.ApiResponse;
-import com.konecta.identity_service.dto.UserRequest;
+import com.konecta.identity_service.dto.CreateUserRequest;
 import com.konecta.identity_service.dto.UserResponse;
 import com.konecta.identity_service.entity.User;
 import com.konecta.identity_service.mapper.UserMapper;
@@ -21,7 +21,7 @@ public class UserServiceImpl  {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public ApiResponse<UserResponse> createUser(UserRequest request) {
+    public ApiResponse<UserResponse> createUser(CreateUserRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             return ApiResponse.error(
                     409,
@@ -35,7 +35,7 @@ public class UserServiceImpl  {
 
         User savedUser = userRepository.save(user);
         return ApiResponse.success(
-                userMapper.toDto(savedUser),
+                userMapper.toUserResponse(savedUser),
                 201,
                 "User registered successfully.",
                 "New user created with ID " + user.getId()

@@ -7,7 +7,6 @@ import com.konecta.identity_service.dto.UserResponse;
 import com.konecta.identity_service.entity.User;
 import com.konecta.identity_service.mapper.UserMapper;
 import com.nimbusds.jose.jwk.JWKSet;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -34,7 +33,7 @@ public class AuthServiceImpl implements AuthService {
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
         String token = jwtService.generateToken(authentication);
-        UserResponse user = userMapper.toDto((User) authentication.getPrincipal());
+        UserResponse user = userMapper.toUserResponse((User) authentication.getPrincipal());
         LoginResponse response = new LoginResponse(user, token);
         return ApiResponse.success(response, 200,
                 "User is successfully logged in.",

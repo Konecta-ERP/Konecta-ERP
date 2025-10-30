@@ -6,10 +6,13 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
+import lombok.Setter;
+
 import java.util.Set;
 
 @Getter
-public class UserRequest {
+@Setter
+public class CreateUserRequest {
     @NotBlank(message = "First name cannot be blank")
     @Size(min = 2, max = 100)
     private String firstName;
