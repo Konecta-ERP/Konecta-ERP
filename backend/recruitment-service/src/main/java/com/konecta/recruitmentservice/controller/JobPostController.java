@@ -1,8 +1,11 @@
 package com.konecta.recruitmentservice.controller;
 
+import com.konecta.recruitmentservice.dto.ApplicantDto;
+import com.konecta.recruitmentservice.dto.ApplyForJobDto;
 import com.konecta.recruitmentservice.dto.CreateJobPostDto;
 import com.konecta.recruitmentservice.dto.JobPostDto;
 import com.konecta.recruitmentservice.dto.response.ApiResponse;
+import com.konecta.recruitmentservice.service.ApplicantService;
 import com.konecta.recruitmentservice.service.JobPostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,10 +20,12 @@ import java.util.Map;
 public class JobPostController {
 
   private final JobPostService jobPostService;
+  private final ApplicantService applicantService;
 
   @Autowired
-  public JobPostController(JobPostService jobPostService) {
+  public JobPostController(JobPostService jobPostService, ApplicantService applicantService) {
     this.jobPostService = jobPostService;
+    this.applicantService = applicantService;
   }
 
   @PostMapping
@@ -79,6 +84,33 @@ public class JobPostController {
         HttpStatus.OK.value(),
         "Job posts retrieved successfully.",
         "Found " + posts.size() + " job posts.");
+    return ResponseEntity.ok(response);
+  }
+
+  @PostMapping("/{postId}/apply")
+  public ResponseEntity<ApiResponse<ApplicantDto>> applyForJob(
+      @PathVariable Integer postId,
+      @RequestBody ApplyForJobDto dto) {
+
+    ApplicantDto newApplicant = applicantService.applyForJob(postId, dto);
+    ApiResponse<ApplicantDto> response = ApiResponse.success(
+        newApplicant,
+        HttpStatus.CREATED.value(),
+        "Application submitted successfully.",
+        "Applicant created with id " + newApplicant.getId());
+    return new ResponseEntity<>(response, HttpStatus.CREATED);
+  }
+
+  @GetMapping("/{postId}/applicants")
+  public ResponseEntity<ApiResponse<List<ApplicantDto>>> getApplicantsForPost(
+      @PathVariable Integer postId) {
+
+    List<ApplicantDto> applicants = applicantService.getApplicantsForPost(postId);
+    ApiResponse<List<ApplicantDto>> response = ApiResponse.success(
+        applicants,
+        HttpStatus.OK.value(),
+        "Applicants retrieved successfully.",
+        "Found " + applicants.size() + " applicants.");
     return ResponseEntity.ok(response);
   }
 }
