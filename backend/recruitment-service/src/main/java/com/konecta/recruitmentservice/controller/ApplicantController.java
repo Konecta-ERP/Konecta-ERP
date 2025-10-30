@@ -1,7 +1,6 @@
 package com.konecta.recruitmentservice.controller;
 
 import com.konecta.recruitmentservice.dto.ApplicantDto;
-import com.konecta.recruitmentservice.dto.ApplyForJobDto;
 import com.konecta.recruitmentservice.dto.UpdateApplicantStatusDto;
 import com.konecta.recruitmentservice.dto.response.ApiResponse;
 import com.konecta.recruitmentservice.service.ApplicantService;
@@ -9,8 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 public class ApplicantController {
