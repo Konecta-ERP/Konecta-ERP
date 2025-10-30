@@ -3,7 +3,7 @@ package com.konecta.identity_service.controller;
 import com.konecta.identity_service.dto.ApiResponse;
 import com.konecta.identity_service.dto.LoginRequest;
 import com.konecta.identity_service.dto.LoginResponse;
-import com.konecta.identity_service.service.AuthService;
+import com.konecta.identity_service.service.AuthServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -14,9 +14,9 @@ import java.util.Map;
 @RestController
 @RequestMapping("api/auth")
 public class AuthController {
-    private final AuthService authService;
+    private final AuthServiceImpl authService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthServiceImpl authService) {
         this.authService = authService;
     }
 

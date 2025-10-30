@@ -1,0 +1,33 @@
+package com.konecta.identity_service.dto;
+
+import com.konecta.identity_service.entity.Role;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import java.util.Set;
+
+@Getter
+public class UserRequest {
+    @NotBlank(message = "First name cannot be blank")
+    @Size(min = 2, max = 100)
+    private String firstName;
+
+    @NotBlank(message = "Last name cannot be blank")
+    @Size(min = 2, max = 100)
+    private String lastName;
+
+    @NotBlank(message = "Email cannot be blank")
+    @Email(message = "Invalid email format")
+    private String email;
+
+    private String phone;
+
+    @NotBlank(message = "Password cannot be blank")
+    @Size(min = 8, message = "Password must be at least 8 characters long")
+    private String password;
+
+    @NotEmpty(message = "User must have at least one role")
+    private Set<Role> role;
+}
