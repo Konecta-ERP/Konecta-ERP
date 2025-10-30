@@ -1,11 +1,19 @@
 package com.konecta.recruitmentservice.dto;
 
-import com.konecta.recruitmentservice.model.enums.InterviewMode;
-import com.konecta.recruitmentservice.model.enums.InterviewStatus;
-import lombok.Data;
 import java.time.LocalDateTime;
 
-@Data
+import com.konecta.recruitmentservice.model.enums.InterviewMode;
+import com.konecta.recruitmentservice.model.enums.InterviewStatus;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class InterviewDto {
   private Integer id;
   private String feedback;

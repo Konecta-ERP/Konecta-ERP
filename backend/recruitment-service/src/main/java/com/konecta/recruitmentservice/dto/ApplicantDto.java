@@ -1,10 +1,18 @@
 package com.konecta.recruitmentservice.dto;
 
 import com.konecta.recruitmentservice.model.enums.ApplicantStatus;
-import lombok.Data;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class ApplicantDto {
   private Integer id;
   private String firstName;
