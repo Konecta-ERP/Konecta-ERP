@@ -32,5 +32,5 @@ public class CreateUserRequest {
     private String password;
 
     @NotEmpty(message = "User must have at least one role")
-    private Set<Role> role;
+    private Set<Role> roles;
 }

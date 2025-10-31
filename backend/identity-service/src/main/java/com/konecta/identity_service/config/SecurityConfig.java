@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -26,6 +27,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @EnableConfigurationProperties(RsaKeyProperties.class)
 public class SecurityConfig {
     private final RsaKeyProperties rsaKeys;
@@ -39,7 +41,7 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login", "/auth/.well-known/jwks.json").permitAll()
+                        .requestMatchers("/api/identity/auth/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
@@ -61,13 +63,11 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // Reads tokens (uses public key)
     @Bean
     public JwtDecoder jwtDecoder() {
         return NimbusJwtDecoder.withPublicKey(rsaKeys.publicKey()).build();
     }
 
-    // Generates tokens (uses private key)
     @Bean
     public JwtEncoder jwtEncoder() {
         JWK jwk = new RSAKey.Builder(rsaKeys.publicKey()).privateKey(rsaKeys.privateKey()).build();
@@ -75,7 +75,6 @@ public class SecurityConfig {
         return new NimbusJwtEncoder(jwkSource);
     }
 
-    // Exposes the public key for other services
     @Bean
     public JWKSet jwkSet() {
         RSAKey.Builder builder = new RSAKey.Builder(rsaKeys.publicKey());

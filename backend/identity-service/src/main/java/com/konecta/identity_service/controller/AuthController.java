@@ -4,6 +4,7 @@ import com.konecta.identity_service.dto.ApiResponse;
 import com.konecta.identity_service.dto.LoginRequest;
 import com.konecta.identity_service.dto.LoginResponse;
 import com.konecta.identity_service.service.AuthServiceImpl;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("api/auth")
+@RequestMapping("/api/identity/auth")
 public class AuthController {
     private final AuthServiceImpl authService;
 
@@ -21,7 +22,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<?>> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<ApiResponse<?>> login(@RequestBody @Valid LoginRequest request) {
         ApiResponse<LoginResponse> response = authService.getToken(request);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
