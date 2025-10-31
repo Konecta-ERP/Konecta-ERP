@@ -45,14 +45,9 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private Boolean active = true;
 
-    @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
-    @CollectionTable(
-            name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id")
-    )
-    @Column(nullable = false)
-    private Set<Role> roles = new HashSet<>();
+    @Column(name = "role")
+    private Role role;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -64,7 +59,11 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return this.getRoles().stream()
+        // when a user wasn't assigned a high-level role, assign the base EMP role.
+        Role effectiveRole = (this.role != null) ? this.role : Role.EMP;
+
+        // Return all implied roles as authorities
+        return effectiveRole.getImpliedRoles().stream()
                 .map(role -> new SimpleGrantedAuthority(role.name()))
                 .collect(Collectors.toSet());
     }

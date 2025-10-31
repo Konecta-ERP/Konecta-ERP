@@ -1,14 +1,9 @@
 package com.konecta.identity_service.dto;
 
 import com.konecta.identity_service.entity.Role;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.Set;
 
 @Getter
 @Setter
@@ -31,6 +26,6 @@ public class CreateUserRequest {
     @Size(min = 8, message = "Password must be at least 8 characters long")
     private String password;
 
-    @NotEmpty(message = "User must have at least one role")
-    private Set<Role> roles;
+    @NotNull(message = "A role must be specified")
+    private Role role;
 }

@@ -14,7 +14,7 @@ public interface UserService {
     ApiResponse<?> deleteUser(UUID id);
     ApiResponse<?> getAllRoles();
     ApiResponse<UserResponse> assignRoleToUser(UUID id, Role role);
-    ApiResponse<UserResponse> revokeRoleFromUser(UUID id, Role role);
+    ApiResponse<UserResponse> revokeRoleFromUser(UUID id);
     ApiResponse<UserResponse> activateUserById(UUID id);
     ApiResponse<UserResponse> deactivateUserById(UUID id);
     ApiResponse<?> updatePassword(UUID id, ChangePasswordRequest request);

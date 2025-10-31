@@ -26,6 +26,6 @@ public interface UserMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "active", ignore = true)
     @Mapping(target = "passwordHash", ignore = true)
-    @Mapping(target = "roles", ignore = true)
+    @Mapping(target = "role", ignore = true)
     void updateUserFromDto(UpdateUserRequest dto, @MappingTarget User user);
 }

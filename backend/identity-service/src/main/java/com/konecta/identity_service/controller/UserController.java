@@ -1,7 +1,6 @@
 package com.konecta.identity_service.controller;
 
 import com.konecta.identity_service.dto.*;
-import com.konecta.identity_service.entity.Role;
 import com.konecta.identity_service.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -113,13 +112,12 @@ public class UserController {
      * Endpoint: Revoke Role from User
      * DELETE /api/identity/users/{id}/roles/{role}
      */
-    @DeleteMapping("/users/{id}/roles/{role}")
+    @DeleteMapping("/users/{id}/roles")
     @PreAuthorize("hasAuthority('HR_ADMIN')")
     public ResponseEntity<ApiResponse<UserResponse>> revokeRoleFromUser(
-            @PathVariable UUID id,
-            @PathVariable Role role) {
+            @PathVariable UUID id) {
 
-        ApiResponse<UserResponse> response = userService.revokeRoleFromUser(id, role);
+        ApiResponse<UserResponse> response = userService.revokeRoleFromUser(id);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

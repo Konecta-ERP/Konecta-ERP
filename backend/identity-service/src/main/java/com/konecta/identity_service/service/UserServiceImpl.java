@@ -130,25 +130,23 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ApiResponse<UserResponse> assignRoleToUser(UUID id, Role role) {
+        if (!role.isAssignable()) {
+            return ApiResponse.error(
+                    400,
+                    "Role " + role.name() + " is not an assignable role.",
+                    "Invalid role specified."
+            );
+        }
         Optional<User> userOpt = userRepository.findById(id);
         if (userOpt.isEmpty()) {
             return ApiResponse.error(404, "No user exists with ID " + id, "User not found.");
         }
-
         User user = userOpt.get();
-        if (user.getRoles().contains(role)) {
-            return ApiResponse.error(
-                    400,
-                    "User ID " + id + " already has role " + role,
-                    "Role already assigned."
-            );
-        }
-
-        user.getRoles().add(role);
-        User updatedUser = userRepository.save(user);
+        user.setRole(role);
+        userRepository.save(user);
 
         return ApiResponse.success(
-                userMapper.toUserResponse(updatedUser),
+                userMapper.toUserResponse(user),
                 200,
                 "Role assigned successfully.",
                 "Role '" + role + "' added to user ID " + id
@@ -156,26 +154,26 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ApiResponse<UserResponse> revokeRoleFromUser(UUID id, Role role) {
+    public ApiResponse<UserResponse> revokeRoleFromUser(UUID id) {
         Optional<User> userOpt = userRepository.findById(id);
         if (userOpt.isEmpty()) {
             return ApiResponse.error(404, "No user exists with ID " + id, "User not found.");
         }
         User user = userOpt.get();
 
-        if (!user.getRoles().contains(role)) {
+        if (user.getRole() == null) {
             return ApiResponse.error(
-                    404,
-                    "Attempted to remove non-existent role '" + role + "' from user ID " + id,
-                    "User does not have this role."
+                    400,
+                    "User does not have a high-level role to revoke.",
+                    "User is already a base employee."
             );
         }
-
-        user.getRoles().remove(role);
-        User updatedUser = userRepository.save(user);
+        Role role = user.getRole();
+        user.setRole(null);
+        userRepository.save(user);
 
         return ApiResponse.success(
-                userMapper.toUserResponse(updatedUser),
+                userMapper.toUserResponse(user),
                 200,
                 "Role removed successfully.",
                 "Role " + role + " removed from user ID " + id
