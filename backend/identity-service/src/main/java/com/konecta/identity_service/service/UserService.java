@@ -1,21 +1,24 @@
 package com.konecta.identity_service.service;
 
-import com.konecta.identity_service.dto.*;
+import com.konecta.identity_service.dto.request.ChangePasswordRequest;
+import com.konecta.identity_service.dto.request.CreateUserRequest;
+import com.konecta.identity_service.dto.request.UpdateUserRequest;
+import com.konecta.identity_service.dto.response.UserResponse;
 import com.konecta.identity_service.entity.Role;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
-    ApiResponse<UserResponse> createUser(CreateUserRequest request);
-    ApiResponse<List<UserResponse>> getAllUsers();
-    ApiResponse<UserResponse> getUserById(UUID id);
-    ApiResponse<UserResponse> updateUser(UUID id, UpdateUserRequest request);
-    ApiResponse<?> deleteUser(UUID id);
-    ApiResponse<?> getAllRoles();
-    ApiResponse<UserResponse> assignRoleToUser(UUID id, Role role);
-    ApiResponse<UserResponse> revokeRoleFromUser(UUID id);
-    ApiResponse<UserResponse> activateUserById(UUID id);
-    ApiResponse<UserResponse> deactivateUserById(UUID id);
-    ApiResponse<?> updatePassword(UUID id, ChangePasswordRequest request);
+    UserResponse createUser(CreateUserRequest request);
+    List<UserResponse> getAllUsers();
+    UserResponse getUserById(UUID id);
+    UserResponse updateUser(UUID id, UpdateUserRequest request);
+    void deleteUser(UUID id);
+    List<String> getAllRoles();
+    UserResponse assignRoleToUser(UUID id, Role role);
+    UserResponse revokeRoleFromUser(UUID id);
+    UserResponse activateUserById(UUID id);
+    UserResponse deactivateUserById(UUID id);
+    void updatePassword(UUID id, ChangePasswordRequest request);
 }

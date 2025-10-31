@@ -1,16 +1,22 @@
 package com.konecta.identity_service.service;
 
-import com.konecta.identity_service.dto.*;
+import com.konecta.identity_service.dto.request.ChangePasswordRequest;
+import com.konecta.identity_service.dto.request.CreateUserRequest;
+import com.konecta.identity_service.dto.request.UpdateUserRequest;
+import com.konecta.identity_service.dto.response.UserResponse;
 import com.konecta.identity_service.entity.Role;
 import com.konecta.identity_service.entity.User;
+import com.konecta.identity_service.exception.DuplicateResourceException;
+import com.konecta.identity_service.exception.InvalidRequestException;
+import com.konecta.identity_service.exception.ResourceNotFoundException;
 import com.konecta.identity_service.mapper.UserMapper;
 import com.konecta.identity_service.repository.UserRepository;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -25,213 +31,142 @@ public class UserServiceImpl implements UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public ApiResponse<UserResponse> createUser(CreateUserRequest request) {
+    @Override
+    public UserResponse createUser(CreateUserRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            return ApiResponse.error(
-                    409,
+            throw new DuplicateResourceException(
                     "Duplicate entry for email " + request.getEmail(),
                     "Email already exists."
             );
         }
+        if (request.getRole() == null || !request.getRole().isAssignable()) {
+            throw new InvalidRequestException(
+                    "Role " + request.getRole() + " is not assignable.",
+                    "A valid, assignable role must be provided."
+            );
+        }
+
         User user = userMapper.toEntity(request);
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setActive(true);
 
         User savedUser = userRepository.save(user);
-        return ApiResponse.success(
-                userMapper.toUserResponse(savedUser),
-                201,
-                "User registered successfully.",
-                "New user created with ID " + user.getId()
-        );
+        return userMapper.toUserResponse(savedUser);
     }
+
     @Override
-    public ApiResponse<List<UserResponse>> getAllUsers() {
-        List<UserResponse> users = userRepository.findAll().stream()
+    public List<UserResponse> getAllUsers() {
+        return userRepository.findAll().stream()
                 .map(userMapper::toUserResponse)
                 .toList();
-
-        return ApiResponse.success(
-                users,
-                200,
-                "User list retrieved successfully.",
-                users.size() + " users fetched from database"
-        );
     }
 
     @Override
-    public ApiResponse<UserResponse> getUserById(UUID id) {
+    public UserResponse getUserById(UUID id) {
         return userRepository.findById(id)
-                .map(user -> ApiResponse.success(
-                        userMapper.toUserResponse(user),
-                        200,
-                        "User data retrieved successfully.",
-                        "User record found for ID " + id
-                ))
-                .orElse(ApiResponse.error(
-                        404,
+                .map(userMapper::toUserResponse)
+                .orElseThrow(() -> new ResourceNotFoundException(
                         "No user exists with ID " + id,
                         "User not found."
                 ));
     }
 
     @Override
-    public ApiResponse<UserResponse> updateUser(UUID id, UpdateUserRequest request) {
-        Optional<User> userOpt = userRepository.findById(id);
-        if (userOpt.isEmpty()) {
-            return ApiResponse.error(404, "No user exists with ID " + id, "User not found.");
-        }
-        User user = userOpt.get();
+    public UserResponse updateUser(UUID id, UpdateUserRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No user exists with ID " + id, "User not found."
+                ));
 
         if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
             if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-                return ApiResponse.error(
-                        409,
+                throw new DuplicateResourceException(
                         "Email " + request.getEmail() + " is already in use.",
-                        "Username or email already exists."
+                        "Email already exists."
                 );
             }
         }
         userMapper.updateUserFromDto(request, user);
         User updatedUser = userRepository.save(user);
-        return ApiResponse.success(
-                userMapper.toUserResponse(updatedUser),
-                200,
-                "User data updated successfully.",
-                "User record updated for ID " + id
-        );
+        return userMapper.toUserResponse(updatedUser);
     }
 
     @Override
-    public ApiResponse<?> deleteUser(UUID id) {
+    public void deleteUser(UUID id) {
         if (!userRepository.existsById(id)) {
-            return ApiResponse.error(404, "No user exists with ID " + id, "User not found.");
+            throw new ResourceNotFoundException("No user exists with ID " + id, "User not found.");
         }
         userRepository.deleteById(id);
-        return ApiResponse.success(
-                204,
-                "User deleted successfully.",
-                "User record deleted for ID " + id
-        );
     }
 
     @Override
-    public ApiResponse<?> getAllRoles() {
-        List<String> roles = Arrays.stream(Role.values())
+    public List<String> getAllRoles() {
+        return Arrays.stream(Role.values())
+                .filter(Role::isAssignable)
                 .map(Enum::name)
                 .toList();
-        return ApiResponse.success(
-                roles,
-                200,
-                "Roles retrieved successfully.",
-                roles.size() + " roles found."
-        );
     }
 
     @Override
-    public ApiResponse<UserResponse> assignRoleToUser(UUID id, Role role) {
+    public UserResponse assignRoleToUser(UUID id, Role role) {
         if (!role.isAssignable()) {
-            return ApiResponse.error(
-                    400,
+            throw new InvalidRequestException(
                     "Role " + role.name() + " is not an assignable role.",
                     "Invalid role specified."
             );
         }
-        Optional<User> userOpt = userRepository.findById(id);
-        if (userOpt.isEmpty()) {
-            return ApiResponse.error(404, "No user exists with ID " + id, "User not found.");
-        }
-        User user = userOpt.get();
-        user.setRole(role);
-        userRepository.save(user);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("No user exists with ID " + id, "User not found."));
 
-        return ApiResponse.success(
-                userMapper.toUserResponse(user),
-                200,
-                "Role assigned successfully.",
-                "Role '" + role + "' added to user ID " + id
-        );
+        user.setRole(role);
+        User updatedUser = userRepository.save(user);
+        return userMapper.toUserResponse(updatedUser);
     }
 
     @Override
-    public ApiResponse<UserResponse> revokeRoleFromUser(UUID id) {
-        Optional<User> userOpt = userRepository.findById(id);
-        if (userOpt.isEmpty()) {
-            return ApiResponse.error(404, "No user exists with ID " + id, "User not found.");
-        }
-        User user = userOpt.get();
+    public UserResponse revokeRoleFromUser(UUID id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("No user exists with ID " + id, "User not found."));
 
         if (user.getRole() == null) {
-            return ApiResponse.error(
-                    400,
+            throw new InvalidRequestException(
                     "User does not have a high-level role to revoke.",
                     "User is already a base employee."
             );
         }
-        Role role = user.getRole();
         user.setRole(null);
-        userRepository.save(user);
-
-        return ApiResponse.success(
-                userMapper.toUserResponse(user),
-                200,
-                "Role removed successfully.",
-                "Role " + role + " removed from user ID " + id
-        );
+        User updatedUser = userRepository.save(user);
+        return userMapper.toUserResponse(updatedUser);
     }
 
     @Override
-    public ApiResponse<UserResponse> activateUserById(UUID id) {
+    public UserResponse activateUserById(UUID id) {
         return setUserActiveStatus(id, true);
     }
 
     @Override
-    public ApiResponse<UserResponse> deactivateUserById(UUID id) {
+    public UserResponse deactivateUserById(UUID id) {
         return setUserActiveStatus(id, false);
     }
 
     @Override
-    public ApiResponse<?> updatePassword(UUID id, ChangePasswordRequest request) {
-        Optional<User> userOpt = userRepository.findById(id);
-        if (userOpt.isEmpty()) {
-            return ApiResponse.error(404, "No user exists with ID " + id, "User not found.");
-        }
-        User user = userOpt.get();
+    public void updatePassword(UUID id, ChangePasswordRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("No user exists with ID " + id, "User not found."));
 
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPasswordHash())) {
-            return ApiResponse.error(
-                    400,
-                    "Old password does not match.",
-                    "Invalid credentials."
-            );
+            throw new BadCredentialsException("Old password does not match.");
         }
-
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
-
-        return ApiResponse.success(
-                200,
-                "Password updated successfully.",
-                "Password changed for user " + user.getEmail()
-        );
     }
 
-    private ApiResponse<UserResponse> setUserActiveStatus(UUID id, boolean isActive) {
-        Optional<User> userOpt = userRepository.findById(id);
-        if (userOpt.isEmpty()) {
-            return ApiResponse.error(404, "No user exists with ID " + id, "User not found.");
-        }
+    private UserResponse setUserActiveStatus(UUID id, boolean isActive) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("No user exists with ID " + id, "User not found."));
 
-        User user = userOpt.get();
         user.setActive(isActive);
         User updatedUser = userRepository.save(user);
-        String action = isActive ? "activated" : "deactivated";
-
-        return ApiResponse.success(
-                userMapper.toUserResponse(updatedUser),
-                200,
-                "User " + action + " successfully.",
-                "User record " + action + " for ID " + id
-        );
+        return userMapper.toUserResponse(updatedUser);
     }
 }

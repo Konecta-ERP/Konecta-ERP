@@ -34,6 +34,7 @@ You should now have `private.pem `and `public.pem` `inside src/main/resources/ce
 
 From the root of the `identity-service` project, run:
 ```bash
+mvn clean install
 mvn spring-boot:run
 ```
 The service will start, connect to your database, load the RSA keys, and be available through the API gateway at `http://localhost:8080`.

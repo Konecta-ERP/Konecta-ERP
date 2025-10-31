@@ -1,9 +1,8 @@
 package com.konecta.identity_service.service;
 
-import com.konecta.identity_service.dto.ApiResponse;
-import com.konecta.identity_service.dto.LoginRequest;
-import com.konecta.identity_service.dto.LoginResponse;
-import com.konecta.identity_service.dto.UserResponse;
+import com.konecta.identity_service.dto.request.LoginRequest;
+import com.konecta.identity_service.dto.response.LoginResponse;
+import com.konecta.identity_service.dto.response.UserResponse;
 import com.konecta.identity_service.entity.User;
 import com.konecta.identity_service.mapper.UserMapper;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -27,19 +26,17 @@ public class AuthServiceImpl implements AuthService {
         this.jwkSet = jwkSet;
         this.userMapper = userMapper;
     }
-
-    public ApiResponse<LoginResponse> getToken(LoginRequest request) {
+    @Override
+    public LoginResponse getToken(LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
         String token = jwtService.generateToken(authentication);
         UserResponse user = userMapper.toUserResponse((User) authentication.getPrincipal());
-        LoginResponse response = new LoginResponse(user, token);
-        return ApiResponse.success(response, 200,
-                "User is successfully logged in.",
-                "Access token valid for 24 hours is generated for " + user.getEmail());
+        return new LoginResponse(user, token);
     }
 
+    @Override
     public Map<String, Object> getPublicKey() {
         return this.jwkSet.toJSONObject();
     }

@@ -1,4 +1,4 @@
-package com.konecta.identity_service.dto;
+package com.konecta.identity_service.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;

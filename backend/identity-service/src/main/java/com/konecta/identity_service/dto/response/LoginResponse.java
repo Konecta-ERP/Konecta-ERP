@@ -1,4 +1,4 @@
-package com.konecta.identity_service.dto;
+package com.konecta.identity_service.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

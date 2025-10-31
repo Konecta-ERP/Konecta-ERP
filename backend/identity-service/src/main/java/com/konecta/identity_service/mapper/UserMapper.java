@@ -1,8 +1,8 @@
 package com.konecta.identity_service.mapper;
 
-import com.konecta.identity_service.dto.CreateUserRequest;
-import com.konecta.identity_service.dto.UpdateUserRequest;
-import com.konecta.identity_service.dto.UserResponse;
+import com.konecta.identity_service.dto.request.CreateUserRequest;
+import com.konecta.identity_service.dto.request.UpdateUserRequest;
+import com.konecta.identity_service.dto.response.UserResponse;
 import com.konecta.identity_service.entity.User;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;

@@ -1,4 +1,4 @@
-package com.konecta.identity_service.dto;
+package com.konecta.identity_service.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
