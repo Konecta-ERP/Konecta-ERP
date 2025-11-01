@@ -34,4 +34,11 @@ public class Routes {
                 .route(path("/api/example/**"), http("lb://service-example"))
                 .build();
     }
+
+    @Bean
+    public RouterFunction<ServerResponse> identityServiceRoute() {
+        return route("identity-service")
+                .route(path("/api/identity/**"), http("lb://identity-service"))
+                .build();
+    }
 }
