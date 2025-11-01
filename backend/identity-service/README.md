@@ -38,3 +38,10 @@ mvn clean install
 mvn spring-boot:run
 ```
 The service will start, connect to your database, load the RSA keys, and be available through the API gateway at `http://localhost:8080`.
+Also, To make testing easier, the database has been pre-populated with the following user accounts. 
+The password for all users is `password`.
+- `admin@email.com`
+- `hr_associate@email.com`
+- `hr_manager@email.com`
+- `accountant@email.com`
+- `cfo@email.com`

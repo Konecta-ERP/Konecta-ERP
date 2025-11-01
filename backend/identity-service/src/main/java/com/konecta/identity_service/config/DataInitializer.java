@@ -43,5 +43,39 @@ public class DataInitializer implements CommandLineRunner {
             emp.setActive(true);
             userRepository.save(emp);
         }
+        if (!userRepository.existsByEmail("hr_manager@email.com")) {
+            User emp = new User();
+            emp.setFirstName("HR");
+            emp.setLastName("Manager");
+            emp.setEmail("hr_manager@email.com");
+            emp.setPhone("+01234567892");
+            emp.setPasswordHash(passwordEncoder.encode("password"));
+            emp.setRole(Role.MANAGER);
+            emp.setActive(true);
+            userRepository.save(emp);
+        }
+        if (!userRepository.existsByEmail("accountant@email.com")) {
+            User emp = new User();
+            emp.setFirstName("Accountant");
+            emp.setLastName("User");
+            emp.setEmail("accountant@email.com");
+            emp.setPhone("+01234567893");
+            emp.setPasswordHash(passwordEncoder.encode("password"));
+            emp.setRole(Role.ACCOUNTANT);
+            emp.setActive(true);
+            userRepository.save(emp);
+        }
+
+        if (!userRepository.existsByEmail("cfo@email.com")) {
+            User emp = new User();
+            emp.setFirstName("CFO");
+            emp.setLastName("User");
+            emp.setEmail("cfo@email.com");
+            emp.setPhone("+01234567894");
+            emp.setPasswordHash(passwordEncoder.encode("password"));
+            emp.setRole(Role.CFO);
+            emp.setActive(true);
+            userRepository.save(emp);
+        }
     }
 }
