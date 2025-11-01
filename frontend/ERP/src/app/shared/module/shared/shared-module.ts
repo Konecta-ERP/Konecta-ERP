@@ -15,7 +15,12 @@ import { MessageModule } from 'primeng/message';
 import { Toast } from 'primeng/toast';
 import { NgxSpinnerModule } from 'ngx-spinner';
 import { MessageService } from 'primeng/api';
-
+import { BadgeModule } from 'primeng/badge';
+import { AvatarModule } from 'primeng/avatar';
+import { Ripple } from 'primeng/ripple';
+import { Menubar } from 'primeng/menubar';
+import { Toolbar} from 'primeng/toolbar';
+import { CardModule } from 'primeng/card';
 @NgModule({
   declarations: [],
   imports: [
@@ -31,6 +36,12 @@ import { MessageService } from 'primeng/api';
     CommonModule,
     Toast,
     NgxSpinnerModule,
+    BadgeModule,
+    AvatarModule,
+    Ripple,
+    Menubar,
+    Toolbar,
+    CardModule
     ],
     exports: [
     MessageModule,
@@ -45,6 +56,12 @@ import { MessageService } from 'primeng/api';
     CommonModule,
     Toast,
     NgxSpinnerModule,
+    BadgeModule,
+    AvatarModule,
+    Ripple,
+    Menubar,
+    Toolbar,
+    CardModule
     ],
     providers: [MessageService]
 

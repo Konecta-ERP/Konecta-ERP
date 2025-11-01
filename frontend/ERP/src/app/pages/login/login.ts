@@ -76,7 +76,7 @@ export class Login {
                 console.log(res);
                 this._NgxSpinnerService.hide();
                 localStorage.setItem('token', res.token);
-                this._router.navigate(['/user']);
+                this._router.navigate(['/home']);
             },
             error: (err) => {
                 this.show('error', 'Error', err.error.error || 'Login failed' )

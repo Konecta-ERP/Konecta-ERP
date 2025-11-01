@@ -13,7 +13,7 @@ export class AuthService {
   }
 
   login( data: ILogin):Observable<any>{
-    return this._httpClient.post(`${baseURL}/auth`,data);
+    return this._httpClient.post(`${baseURL}/identity/auth/login`,data);
   }
 
   authorized():boolean{

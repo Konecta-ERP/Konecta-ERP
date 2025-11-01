@@ -7,10 +7,21 @@ export const routes: Routes = [
         {path: '', redirectTo: 'login', pathMatch: 'full' }
     ]},
     {
-        path: 'user', loadComponent:()=>import('./layouts/user-layout/user-layout').then(
-            m=>m.UserLayout
+        path: 'home', loadComponent:()=>import('./layouts/home-layout/home-layout').then(
+            m=>m.homeLayout
         ),
-        canActivate:[authGuard]
+        canActivate:[authGuard],
+        children: [
+            {
+                path: 'dashboard', loadComponent:()=>import('./pages/dashboard/dashboard').then(m=>m.Dashboard)
+            },
+            {
+                path: 'profile', loadComponent:()=>import('./pages/profile/profile').then(m=>m.Profile)
+            },
+            {
+                path: '', redirectTo: 'dashboard', pathMatch: 'full'
+            }
+        ]
     },
     {path: '', redirectTo: 'auth', pathMatch: 'full' },
 ];
