@@ -15,10 +15,10 @@ import java.util.stream.Stream;
  */
 @Getter
 public enum Role {
-    // Base Role (Not directly assignable)
+    // Base Role (Not directly assignable, but can be used in authorization)
     EMP(false),
 
-    // Department Roles (Not directly assignable)
+    // Department Roles (Not directly assignable, but can be used in authorization)
     HR_EMP(false, EMP),
     FINANCE_EMP(false, EMP),
 
