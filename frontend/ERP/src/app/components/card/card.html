@@ -1,0 +1,12 @@
+<div class="mb-4 p-4">
+    <p-card
+        [style]="{ width: '100%', overflow: 'hidden', cursor: route ? 'pointer' : 'default' }"
+        (click)="onCardClick()"
+    >
+        <ng-template #header>
+            <img [alt]="title" class="w-full h-48 object-cover" [src]="imageUrl" />
+        </ng-template>
+        <ng-template #title>{{ title }}</ng-template>
+        <ng-template #subtitle>{{ subtitle }}</ng-template>
+    </p-card>
+</div>
