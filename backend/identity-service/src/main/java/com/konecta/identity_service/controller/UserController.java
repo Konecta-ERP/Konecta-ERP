@@ -27,7 +27,7 @@ public class UserController {
     }
 
     @PostMapping("/users")
-    @PreAuthorize("hasAuthority('HR_ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<UserResponse>> createUser(
             @Valid @RequestBody CreateUserRequest request) {
 
@@ -38,7 +38,7 @@ public class UserController {
     }
 
     @GetMapping("/users")
-    @PreAuthorize("hasAnyAuthority('HR_ADMIN', 'HR_MANAGER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<List<UserResponse>>> getAllUsers() {
 
         List<UserResponse> users = userService.getAllUsers();
@@ -48,8 +48,8 @@ public class UserController {
     }
 
     @GetMapping("/users/{id}")
-    @PreAuthorize("hasAnyAuthority('HR_ADMIN', 'HR_MANAGER') or #id.toString() == authentication.token.claims['userId']")
-    public ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable UUID id) {
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER') or #id.toString() == authentication.token.claims['userId']")
+    public ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable("id") UUID id) {
 
         UserResponse user = userService.getUserById(id);
         ApiResponse<UserResponse> response = ApiResponse.success(
@@ -58,9 +58,9 @@ public class UserController {
     }
 
     @PutMapping("/users/{id}")
-    @PreAuthorize("hasAuthority('HR_ADMIN') or #id.toString() == authentication.token.claims['userId']")
+    @PreAuthorize("hasAuthority('ADMIN') or #id.toString() == authentication.token.claims['userId']")
     public ResponseEntity<ApiResponse<UserResponse>> updateUser(
-            @PathVariable UUID id,
+            @PathVariable("id") UUID id,
             @Valid @RequestBody UpdateUserRequest request) {
 
         UserResponse user = userService.updateUser(id, request);
@@ -70,14 +70,13 @@ public class UserController {
     }
 
     @DeleteMapping("/users/{id}")
-    @PreAuthorize("hasAuthority('HR_ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<?>> deleteUser(@PathVariable UUID id) {
 
         userService.deleteUser(id);
         ApiResponse<?> response = ApiResponse.success(
                 204, "User deleted successfully.", "User record deleted.");
-        // 204 No Content is standard for a successful DELETE
-        return new ResponseEntity<>(response, HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/roles")
@@ -90,8 +89,8 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PostMapping("/users/{id}/roles")
-    @PreAuthorize("hasAuthority('HR_ADMIN')")
+    @PatchMapping("/users/{id}/roles")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<UserResponse>> assignRoleToUser(
             @PathVariable UUID id,
             @Valid @RequestBody AssignRoleRequest request) {
@@ -102,10 +101,9 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @DeleteMapping("/users/{id}/roles/{role}")
-    @PreAuthorize("hasAuthority('HR_ADMIN')")
-    public ResponseEntity<ApiResponse<UserResponse>> revokeRoleFromUser(
-            @PathVariable UUID id) {
+    @PatchMapping("/users/{id}/roles/{role}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<ApiResponse<UserResponse>> revokeRoleFromUser(@PathVariable UUID id) {
 
         UserResponse user = userService.revokeRoleFromUser(id);
         ApiResponse<UserResponse> response = ApiResponse.success(
@@ -114,7 +112,7 @@ public class UserController {
     }
 
     @PostMapping("/users/{id}/activate")
-    @PreAuthorize("hasAuthority('HR_ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<UserResponse>> activateUser(@PathVariable UUID id) {
         UserResponse user = userService.activateUserById(id);
         ApiResponse<UserResponse> response = ApiResponse.success(
@@ -123,7 +121,7 @@ public class UserController {
     }
 
     @PostMapping("/users/{id}/deactivate")
-    @PreAuthorize("hasAuthority('HR_ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<UserResponse>> deactivateUser(@PathVariable UUID id) {
         UserResponse user = userService.deactivateUserById(id);
         ApiResponse<UserResponse> response = ApiResponse.success(
@@ -134,7 +132,7 @@ public class UserController {
     @PutMapping("/users/{id}/password")
     @PreAuthorize("#id.toString() == authentication.token.claims['userId']")
     public ResponseEntity<ApiResponse<?>> updatePassword(
-            @PathVariable UUID id,
+            @PathVariable("id") UUID id,
             @Valid @RequestBody ChangePasswordRequest request) {
 
         userService.updatePassword(id, request);
