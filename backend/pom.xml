@@ -23,6 +23,7 @@
         <module>api-gateway</module>
         <module>discovery-server</module>
         <module>service-example</module>
+        <module>identity-service</module>
     </modules>
 
     <dependencyManagement>
