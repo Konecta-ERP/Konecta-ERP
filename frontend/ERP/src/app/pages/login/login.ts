@@ -6,11 +6,11 @@ import {
     Validators
 } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '../../core/services/auth.service';
 import { ILogin } from '../../core/interfaces/ilogin';
 import { MessageService } from 'primeng/api';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { SharedModule } from '../../shared/module/shared/shared-module';
+import { UserService } from '../../core/services/user.service';
 @Component({
   selector: 'app-login',
   imports: [
@@ -23,9 +23,9 @@ import { SharedModule } from '../../shared/module/shared/shared-module';
 export class Login {
 
     constructor(
-        private _authService: AuthService,
         private _messageService: MessageService,
         private _NgxSpinnerService: NgxSpinnerService,
+        private _userService: UserService,
         private _router: Router
     ) {
         this.initFormControls()
@@ -68,22 +68,38 @@ export class Login {
 
     }
 
-    loginAPI(data:ILogin): void {
-        this._NgxSpinnerService.show();
-        this._authService.login(data).subscribe({
-            next: (res) => {
-                this.show('success', 'Success', 'Login successful' )
-                console.log(res);
-                this._NgxSpinnerService.hide();
-                localStorage.setItem('token', res.token);
-                this._router.navigate(['/home']);
-            },
-            error: (err) => {
-                this.show('error', 'Error', err.error.error || 'Login failed' )
-                this._NgxSpinnerService.hide();
+    loginAPI(data: ILogin): void {
+    this._NgxSpinnerService.show();
+
+    this._userService.login(data).subscribe({
+        next: (res) => {
+            this._NgxSpinnerService.hide();
+
+            if (res.status === 200 && res.data && res.data.accessToken) {
+                this.show('success', 'Success', res.cMessage || 'Login successful');
+
+
+                localStorage.setItem('token', res.data.accessToken);
+                this._userService.setUser(res.data.user);
+                console.log('Logged in user:', res.data.user);
+                console.log(this._userService.getUser());
+                setTimeout(() => {
+                    this._router.navigate(['/home']);
+                }, 500);
+
+            } else {
+                this.show('error', 'Error', res.cMessage || 'Login failed');
+                console.warn('Login failed (API reported error):', res);
             }
-        });
-    }
+        },
+        error: (err) => {
+            this._NgxSpinnerService.hide();
+
+            const errorMessage = err.error?.cMessage || err.error?.sMessage || 'An unexpected server error occurred';
+            this.show('error', 'Error', errorMessage);
+        }
+    });
+}
 
     show(severity: string='info', summary: string='Info', detail: string='Message Content'): void {
         this._messageService.add({ severity, summary, detail, life: 3000 });

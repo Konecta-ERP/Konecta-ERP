@@ -1,0 +1,24 @@
+<div class="min-h-screen p-6 bg-gray-50 dark:bg-gray-900">
+    <h2 class="text-3xl font-semibold text-gray-800 dark:text-gray-100 mb-6">
+        Performance Reviews
+    </h2>
+
+    <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <app-performance-review-card
+            *ngFor="let review of reviews"
+            [review]="review"
+        ></app-performance-review-card>
+    </div>
+</div>
+
+<ngx-spinner
+    bdColor="rgba(0, 0, 0, 0.8)"
+    size="large"
+    color="#ffd700"
+    type="timer"
+    [fullScreen]="true"
+>
+    <p style="color: #ffd700">Konnection flowing...</p>
+</ngx-spinner>
+
+<p-toast position="top-center" />
