@@ -23,6 +23,7 @@
         <module>api-gateway</module>
         <module>discovery-server</module>
         <module>service-example</module>
+        <module>finance-service</module>
     </modules>
 
     <dependencyManagement>
