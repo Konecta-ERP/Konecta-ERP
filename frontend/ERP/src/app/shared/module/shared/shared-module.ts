@@ -21,6 +21,10 @@ import { Ripple } from 'primeng/ripple';
 import { Menubar } from 'primeng/menubar';
 import { Toolbar} from 'primeng/toolbar';
 import { CardModule } from 'primeng/card';
+import { DatePickerModule } from 'primeng/datepicker';
+import { IftaLabelModule } from 'primeng/iftalabel';
+import { DialogModule } from 'primeng/dialog'
+import { TableModule } from 'primeng/table';
 @NgModule({
   declarations: [],
   imports: [
@@ -41,7 +45,11 @@ import { CardModule } from 'primeng/card';
     Ripple,
     Menubar,
     Toolbar,
-    CardModule
+    CardModule,
+    DatePickerModule,
+    IftaLabelModule,
+    DialogModule,
+    TableModule
     ],
     exports: [
     MessageModule,
@@ -61,7 +69,11 @@ import { CardModule } from 'primeng/card';
     Ripple,
     Menubar,
     Toolbar,
-    CardModule
+    CardModule,
+    DatePickerModule,
+    IftaLabelModule,
+    DialogModule,
+    TableModule
     ],
     providers: [MessageService]
 

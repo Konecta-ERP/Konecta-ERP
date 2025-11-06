@@ -6,7 +6,6 @@ import {
     Validators
 } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '../../core/services/auth.service';
 import { ILogin } from '../../core/interfaces/ilogin';
 import { MessageService } from 'primeng/api';
 import { NgxSpinnerService } from 'ngx-spinner';
@@ -24,7 +23,6 @@ import { UserService } from '../../core/services/user.service';
 export class Login {
 
     constructor(
-        private _authService: AuthService,
         private _messageService: MessageService,
         private _NgxSpinnerService: NgxSpinnerService,
         private _userService: UserService,
@@ -73,7 +71,7 @@ export class Login {
     loginAPI(data: ILogin): void {
     this._NgxSpinnerService.show();
 
-    this._authService.login(data).subscribe({
+    this._userService.login(data).subscribe({
         next: (res) => {
             this._NgxSpinnerService.hide();
 

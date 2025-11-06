@@ -1,1 +1,340 @@
-<p>employee-leave-requests works!</p>
+<div class="flex-auto p-4">
+    <div class="w-full max-w-7xl mx-auto">
+        <!-- Header Section -->
+        <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
+            <div>
+                <h2 class="text-3xl font-bold text-gray-800 dark:text-white">My Leave Requests</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                    View and manage your leave requests
+                </p>
+            </div>
+            <p-button
+                label="New Request"
+                icon="pi pi-plus"
+                (onClick)="showDialog()"
+                styleClass="font-medium"
+            ></p-button>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="mb-4 flex flex-wrap gap-3 items-center">
+            <p-select
+                [(ngModel)]="selectedStatus"
+                [options]="statusOptions"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Filter by Status"
+                styleClass="w-48"
+                (onChange)="filterRequests()"
+            />
+            <p-button
+                label="Clear Filters"
+                icon="pi pi-filter-slash"
+                (onClick)="clearFilters()"
+                styleClass="p-button-outlined"
+                *ngIf="selectedStatus"
+            ></p-button>
+        </div>
+
+        <!-- Table for large screens -->
+        <div class="hidden md:block">
+            <p-table
+                [value]="filteredRequests"
+                [paginator]="true"
+                [rows]="10"
+                [showCurrentPageReport]="true"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} requests"
+                [rowsPerPageOptions]="[10, 25, 50]"
+                styleClass="p-datatable-striped"
+                [loading]="loading"
+            >
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th pSortableColumn="startDate">
+                            Start Date <p-sortIcon field="startDate"></p-sortIcon>
+                        </th>
+                        <th pSortableColumn="endDate">
+                            End Date <p-sortIcon field="endDate"></p-sortIcon>
+                        </th>
+                        <th pSortableColumn="type">Type <p-sortIcon field="type"></p-sortIcon></th>
+                        <th pSortableColumn="status">
+                            Status <p-sortIcon field="status"></p-sortIcon>
+                        </th>
+                        <th>Actions</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-request>
+                    <tr>
+                        <td>{{ request.startDate | date : 'MMM d, y' }}</td>
+                        <td>{{ request.endDate | date : 'MMM d, y' }}</td>
+                        <td>{{ request.requestType }}</td>
+                        <td>
+                            <span
+                                class="px-3 py-1 rounded-full text-sm font-medium"
+                                [ngClass]="{
+                                    'bg-yellow-100 text-yellow-800': request.status === 'PENDING',
+                                    'bg-green-100 text-green-800': request.status === 'APPROVED',
+                                    'bg-red-100 text-red-800': request.status === 'REJECTED'
+                                }"
+                            >
+                                {{ request.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="flex gap-2">
+                                <p-button
+                                    icon="pi pi-eye"
+                                    styleClass="p-button-rounded p-button-text p-button-sm"
+                                    (onClick)="viewRequest(request)"
+                                    pTooltip="View Details"
+                                ></p-button>
+                                <p-button
+                                    icon="pi pi-trash"
+                                    styleClass="p-button-rounded p-button-text p-button-danger p-button-sm"
+                                    (onClick)="deleteRequestAPI(request)"
+                                    pTooltip="Delete Request"
+                                    *ngIf="request.status === 'PENDING'"
+                                ></p-button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="7" class="text-center py-8">
+                            <div class="flex flex-col items-center gap-3">
+                                <i class="pi pi-inbox text-4xl text-gray-400"></i>
+                                <p class="text-gray-600 dark:text-gray-300">
+                                    No leave requests found
+                                </p>
+                                <p-button
+                                    label="Submit Your First Request"
+                                    icon="pi pi-plus"
+                                    (onClick)="showDialog()"
+                                    styleClass="p-button-sm"
+                                ></p-button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+
+        <!-- Mobile Card View -->
+        <div class="block md:hidden space-y-4">
+            <div
+                *ngFor="let request of filteredRequests"
+                class="border rounded-xl p-4 bg-white dark:bg-gray-800 shadow-sm"
+            >
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="font-semibold text-lg text-gray-800 dark:text-white">
+                        {{ request.requestType }}
+                    </h3>
+                    <span
+                        class="px-3 py-1 rounded-full text-sm font-medium"
+                        [ngClass]="{
+                            'bg-yellow-100 text-yellow-800': request.status === 'PENDING',
+                            'bg-green-100 text-green-800': request.status === 'APPROVED',
+                            'bg-red-100 text-red-800': request.status === 'REJECTED'
+                        }"
+                    >
+                        {{ request.status }}
+                    </span>
+                </div>
+                <div class="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+                    <p><strong>Start:</strong> {{ request.startDate | date : 'MMM d, y' }}</p>
+                    <p><strong>End:</strong> {{ request.endDate | date : 'MMM d, y' }}</p>
+                </div>
+                <div class="flex gap-2 mt-3">
+                    <p-button
+                        icon="pi pi-eye"
+                        styleClass="p-button-rounded p-button-text p-button-sm"
+                        (onClick)="viewRequest(request)"
+                    ></p-button>
+                    <p-button
+                        icon="pi pi-trash"
+                        styleClass="p-button-rounded p-button-text p-button-danger p-button-sm"
+                        (onClick)="deleteRequestAPI(request)"
+                        *ngIf="request.status === 'PENDING'"
+                    ></p-button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dialog for New Leave Request -->
+    <p-dialog
+        header="New Leave Request"
+        [(visible)]="displayDialog"
+        [modal]="true"
+        [style]="{ width: '50vw' }"
+        [breakpoints]="{ '960px': '75vw', '640px': '95vw' }"
+        [draggable]="false"
+        [resizable]="false"
+    >
+        <form [formGroup]="leaveRequestForm" (ngSubmit)="submit()" class="p-fluid space-y-5">
+            <!-- Period and Request Type on Same Line -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Period/Date Range Field -->
+                <div class="field">
+                    <label
+                        for="buttondisplay"
+                        class="font-bold block mb-2 text-gray-700 dark:text-gray-200"
+                    >
+                        Leave Period
+                    </label>
+                    <p-datepicker
+                        [showIcon]="true"
+                        inputId="buttondisplay"
+                        [showOnFocus]="false"
+                        selectionMode="range"
+                        [readonlyInput]="true"
+                        formControlName="period"
+                        placeholder="Select start and end date"
+                        styleClass="w-full"
+                    />
+
+                    @if (period.errors?.['required'] && (period.dirty || period.touched)) {
+                    <p-message severity="error" [closable]="false" styleClass="mt-2">
+                        Leave period is required
+                    </p-message>
+                    }
+                </div>
+
+                <!-- Request Type Field -->
+                <div class="field">
+                    <label
+                        for="request-type"
+                        class="font-bold block mb-2 text-gray-700 dark:text-gray-200"
+                    >
+                        Request Type
+                    </label>
+                    <p-select
+                        id="request-type"
+                        formControlName="requestType"
+                        [options]="requestTypes"
+                        optionLabel="name"
+                        placeholder="Select a Request Type"
+                        styleClass="w-full"
+                    />
+
+                    @if (requestType.errors?.['required'] && (requestType.dirty ||
+                    requestType.touched)) {
+                    <p-message severity="error" [closable]="false" styleClass="mt-2">
+                        Request type is required
+                    </p-message>
+                    }
+                </div>
+            </div>
+
+            <!-- Reason Field -->
+            <div class="field">
+                <label for="reason" class="font-bold block mb-2 text-gray-700 dark:text-gray-200">
+                    Reason for Leave
+                </label>
+                <textarea
+                    id="reason"
+                    rows="5"
+                    formControlName="reason"
+                    placeholder="Please provide a reason for your leave request"
+                    pTextarea
+                    class="w-full border border-gray-300 dark:border-gray-600 rounded-md p-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:text-white"
+                ></textarea>
+
+                @if (reason.errors?.['required'] && (reason.dirty || reason.touched)) {
+                <p-message severity="error" [closable]="false" styleClass="mt-2">
+                    Reason is required
+                </p-message>
+                }
+            </div>
+        </form>
+
+        <ng-template pTemplate="footer">
+            <p-button
+                label="Cancel"
+                icon="pi pi-times"
+                (onClick)="hideDialog()"
+                styleClass="p-button-text"
+            ></p-button>
+            <p-button
+                label="Submit Request"
+                icon="pi pi-check"
+                (onClick)="submit()"
+                [disabled]="leaveRequestForm.invalid"
+            ></p-button>
+        </ng-template>
+    </p-dialog>
+
+    <!-- View Request Dialog -->
+    <p-dialog
+        header="Leave Request Details"
+        [(visible)]="displayViewDialog"
+        [modal]="true"
+        [style]="{ width: '40vw' }"
+        [breakpoints]="{ '960px': '75vw', '640px': '95vw' }"
+    >
+        <div class="space-y-4" *ngIf="selectedRequest">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="font-bold text-gray-700 dark:text-gray-200">Start Date</label>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        {{ selectedRequest.startDate | date : 'fullDate' }}
+                    </p>
+                </div>
+                <div>
+                    <label class="font-bold text-gray-700 dark:text-gray-200">End Date</label>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        {{ selectedRequest.endDate | date : 'fullDate' }}
+                    </p>
+                </div>
+            </div>
+            >
+            <div>
+                <label class="font-bold text-gray-700 dark:text-gray-200">Status</label>
+                <p>
+                    <span
+                        class="px-3 py-1 rounded-full text-sm font-medium"
+                        [ngClass]="{
+                            'bg-yellow-100 text-yellow-800': selectedRequest.status === 'PENDING',
+                            'bg-green-100 text-green-800': selectedRequest.status === 'APPROVED',
+                            'bg-red-100 text-red-800': selectedRequest.status === 'REJECTED'
+                        }"
+                    >
+                        {{ selectedRequest.status }}
+                    </span>
+                </p>
+            </div>
+            <div>
+                <label class="font-bold text-gray-700 dark:text-gray-200">Reason</label>
+                <p class="text-gray-600 dark:text-gray-300">{{ selectedRequest.reason }}</p>
+            </div>
+        </div>
+
+        <ng-template pTemplate="footer">
+            <p-button
+                label="Close"
+                icon="pi pi-times"
+                (onClick)="displayViewDialog = false"
+                styleClass="p-button-text"
+            ></p-button>
+        </ng-template>
+    </p-dialog>
+
+    <!-- Toast for notifications -->
+    <p-toast position="top-center" />
+
+    <!-- Confirmation Dialog for Delete -->
+
+    <!-- Spinner -->
+    <ngx-spinner
+        bdColor="rgba(0, 0, 0, 0.8)"
+        size="large"
+        color="#ffd700"
+        type="timer"
+        [fullScreen]="true"
+    >
+        <p style="color: #ffd700">Konnection flowing...</p>
+    </ngx-spinner>
+</div>
