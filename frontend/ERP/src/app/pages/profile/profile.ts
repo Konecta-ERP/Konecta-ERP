@@ -26,7 +26,7 @@ export class Profile {
 
 
 
-    activeTab = 'Leave Requests';
+    activeTab = 'Career Goals';
 
   setActive(tab: string) {
     this.activeTab = tab;

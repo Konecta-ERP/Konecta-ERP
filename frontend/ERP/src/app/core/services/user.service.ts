@@ -50,5 +50,12 @@ export class UserService {
         return this._httpClient.delete(`${baseURL}/leaves/request/${id}`);
     }
 
+    getPerformanceReviews():Observable<any>{
+        return this._httpClient.get(`${baseURL}/performance-reviews/employee/reviews`);
+    }
+
+    getEmployeeGoals():Observable<any>{
+        return this._httpClient.get(`${baseURL}/employee-goals/employee/goals`);
+    }
 
 }

@@ -48,13 +48,13 @@
 
         <!-- Tab Content -->
         <div class="w-full mt-8 bg-white rounded-2xl shadow-md p-6 border border-gray-200">
-            @switch (activeTab) { @case ('Career Goals') {
-            <app-employee-goals></app-employee-goals>
-            } @case ('Leave Requests') {
-            <app-employee-leave-requests></app-employee-leave-requests>
-            } @case ('Performance Feedbacks') {
-            <app-employee-performance-reviews></app-employee-performance-reviews>
-            } }
+            <app-employee-leave-requests
+                [hidden]="activeTab !== 'Leave Requests'"
+            ></app-employee-leave-requests>
+            <app-employee-goals [hidden]="activeTab !== 'Career Goals'"></app-employee-goals>
+            <app-employee-performance-reviews
+                [hidden]="activeTab !== 'Performance Feedbacks'"
+            ></app-employee-performance-reviews>
         </div>
     </div>
 </div>

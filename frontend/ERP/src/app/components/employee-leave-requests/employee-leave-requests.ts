@@ -59,6 +59,7 @@ export class EmployeeLeaveRequests implements OnInit {
     }
 
     loadLeaveRequests() {
+        console.log('Loading leave requests...');
         this._NgxSpinnerService.show();
         this._userService.getLeaveRequests().subscribe({
             next: (res) => {
