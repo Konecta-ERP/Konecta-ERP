@@ -2,10 +2,10 @@ package com.konecta.financeservice.dto;
 
 import com.konecta.financeservice.model.enums.AccountStatus;
 import com.konecta.financeservice.model.enums.AccountType;
+import com.konecta.financeservice.model.enums.CashSource;
 import com.konecta.financeservice.model.enums.ProfitLossMapping;
 import lombok.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -18,6 +18,9 @@ public class AccountDTO {
     private String accountName;
     private AccountType accountType;
     private ProfitLossMapping plMapping;
+    private CashSource cashSource;
+    private boolean isCashAccount;
+    private boolean isCurrent;
     private String description;
     private AccountStatus status;
     private boolean hasTransactions;

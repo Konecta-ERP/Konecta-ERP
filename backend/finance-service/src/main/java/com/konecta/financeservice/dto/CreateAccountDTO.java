@@ -1,6 +1,7 @@
 package com.konecta.financeservice.dto;
 
 import com.konecta.financeservice.model.enums.AccountType;
+import com.konecta.financeservice.model.enums.CashSource;
 import com.konecta.financeservice.model.enums.ProfitLossMapping;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -20,7 +21,13 @@ public class CreateAccountDTO {
     private AccountType accountType;
 
     private ProfitLossMapping plMapping;
-    
+
+    private CashSource cashSource;
+
+    private Boolean isCashAccount;
+
+    private Boolean isCurrent;
+
     private String description;
 
 }

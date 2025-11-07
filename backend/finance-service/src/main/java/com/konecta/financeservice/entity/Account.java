@@ -2,6 +2,7 @@ package com.konecta.financeservice.entity;
 
 import com.konecta.financeservice.model.enums.AccountStatus;
 import com.konecta.financeservice.model.enums.AccountType;
+import com.konecta.financeservice.model.enums.CashSource;
 import com.konecta.financeservice.model.enums.ProfitLossMapping;
 import jakarta.persistence.*;
 import lombok.*;
@@ -38,6 +39,16 @@ public class Account {
     @Enumerated(EnumType.STRING)
     @Column(name = "pl_mapping", nullable = false, length = 20)
     private ProfitLossMapping plMapping = ProfitLossMapping.NONE;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "cash_source", nullable = false, length = 20)
+    private CashSource cashSource = CashSource.NONE;
+
+    @Column(name = "is_cash_account", nullable = false)
+    private boolean isCashAccount = false;
+
+    @Column(name = "is_current", nullable = false)
+    private boolean isCurrent = true;
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
