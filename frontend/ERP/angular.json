@@ -41,7 +41,9 @@
                             }
                         ],
                         "styles": [
-                            "src/styles.css"
+                            "src/styles.css",
+                            "node_modules/primeflex/primeflex.css",
+                            "node_modules/ngx-spinner/animations/timer.css"
                         ]
                     },
                     "configurations": {
@@ -98,7 +100,9 @@
                             }
                         ],
                         "styles": [
-                            "src/styles.css"
+                            "src/styles.css",
+                            "node_modules/primeflex/primeflex.css",
+                            "node_modules/ngx-spinner/animations/timer.css"
                         ]
                     }
                 }
