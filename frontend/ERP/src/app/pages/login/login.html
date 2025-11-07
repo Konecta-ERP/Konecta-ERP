@@ -1,1 +1,80 @@
-<p>login works!</p>
+<section class="flex items-center justify-center min-h-screen bg-blue-700 dark:bg-gray-900">
+    <div class="w-full max-w-md p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg space-y-6">
+        <div class="w-full p-3 flex justify-center">
+            <figure>
+                <img class="h-10 sm:h-12" src="test2.png" alt="K-Flow Logo" />
+            </figure>
+        </div>
+
+        <form [formGroup]="loginForm" (ngSubmit)="submit()" class="p-fluid space-y-5">
+            <!-- Email Field -->
+            <div class="field">
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-envelope"></i>
+                    </p-inputgroup-addon>
+                    <input formControlName="email" pInputText placeholder="Email" />
+                </p-inputgroup>
+
+                @if (email.errors?.['required'] && (email.dirty || email.touched)) {
+                <p-message severity="error" [closable]="false">Email is required</p-message>
+                } @else if (email.errors?.['email'] && (email.dirty || email.touched)) {
+                <p-message severity="error" [closable]="false">Invalid email format</p-message>
+                }
+            </div>
+
+            <!-- Password Field -->
+            <div class="field">
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-lock"></i>
+                    </p-inputgroup-addon>
+
+                    <input
+                        [type]="showPassword ? 'text' : 'password'"
+                        formControlName="password"
+                        pInputText
+                        placeholder="Password"
+                    />
+
+                    <p-inputgroup-addon class="cursor-pointer" (click)="togglePassword()">
+                        <i [class]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+                    </p-inputgroup-addon>
+                </p-inputgroup>
+
+                @if (password.errors?.['required'] && (password.dirty || password.touched)) {
+                <p-message severity="error" [closable]="false">Password is required</p-message>
+                } @else if (password.errors?.['minlength'] && (password.dirty || password.touched))
+                {
+                <p-message severity="error" [closable]="false">
+                    Password must be at least 6 characters
+                </p-message>
+                }
+            </div>
+
+            <div class="space-y-4">
+                <p-button type="submit" label="Sign In" styleClass="w-full font-medium"></p-button>
+
+                <div class="my-5 text-center text-sm text-gray-600 dark:text-gray-300">
+                    Not part of our team?
+                </div>
+
+                <p-button
+                    type="button"
+                    label="Join Us"
+                    styleClass="w-full mt-1 font-medium p-button-outlined"
+                    (onClick)="viewOpenPositions()"
+                ></p-button>
+            </div>
+        </form>
+
+        <div class="card flex justify-center">
+            <p-toast position="top-center" />
+        </div>
+    </div>
+
+    <!-- Spinner -->
+    <ngx-spinner bdColor="blue" size="large" color="#ffd700" type="timer" [fullScreen]="true">
+        <p style="color: #ffd700">Konekting</p>
+    </ngx-spinner>
+</section>

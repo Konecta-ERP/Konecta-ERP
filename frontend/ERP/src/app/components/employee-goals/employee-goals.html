@@ -1,0 +1,124 @@
+<div class="w-full max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
+        <div>
+            <h2 class="text-3xl font-bold text-gray-800 dark:text-white">Employee Goals</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                View your performance goals and targets
+            </p>
+        </div>
+    </div>
+
+    <!-- Desktop Table -->
+    <div class="hidden md:block">
+        <p-table
+            [value]="employeeGoals"
+            [paginator]="true"
+            [rows]="10"
+            [showCurrentPageReport]="true"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} goals"
+            [rowsPerPageOptions]="[10, 25, 50]"
+            styleClass="p-datatable-gridlines p-datatable-sm"
+        >
+            <ng-template pTemplate="header">
+                <tr>
+                    <th pSortableColumn="title">Title <p-sortIcon field="title"></p-sortIcon></th>
+                    <th pSortableColumn="cycle">Cycle <p-sortIcon field="cycle"></p-sortIcon></th>
+                    <th pSortableColumn="target">
+                        Target <p-sortIcon field="target"></p-sortIcon>
+                    </th>
+                    <th>Description</th>
+                    <th class="text-right">Actions</th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-goal>
+                <tr>
+                    <td class="whitespace-nowrap">{{ goal.title }}</td>
+                    <td class="whitespace-nowrap">{{ goal.cycle }}</td>
+                    <td class="whitespace-nowrap">{{ goal.target }}</td>
+                    <td class="truncate max-w-xs">
+                        {{ goal.description }}
+                    </td>
+                    <td class="text-right">
+                        <p-button
+                            label="View"
+                            icon="pi pi-eye"
+                            styleClass="p-button-text p-button-sm"
+                            (onClick)="viewGoal(goal)"
+                        ></p-button>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="5" class="text-center py-8 text-gray-600 dark:text-gray-300">
+                        No goals found
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+
+    <!-- Mobile Card View -->
+    <div class="block md:hidden space-y-4">
+        <div
+            *ngFor="let goal of employeeGoals"
+            class="border rounded-xl p-4 bg-white dark:bg-gray-800 shadow-sm"
+        >
+            <div class="flex justify-between items-start mb-2">
+                <h3 class="font-semibold text-lg text-gray-800 dark:text-white">
+                    {{ goal.title }}
+                </h3>
+                <p-button
+                    icon="pi pi-eye"
+                    styleClass="p-button-text p-button-sm"
+                    (onClick)="viewGoal(goal)"
+                ></p-button>
+            </div>
+
+            <div class="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+                <p><strong>Cycle:</strong> {{ goal.cycle }}</p>
+                <p><strong>Target:</strong> {{ goal.target }}</p>
+                <p class="line-clamp-3"><strong>Description:</strong> {{ goal.description }}</p>
+            </div>
+        </div>
+
+        <div
+            *ngIf="!employeeGoals?.length"
+            class="text-center py-8 text-gray-600 dark:text-gray-300"
+        >
+            No goals found
+        </div>
+    </div>
+</div>
+<p-dialog
+    header="Goal Details"
+    [(visible)]="goalDialogVisible"
+    [modal]="true"
+    [style]="{ width: '400px' }"
+    [draggable]="false"
+    [resizable]="false"
+>
+    <ng-container *ngIf="selectedGoal">
+        <div class="space-y-3 text-gray-700 dark:text-gray-300">
+            <p><strong>Title:</strong> {{ selectedGoal.title }}</p>
+            <p><strong>Cycle:</strong> {{ selectedGoal.cycle }}</p>
+            <p><strong>Target:</strong> {{ selectedGoal.target }}</p>
+            <p><strong>Description:</strong></p>
+            <p class="whitespace-pre-line">{{ selectedGoal.description }}</p>
+        </div>
+    </ng-container>
+</p-dialog>
+<ngx-spinner
+    bdColor="rgba(0, 0, 0, 0.8)"
+    size="large"
+    color="#ffd700"
+    type="timer"
+    [fullScreen]="true"
+>
+    <p style="color: #ffd700">Konnection flowing...</p>
+</ngx-spinner>
+
+<p-toast position="top-center" />

@@ -24,6 +24,8 @@
         <module>discovery-server</module>
         <module>service-example</module>
         <module>finance-service</module>
+        <module>identity-service</module>
+
     </modules>
 
     <dependencyManagement>
