@@ -36,6 +36,28 @@ public class Routes {
     }
 
     @Bean
+    public RouterFunction<ServerResponse> employeeServiceRoute() {
+        return route("employee-service")
+                .route(path("/employees/**"), http("lb://employee-service"))
+                .route(path("/departments/**"), http("lb://employee-service"))
+                .route(path("/attendance/**"), http("lb://employee-service"))
+                .route(path("/leaves/**"), http("lb://employee-service"))
+                .route(path("/offboarding/**"), http("lb://employee-service"))
+                .route(path("/performance/**"), http("lb://employee-service"))
+                .build();
+    }
+    @Bean
+    public RouterFunction<ServerResponse> recruitmentServiceRoute() {
+        return route("recruitment-service")
+                .route(path("/job-posts/**"), http("lb://recruitment-service"))
+                .route(path("/applicants/**"), http("lb://recruitment-service"))
+                .route(path("/interviews/**"), http("lb://recruitment-service"))
+                .route(path("/offers/**"), http("lb://recruitment-service"))
+                .route(path("/requisitions/**"), http("lb://recruitment-service"))
+                .build();
+    }
+
+    @Bean
     public RouterFunction<ServerResponse> identityServiceRoute() {
         return route("identity-service")
                 .route(path("/api/identity/**"), http("lb://identity-service"))
