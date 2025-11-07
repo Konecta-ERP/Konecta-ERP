@@ -46,7 +46,7 @@ public class DepartmentController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<ApiResponse<DepartmentDto>> getDepartmentById(@PathVariable Integer id) {
+  public ResponseEntity<ApiResponse<DepartmentDto>> getDepartmentById(@PathVariable(name = "id") Integer id) {
     DepartmentDto department = departmentService.getDepartmentById(id);
     ApiResponse<DepartmentDto> response = ApiResponse.success(
         department,
@@ -57,7 +57,7 @@ public class DepartmentController {
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<ApiResponse<DepartmentDto>> updateDepartment(@PathVariable Integer id,
+  public ResponseEntity<ApiResponse<DepartmentDto>> updateDepartment(@PathVariable(name = "id") Integer id,
       @RequestBody CreateOrUpdateDepartmentDto dto) {
     DepartmentDto updatedDepartment = departmentService.updateDepartment(id, dto);
     ApiResponse<DepartmentDto> response = ApiResponse.success(
@@ -69,7 +69,7 @@ public class DepartmentController {
   }
 
   @DeleteMapping("/{id}")
-  public ResponseEntity<ApiResponse<Object>> deleteDepartment(@PathVariable Integer id) {
+  public ResponseEntity<ApiResponse<Object>> deleteDepartment(@PathVariable(name = "id") Integer id) {
     departmentService.deleteDepartment(id);
     ApiResponse<Object> response = ApiResponse.success(
         HttpStatus.NO_CONTENT.value(),

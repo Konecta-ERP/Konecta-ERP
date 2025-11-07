@@ -19,7 +19,7 @@ public class AttendanceController {
   }
 
   @PostMapping("/employees/{id}/clock-in")
-  public ResponseEntity<ApiResponse<AttendanceRecordDto>> clockIn(@PathVariable Integer id) {
+  public ResponseEntity<ApiResponse<AttendanceRecordDto>> clockIn(@PathVariable(name = "id") Integer id) {
     AttendanceRecordDto record = attendanceService.clockIn(id);
     ApiResponse<AttendanceRecordDto> response = ApiResponse.success(
         record,
@@ -30,7 +30,7 @@ public class AttendanceController {
   }
 
   @PostMapping("/employees/{id}/clock-out")
-  public ResponseEntity<ApiResponse<AttendanceRecordDto>> clockOut(@PathVariable Integer id) {
+  public ResponseEntity<ApiResponse<AttendanceRecordDto>> clockOut(@PathVariable(name = "id") Integer id) {
     AttendanceRecordDto record = attendanceService.clockOut(id);
     ApiResponse<AttendanceRecordDto> response = ApiResponse.success(
         record,

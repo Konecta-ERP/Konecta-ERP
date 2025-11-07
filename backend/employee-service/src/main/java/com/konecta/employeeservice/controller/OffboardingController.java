@@ -22,7 +22,7 @@ public class OffboardingController {
 
   @PostMapping("/employees/{employeeId}/offboard")
   public ResponseEntity<ApiResponse<OffboardingChecklistDto>> initiateOffboarding(
-      @PathVariable Integer employeeId,
+      @PathVariable(name = "employeeId") Integer employeeId,
       @RequestBody InitiateOffboardingDto dto) {
 
     OffboardingChecklistDto checklist = offboardingService.initiateOffboarding(employeeId, dto);
@@ -36,7 +36,7 @@ public class OffboardingController {
 
   @GetMapping("/employees/{employeeId}/offboarding-checklist")
   public ResponseEntity<ApiResponse<OffboardingChecklistDto>> getChecklist(
-      @PathVariable Integer employeeId) {
+      @PathVariable(name = "employeeId") Integer employeeId) {
 
     OffboardingChecklistDto checklist = offboardingService.getChecklistForEmployee(employeeId);
     ApiResponse<OffboardingChecklistDto> response = ApiResponse.success(
@@ -49,7 +49,7 @@ public class OffboardingController {
 
   @PutMapping("/offboarding-checklists/{checklistId}")
   public ResponseEntity<ApiResponse<OffboardingChecklistDto>> updateChecklist(
-      @PathVariable Integer checklistId,
+      @PathVariable(name = "checklistId") Integer checklistId,
       @RequestBody UpdateChecklistDto dto) {
 
     OffboardingChecklistDto checklist = offboardingService.updateChecklist(checklistId, dto);

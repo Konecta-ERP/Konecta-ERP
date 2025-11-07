@@ -25,7 +25,7 @@ public class LeaveController {
 
   @PostMapping("/employees/{employeeId}/leave-requests")
   public ResponseEntity<ApiResponse<LeaveRequestDto>> submitLeaveRequest(
-      @PathVariable Integer employeeId,
+      @PathVariable(name = "employeeId") Integer employeeId,
       @RequestBody CreateLeaveRequestDto dto) {
     LeaveRequestDto newRequest = leaveService.createLeaveRequest(employeeId, dto);
 
@@ -39,7 +39,7 @@ public class LeaveController {
 
   @PatchMapping("/leave-requests/{requestId}/status")
   public ResponseEntity<ApiResponse<LeaveRequestDto>> updateLeaveRequestStatus(
-      @PathVariable Integer requestId,
+      @PathVariable(name = "requestId") Integer requestId,
       @RequestBody UpdateLeaveStatusDto dto) {
     LeaveRequestDto updatedRequest = leaveService.updateRequestStatus(requestId, dto);
 
@@ -52,7 +52,8 @@ public class LeaveController {
   }
 
   @GetMapping("/employees/{employeeId}/leave-balance")
-  public ResponseEntity<ApiResponse<LeaveBalanceDto>> getEmployeeLeaveBalance(@PathVariable Integer employeeId) {
+  public ResponseEntity<ApiResponse<LeaveBalanceDto>> getEmployeeLeaveBalance(
+      @PathVariable(name = "employeeId") Integer employeeId) {
     LeaveBalanceDto balance = leaveService.getLeaveBalance(employeeId);
 
     ApiResponse<LeaveBalanceDto> response = ApiResponse.success(
@@ -65,7 +66,7 @@ public class LeaveController {
 
   @GetMapping("/employees/{employeeId}/leave-requests")
   public ResponseEntity<ApiResponse<List<LeaveRequestDto>>> getLeaveRequestsForEmployee(
-      @PathVariable Integer employeeId) {
+      @PathVariable(name = "employeeId") Integer employeeId) {
     List<LeaveRequestDto> requests = leaveService.getRequestsForEmployee(employeeId);
 
     ApiResponse<List<LeaveRequestDto>> response = ApiResponse.success(
@@ -77,7 +78,8 @@ public class LeaveController {
   }
 
   @GetMapping("/leave-requests/{requestId}")
-  public ResponseEntity<ApiResponse<LeaveRequestDto>> getLeaveRequestById(@PathVariable Integer requestId) {
+  public ResponseEntity<ApiResponse<LeaveRequestDto>> getLeaveRequestById(
+      @PathVariable(name = "requestId") Integer requestId) {
     LeaveRequestDto request = leaveService.getRequestById(requestId);
 
     ApiResponse<LeaveRequestDto> response = ApiResponse.success(
@@ -89,7 +91,7 @@ public class LeaveController {
   }
 
   @DeleteMapping("/leave-requests/{requestId}")
-  public ResponseEntity<ApiResponse<Object>> deleteLeaveRequest(@PathVariable Integer requestId) {
+  public ResponseEntity<ApiResponse<Object>> deleteLeaveRequest(@PathVariable(name = "requestId") Integer requestId) {
     leaveService.deleteLeaveRequest(requestId);
 
     ApiResponse<Object> response = ApiResponse.success(

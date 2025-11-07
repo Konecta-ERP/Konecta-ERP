@@ -26,7 +26,7 @@ public class PerformanceController {
 
   @PostMapping("/employees/{id}/goals")
   public ResponseEntity<ApiResponse<GoalDto>> assignGoalToEmployee(
-      @PathVariable Integer id,
+      @PathVariable(name = "id") Integer id,
       @RequestBody CreateGoalDto goalDto) {
 
     GoalDto newGoal = performanceService.assignGoal(id, goalDto);
@@ -40,7 +40,7 @@ public class PerformanceController {
 
   @PostMapping("/employees/{id}/feedback")
   public ResponseEntity<ApiResponse<FeedbackDto>> giveFeedbackToEmployee(
-      @PathVariable Integer id,
+      @PathVariable(name = "id") Integer id,
       @RequestBody CreateFeedbackDto feedbackDto) {
 
     FeedbackDto newFeedback = performanceService.giveFeedback(id, feedbackDto);
@@ -53,7 +53,7 @@ public class PerformanceController {
   }
 
   @GetMapping("/employees/{id}/goals")
-  public ResponseEntity<ApiResponse<List<GoalDto>>> getEmployeeGoals(@PathVariable Integer id) {
+  public ResponseEntity<ApiResponse<List<GoalDto>>> getEmployeeGoals(@PathVariable(name = "id") Integer id) {
     List<GoalDto> goals = performanceService.getGoalsForEmployee(id);
     ApiResponse<List<GoalDto>> response = ApiResponse.success(
         goals,
@@ -64,7 +64,7 @@ public class PerformanceController {
   }
 
   @GetMapping("/employees/{id}/feedback")
-  public ResponseEntity<ApiResponse<List<FeedbackDto>>> getEmployeeFeedback(@PathVariable Integer id) {
+  public ResponseEntity<ApiResponse<List<FeedbackDto>>> getEmployeeFeedback(@PathVariable(name = "id") Integer id) {
     List<FeedbackDto> feedbacks = performanceService.getFeedbackForEmployee(id);
     ApiResponse<List<FeedbackDto>> response = ApiResponse.success(
         feedbacks,
@@ -75,7 +75,7 @@ public class PerformanceController {
   }
 
   @DeleteMapping("/goals/{id}")
-  public ResponseEntity<ApiResponse<Object>> deleteGoal(@PathVariable Integer id) {
+  public ResponseEntity<ApiResponse<Object>> deleteGoal(@PathVariable(name = "id") Integer id) {
     performanceService.deleteGoal(id);
     ApiResponse<Object> response = ApiResponse.success(
         HttpStatus.NO_CONTENT.value(),
@@ -85,7 +85,7 @@ public class PerformanceController {
   }
 
   @DeleteMapping("/feedback/{id}")
-  public ResponseEntity<ApiResponse<Object>> deleteFeedback(@PathVariable Integer id) {
+  public ResponseEntity<ApiResponse<Object>> deleteFeedback(@PathVariable(name = "id") Integer id) {
     performanceService.deleteFeedback(id);
     ApiResponse<Object> response = ApiResponse.success(
         HttpStatus.NO_CONTENT.value(),
