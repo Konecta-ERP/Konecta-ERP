@@ -23,10 +23,10 @@
         <module>api-gateway</module>
         <module>discovery-server</module>
         <module>service-example</module>
+        <module>employee-service</module>
         <module>recruitment-service</module>
         <module>finance-service</module>
         <module>identity-service</module>
-
     </modules>
 
     <dependencyManagement>
