@@ -84,9 +84,9 @@ public class JobPostController {
 
   @GetMapping("/search")
   public ResponseEntity<ApiResponse<List<JobPostDto>>> searchJobPosts(
-      @RequestParam(required = false) String position,
-      @RequestParam(required = false) Integer departmentId,
-      @RequestParam(required = false) Boolean active) {
+      @RequestParam(name = "position", required = false) String position,
+      @RequestParam(name = "departmentId", required = false) Integer departmentId,
+      @RequestParam(name = "active", required = false) Boolean active) {
 
     List<JobPostDto> posts = jobPostService.searchJobPosts(position, departmentId, active);
     ApiResponse<List<JobPostDto>> response = ApiResponse.success(

@@ -48,8 +48,8 @@ public class RequisitionController {
 
   @GetMapping("/search")
   public ResponseEntity<ApiResponse<List<JobRequisitionDto>>> searchRequisitions(
-      @RequestParam(required = false) Integer departmentId,
-      @RequestParam(required = false) RequisitionStatus status) {
+      @RequestParam(name = "departmentId", required = false) Integer departmentId,
+      @RequestParam(name = "status", required = false) RequisitionStatus status) {
 
     List<JobRequisitionDto> requisitions = requisitionService.searchRequisitions(departmentId, status);
     ApiResponse<List<JobRequisitionDto>> response = ApiResponse.success(
