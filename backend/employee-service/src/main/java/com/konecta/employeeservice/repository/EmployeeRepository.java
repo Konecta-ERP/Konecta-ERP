@@ -7,6 +7,8 @@ import org.springframework.stereotype.Repository;
 import com.konecta.employeeservice.entity.Employee;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Integer>, JpaSpecificationExecutor<Employee> {
@@ -14,4 +16,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer>, Jp
   List<Employee> findByDepartmentId(Integer departmentId);
 
   List<Employee> findByPositionTitle(String positionTitle);
+
+  Optional<Employee> findByUserId(UUID userId);
 }

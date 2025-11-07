@@ -50,6 +50,12 @@ public class EmployeeService {
     return convertToDto(employee);
   }
 
+  public EmployeeDetailsDto getEmployeeDetailsByUserId(java.util.UUID userId) {
+    Employee employee = employeeRepository.findByUserId(userId)
+        .orElseThrow(() -> new EntityNotFoundException("Employee not found with userId: " + userId));
+    return convertToDto(employee);
+  }
+
   @Transactional
   public EmployeeDetailsDto createEmployee(CreateEmployeeRequestDto dto) {
     // Delegate user creation to Identity service

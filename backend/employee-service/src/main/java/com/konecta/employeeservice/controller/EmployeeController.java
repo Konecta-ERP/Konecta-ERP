@@ -66,6 +66,31 @@ public class EmployeeController {
     return ResponseEntity.ok(response);
   }
 
+  @GetMapping("/by-user/{userId}")
+  @PreAuthorize("isAuthenticated()")
+  public ResponseEntity<ApiResponse<EmployeeDetailsDto>> getEmployeeByUserId(@PathVariable("userId") java.util.UUID userId,
+      Authentication authentication) {
+    // Only the user themself may call this endpoint
+    String jwtUserId = null;
+    if (authentication instanceof JwtAuthenticationToken) {
+      jwtUserId = ((JwtAuthenticationToken) authentication).getToken().getClaimAsString("userId");
+    } else if (authentication.getPrincipal() instanceof Jwt) {
+      jwtUserId = ((Jwt) authentication.getPrincipal()).getClaimAsString("userId");
+    }
+
+    if (jwtUserId == null || !jwtUserId.equals(userId.toString())) {
+      throw new AccessDeniedException("Access denied: can only fetch your own employee record");
+    }
+
+    EmployeeDetailsDto employeeDetails = employeeService.getEmployeeDetailsByUserId(userId);
+    ApiResponse<EmployeeDetailsDto> response = ApiResponse.success(
+        employeeDetails,
+        HttpStatus.OK.value(),
+        "Employee details retrieved.",
+        "Retrieved employee for userId " + userId);
+    return ResponseEntity.ok(response);
+  }
+
   @PostMapping
   @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('ADMIN')")
   public ResponseEntity<ApiResponse<EmployeeDetailsDto>> createEmployee(
