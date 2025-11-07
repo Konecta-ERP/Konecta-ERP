@@ -156,10 +156,8 @@ public class LeaveService {
     dto.setStatus(request.getStatus());
     dto.setEmployeeId(request.getEmployee().getId());
 
-    if (request.getEmployee().getUser() != null) {
-      dto.setEmployeeName(
-          request.getEmployee().getUser().getFirstName() + " " + request.getEmployee().getUser().getLastName());
-    }
+    // User details are managed by Identity service; enrich later if needed
+    dto.setEmployeeName(null);
     return dto;
   }
 }

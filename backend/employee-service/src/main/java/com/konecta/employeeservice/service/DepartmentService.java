@@ -95,10 +95,8 @@ public class DepartmentService {
     dto.setName(department.getName());
     if (department.getManager() != null) {
       dto.setManagerId(department.getManager().getId());
-      if (department.getManager().getUser() != null) {
-        dto.setManagerName(department.getManager().getUser().getFirstName() + " "
-            + department.getManager().getUser().getLastName());
-      }
+      // Manager user details are in Identity service; optionally enrich via identity client later
+      dto.setManagerName(null);
     }
     return dto;
   }

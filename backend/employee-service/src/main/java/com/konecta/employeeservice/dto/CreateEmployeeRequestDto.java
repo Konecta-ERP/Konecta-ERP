@@ -12,6 +12,8 @@ public class CreateEmployeeRequestDto {
   private String firstName;
   private String lastName;
   private String phoneNumber;
+  private String password;
+  private String role;
 
   // Employee fields
   private String positionTitle;

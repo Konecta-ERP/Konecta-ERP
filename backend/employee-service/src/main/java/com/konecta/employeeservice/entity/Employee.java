@@ -20,9 +20,8 @@ public class Employee {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
 
-  @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_id", unique = true)
-  private User user;
+  @Column(name = "user_id", unique = true)
+  private java.util.UUID userId;
 
   @Column(name = "position_title")
   private String positionTitle;
