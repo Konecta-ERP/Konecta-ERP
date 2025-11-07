@@ -1,0 +1,25 @@
+<p-card
+    class="shadow-md hover:shadow-lg transition-all duration-300 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+>
+    <ng-template pTemplate="header">
+        <div class="flex items-center space-x-4">
+            <img
+                [src]="review.imageUrl || 'placeholderProfile.png'"
+                alt="{{ review.employeeName }}"
+                class="w-14 h-14 rounded-full object-cover border border-gray-300 dark:border-gray-600"
+            />
+            <div>
+                <h3 class="font-semibold text-gray-800 dark:text-gray-100 text-base">
+                    {{ review.employeeName }}
+                </h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                    {{ review.position }}
+                </p>
+            </div>
+        </div>
+    </ng-template>
+
+    <div class="text-gray-700 dark:text-gray-300 leading-relaxed text-sm mt-3">
+        {{ review.feedback }}
+    </div>
+</p-card>
