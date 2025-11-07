@@ -1,10 +1,10 @@
-package com.konecta.discovery_service;
+package com.konecta.recruitmentservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class DiscoveryServerApplicationTests {
+class RecruitmentServiceApplicationTests {
 
 	@Test
 	void contextLoads() {
