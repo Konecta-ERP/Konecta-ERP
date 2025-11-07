@@ -51,9 +51,9 @@ public class EmployeeController {
   // GET /employees/search?name=John&department=Engineering&position=Manager
   @GetMapping("/search")
   public ResponseEntity<ApiResponse<List<EmployeeDetailsDto>>> searchEmployees(
-      @RequestParam(required = false) String name,
-      @RequestParam(required = false) String department,
-      @RequestParam(required = false) String position) {
+    @RequestParam(name = "name", required = false) String name,
+    @RequestParam(name = "department", required = false) String department,
+    @RequestParam(name = "position", required = false) String position) {
     List<EmployeeDetailsDto> employees = employeeService.searchEmployees(name, department, position);
     ApiResponse<List<EmployeeDetailsDto>> response = ApiResponse.success(
         employees,
