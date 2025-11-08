@@ -47,7 +47,7 @@ services:
 
   # === IDENTITY SERVICE & DB ===
   identity-db:
-    image: postgres:latest
+    image: postgres:17
     container_name: identity-db
     environment:
       POSTGRES_DB: identity_db
@@ -91,7 +91,7 @@ services:
 
   # === EMPLOYEE SERVICE & DB ===
   employee-db:
-    image: postgres:latest
+    image: postgres:17
     container_name: employee-db
     environment:
       POSTGRES_DB: employee_db
@@ -137,7 +137,7 @@ services:
 
   # === RECRUITMENT SERVICE & DB ===
   recruitment-db:
-    image: postgres:latest
+    image: postgres:17
     container_name: recruitment-db
     environment:
       POSTGRES_DB: recruitment_db
@@ -183,7 +183,7 @@ services:
 
   # === FINANCE SERVICE & DB ===
   finance-db:
-    image: postgres:latest
+    image: postgres:17
     container_name: finance-db
     environment:
       POSTGRES_DB: finance_db
