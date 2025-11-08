@@ -1,0 +1,242 @@
+version: "3.9"
+
+services:
+  # === CORE INFRASTRUCTURE ===
+
+  # Eureka Discovery Server
+  discovery-server:
+    build:
+      context: .
+      dockerfile: ./discovery-server/Dockerfile
+    container_name: discovery-server
+    ports:
+      - "8761:8761"
+    networks:
+      - microservices-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8761/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  # API Gateway
+  # The gateway should start and discover services from Eureka as they become healthy.
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ./api-gateway/Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - EUREKA_SERVER=http://discovery-server:8761/eureka/
+      - CORS_ALLOWED_ORIGINS=*
+      - CORS_ALLOW_CREDENTIALS=false
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - microservices-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # === IDENTITY SERVICE & DB ===
+  identity-db:
+    image: postgres:17
+    container_name: identity-db
+    environment:
+      POSTGRES_DB: identity_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - identity-data:/var/lib/postgresql/data
+    networks:
+      - microservices-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d identity_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  identity-service:
+    build:
+      context: .
+      dockerfile: ./identity-service/Dockerfile
+    container_name: identity-service
+    environment:
+      - DB_URL=jdbc:postgresql://identity-db:5432/identity_db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      # Eureka connection
+      - EUREKA_SERVER=http://discovery-server:8761/eureka/
+    depends_on:
+      identity-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - microservices-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8080/api/identity/auth/.well-known/jwks.json || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  # === EMPLOYEE SERVICE & DB ===
+  employee-db:
+    image: postgres:17
+    container_name: employee-db
+    environment:
+      POSTGRES_DB: employee_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - employee-data:/var/lib/postgresql/data
+    networks:
+      - microservices-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d employee_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  employee-service:
+    build:
+      context: .
+      dockerfile: ./employee-service/Dockerfile
+    container_name: employee-service
+    environment:
+      - DB_URL=jdbc:postgresql://employee-db:5432/employee_db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - EUREKA_SERVER=http://discovery-server:8761/eureka/
+      - JWT_JWK_URI=http://identity-service:8080/api/identity/auth/.well-known/jwks.json
+    depends_on:
+      employee-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      identity-service:
+        condition: service_healthy
+    networks:
+      - microservices-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  # === RECRUITMENT SERVICE & DB ===
+  recruitment-db:
+    image: postgres:17
+    container_name: recruitment-db
+    environment:
+      POSTGRES_DB: recruitment_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - recruitment-data:/var/lib/postgresql/data
+    networks:
+      - microservices-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d recruitment_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  recruitment-service:
+    build:
+      context: .
+      dockerfile: ./recruitment-service/Dockerfile
+    container_name: recruitment-service
+    environment:
+      - DB_URL=jdbc:postgresql://recruitment-db:5432/recruitment_db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - EUREKA_SERVER=http://discovery-server:8761/eureka/
+      - JWT_JWK_URI=http://identity-service:8080/api/identity/auth/.well-known/jwks.json
+    depends_on:
+      recruitment-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      identity-service:
+        condition: service_healthy
+    networks:
+      - microservices-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  # === FINANCE SERVICE & DB ===
+  finance-db:
+    image: postgres:17
+    container_name: finance-db
+    environment:
+      POSTGRES_DB: finance_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - finance-data:/var/lib/postgresql/data
+    networks:
+      - microservices-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d finance_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  finance-service:
+    build:
+      context: .
+      dockerfile: ./finance-service/Dockerfile
+    container_name: finance-service
+    environment:
+      - DB_URL=jdbc:postgresql://finance-db:5432/finance_db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - EUREKA_SERVER=http://discovery-server:8761/eureka/
+      - JWT_JWK_URI=http://identity-service:8080/api/identity/auth/.well-known/jwks.json
+    depends_on:
+      finance-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      identity-service:
+        condition: service_healthy
+    networks:
+      - microservices-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+networks:
+  microservices-net:
+    driver: bridge
+
+volumes:
+  identity-data:
+    driver: local
+  employee-data:
+    driver: local
+  recruitment-data:
+    driver: local
+  finance-data:
+    driver: local
