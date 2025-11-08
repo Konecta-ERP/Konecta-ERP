@@ -14,6 +14,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpMethod;
 
 @Configuration
 @EnableWebSecurity
@@ -35,6 +36,11 @@ public class SecurityConfig {
     return http
         .csrf(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(auth -> auth
+            // Public read endpoints
+            .requestMatchers(HttpMethod.GET, "/job-posts/*", "/job-posts/search").permitAll()
+            // Public apply endpoint (POST)
+            .requestMatchers(HttpMethod.POST, "/job-posts/*/apply").permitAll()
+            // All other requests require authentication
             .anyRequest().authenticated())
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         // use the custom JWT decoder
