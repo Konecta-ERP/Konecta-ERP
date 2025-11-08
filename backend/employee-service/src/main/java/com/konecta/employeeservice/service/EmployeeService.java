@@ -17,6 +17,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 
 import com.konecta.employeeservice.dto.CreateEmployeeRequestDto;
 import com.konecta.employeeservice.dto.EmployeeDetailsDto;
@@ -61,7 +63,7 @@ public class EmployeeService {
     // Delegate user creation to Identity service
     // Password is now mandatory; throw exception if missing or blank
     if (dto.getPassword() == null || dto.getPassword().isBlank()) {
-        throw new IllegalArgumentException("Password is required when creating an employee.");
+      throw new IllegalArgumentException("Password is required when creating an employee.");
     }
     String passwordToUse = dto.getPassword();
     String roleToUse = dto.getRole() != null && !dto.getRole().isBlank() ? dto.getRole() : "ASSOCIATE";
@@ -124,10 +126,10 @@ public class EmployeeService {
         throw new IllegalStateException("Identity service did not return created user id; response data: " + data);
       }
       createdUserId = java.util.UUID.fromString(idObj.toString());
-    } catch (org.springframework.web.client.HttpClientErrorException e) {
+    } catch (HttpClientErrorException e) {
       throw new IllegalStateException(
           "Identity service error: " + e.getStatusCode() + " " + e.getResponseBodyAsString(), e);
-    } catch (org.springframework.web.client.RestClientException e) {
+    } catch (RestClientException e) {
       throw new IllegalStateException("Failed to call identity service: " + e.getMessage(), e);
     }
 
