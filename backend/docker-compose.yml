@@ -1,85 +1,127 @@
+version: "3.9"
+
 services:
-  # PostgreSQL Database
-  postgres-db:
-    image: postgres:latest
-    container_name: postgres-db
-    environment:
-      POSTGRES_DB: identity_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5432:5432"  # Expose for local DB tools (optional)
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    networks:
-      - microservices-net
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
+  # === CORE INFRASTRUCTURE ===
 
   # Eureka Discovery Server
   discovery-server:
     build:
-      context: discovery-server
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./discovery-server/Dockerfile
     container_name: discovery-server
     ports:
       - "8761:8761"
     networks:
       - microservices-net
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8761/actuator/health"]
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8761/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 40s
 
-  # Identity Service
+  # API Gateway
+  # The gateway should start and discover services from Eureka as they become healthy.
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ./api-gateway/Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - EUREKA_SERVER=http://discovery-server:8761/eureka/
+      - CORS_ALLOWED_ORIGINS=*
+      - CORS_ALLOW_CREDENTIALS=false
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - microservices-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # === IDENTITY SERVICE & DB ===
+  identity-db:
+    image: postgres:latest
+    container_name: identity-db
+    environment:
+      POSTGRES_DB: identity_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - identity-data:/var/lib/postgresql/data
+    networks:
+      - microservices-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d identity_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   identity-service:
     build:
-      context: identity-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./identity-service/Dockerfile
     container_name: identity-service
     environment:
-      # Database connection
-      - DB_URL=jdbc:postgresql://postgres-db:5432/identity_db
+      - DB_URL=jdbc:postgresql://identity-db:5432/identity_db
       - DB_USERNAME=postgres
       - DB_PASSWORD=postgres
       # Eureka connection
       - EUREKA_SERVER=http://discovery-server:8761/eureka/
     depends_on:
-      postgres-db:
+      identity-db:
         condition: service_healthy
       discovery-server:
         condition: service_healthy
     networks:
       - microservices-net
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8080/api/identity/auth/.well-known/jwks.json || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 90s  # Longer startup time due to DB initialization
+      start_period: 90s
 
-  # API Gateway
-  api-gateway:
-    build:
-      context: api-gateway
-      dockerfile: Dockerfile
-    container_name: api-gateway
-    ports:
-      - "8080:8080"  # Main entry point
+  # === EMPLOYEE SERVICE & DB ===
+  employee-db:
+    image: postgres:latest
+    container_name: employee-db
     environment:
-      # Eureka connection
+      POSTGRES_DB: employee_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - employee-data:/var/lib/postgresql/data
+    networks:
+      - microservices-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d employee_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  employee-service:
+    build:
+      context: .
+      dockerfile: ./employee-service/Dockerfile
+    container_name: employee-service
+    environment:
+      - DB_URL=jdbc:postgresql://employee-db:5432/employee_db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
       - EUREKA_SERVER=http://discovery-server:8761/eureka/
-      # JWT validation endpoint
       - JWT_JWK_URI=http://identity-service:8080/api/identity/auth/.well-known/jwks.json
-      # CORS configuration (optional - override in production)
-      - CORS_ALLOWED_ORIGINS=*
     depends_on:
+      employee-db:
+        condition: service_healthy
       discovery-server:
         condition: service_healthy
       identity-service:
@@ -87,16 +129,114 @@ services:
     networks:
       - microservices-net
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8080/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 60s
+      retries: 5
+      start_period: 90s
+
+  # === RECRUITMENT SERVICE & DB ===
+  recruitment-db:
+    image: postgres:latest
+    container_name: recruitment-db
+    environment:
+      POSTGRES_DB: recruitment_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - recruitment-data:/var/lib/postgresql/data
+    networks:
+      - microservices-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d recruitment_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  recruitment-service:
+    build:
+      context: .
+      dockerfile: ./recruitment-service/Dockerfile
+    container_name: recruitment-service
+    environment:
+      - DB_URL=jdbc:postgresql://recruitment-db:5432/recruitment_db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - EUREKA_SERVER=http://discovery-server:8761/eureka/
+      - JWT_JWK_URI=http://identity-service:8080/api/identity/auth/.well-known/jwks.json
+    depends_on:
+      recruitment-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      identity-service:
+        condition: service_healthy
+    networks:
+      - microservices-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  # === FINANCE SERVICE & DB ===
+  finance-db:
+    image: postgres:latest
+    container_name: finance-db
+    environment:
+      POSTGRES_DB: finance_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - finance-data:/var/lib/postgresql/data
+    networks:
+      - microservices-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d finance_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  finance-service:
+    build:
+      context: .
+      dockerfile: ./finance-service/Dockerfile
+    container_name: finance-service
+    environment:
+      - DB_URL=jdbc:postgresql://finance-db:5432/finance_db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - EUREKA_SERVER=http://discovery-server:8761/eureka/
+      - JWT_JWK_URI=http://identity-service:8080/api/identity/auth/.well-known/jwks.json
+    depends_on:
+      finance-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      identity-service:
+        condition: service_healthy
+    networks:
+      - microservices-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
 
 networks:
   microservices-net:
     driver: bridge
 
 volumes:
-  postgres-data:
+  identity-data:
+    driver: local
+  employee-data:
+    driver: local
+  recruitment-data:
+    driver: local
+  finance-data:
     driver: local

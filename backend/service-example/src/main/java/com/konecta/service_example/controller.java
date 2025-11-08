@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/example")
 public class controller {
     @GetMapping
-    @PreAuthorize("hasAuthority('ASSOCIATE')")  // Only HR associates are permitted
+    @PreAuthorize("hasAuthority('ASSOCIATE')")
     public String getServiceMessage() {
         return "This is example service";
     }
