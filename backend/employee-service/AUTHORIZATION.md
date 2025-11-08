@@ -30,9 +30,9 @@ Format: HTTP_METHOD PATH -> Authorization / Notes
 - POST /employees/{id}/goals -> Requires MANAGER authority.
 - POST /employees/{id}/feedback -> Requires MANAGER or HR_EMP authority.
 - GET /employees/{id}/goals -> Authenticated. Managers/Admins may fetch any employee's goals. Other users may fetch only their own goals (JWT `userId` must match employee.userId).
-- GET /employees/{id}/feedback -> No explicit authorization annotation (caller allowed as-is). Consider restricting to Manager/Admin or owner if needed.
-- DELETE /goals/{id} -> No explicit authorization annotation (caller allowed as-is). Consider restricting.
-- DELETE /feedback/{id} -> No explicit authorization annotation (caller allowed as-is). Consider restricting.
+- GET /employees/{id}/feedback -> Authenticated. Only the employee themselves, their manager, or an admin may access (ownership checks enforced).
+- DELETE /goals/{id} -> Requires MANAGER authority.
+- DELETE /feedback/{id} -> Requires MANAGER authority.
 
 ## LeaveController
 

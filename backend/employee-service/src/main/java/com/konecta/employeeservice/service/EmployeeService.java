@@ -59,10 +59,11 @@ public class EmployeeService {
   @Transactional
   public EmployeeDetailsDto createEmployee(CreateEmployeeRequestDto dto) {
     // Delegate user creation to Identity service
-    // Use provided password and role if present; otherwise generate/default
-    String passwordToUse = dto.getPassword() != null && !dto.getPassword().isBlank()
-        ? dto.getPassword()
-        : java.util.UUID.randomUUID().toString();
+    // Password is now mandatory; throw exception if missing or blank
+    if (dto.getPassword() == null || dto.getPassword().isBlank()) {
+        throw new IllegalArgumentException("Password is required when creating an employee.");
+    }
+    String passwordToUse = dto.getPassword();
     String roleToUse = dto.getRole() != null && !dto.getRole().isBlank() ? dto.getRole() : "ASSOCIATE";
 
     var createUserPayload = new java.util.HashMap<String, Object>();

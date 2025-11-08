@@ -119,7 +119,7 @@ public class PerformanceController {
       EmployeeDetailsDto emp = employeeService.getEmployeeDetailsById(id);
       String employeeUserId = emp.getUserId() == null ? null : emp.getUserId().toString();
       if (Objects.isNull(jwtUserId) || !Objects.equals(jwtUserId, employeeUserId)) {
-        throw new AccessDeniedException("Access denied: can only view your own goals");
+        throw new AccessDeniedException("Access denied: can only view your own feedback");
       }
     }
 
