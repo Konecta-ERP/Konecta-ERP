@@ -12,7 +12,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/analytics")
+@RequestMapping("/api/finance/analytics")
 public class AnalyticsController {
 
     private final AnalyticsService analyticsService;

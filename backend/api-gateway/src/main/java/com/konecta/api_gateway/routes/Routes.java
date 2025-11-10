@@ -46,6 +46,7 @@ public class Routes {
                 .route(path("/performance/**"), http("lb://employee-service"))
                 .build();
     }
+
     @Bean
     public RouterFunction<ServerResponse> recruitmentServiceRoute() {
         return route("recruitment-service")
@@ -63,4 +64,12 @@ public class Routes {
                 .route(path("/api/identity/**"), http("lb://identity-service"))
                 .build();
     }
+
+    @Bean
+    public RouterFunction<ServerResponse> financeServiceRoute() {
+        return route("finance-service")
+                .route(path("/api/finance/**"), http("lb://finance-service"))
+                .build();
+    }
+
 }

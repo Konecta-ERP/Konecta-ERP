@@ -1,12 +1,10 @@
 package com.konecta.financeservice.controller;
 
 import com.konecta.financeservice.dto.*;
-import com.konecta.financeservice.dto.response.ApiResponse;
 import com.konecta.financeservice.service.AnalyticsService;
 import com.konecta.financeservice.service.PDFExportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +14,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/pdf")
+@RequestMapping("/api/finance/pdf")
 public class PDFExportController {
 
     private final AnalyticsService analyticsService;

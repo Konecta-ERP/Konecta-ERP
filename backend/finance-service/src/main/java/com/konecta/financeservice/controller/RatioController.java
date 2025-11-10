@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("ratios")
+@RequestMapping("/api/finance/ratios")
 public class RatioController {
 
     private final RatioService ratioService;
