@@ -7,6 +7,7 @@ import com.konecta.financeservice.service.PeriodService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class PeriodController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('CFO')")
     public ResponseEntity<ApiResponse<PeriodDTO>> createPeriod(@RequestBody CreatePeriodDTO dto) {
         PeriodDTO period = periodService.createPeriod(dto);
         ApiResponse<PeriodDTO> response = ApiResponse.success(
@@ -35,6 +37,7 @@ public class PeriodController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('CFO') or hasAuthority('ACCOUNTANT')")
     public ResponseEntity<ApiResponse<List<PeriodDTO>>> getAllPeriods() {
         List<PeriodDTO> periods = periodService.getAllPeriods();
         ApiResponse<List<PeriodDTO>> response = ApiResponse.success(
@@ -47,6 +50,7 @@ public class PeriodController {
     }
 
     @GetMapping("/last")
+    @PreAuthorize("hasAuthority('CFO')")
     public ResponseEntity<ApiResponse<List<PeriodDTO>>> getLastSixPeriods() {
         List<PeriodDTO> periods = periodService.getLastSixPeriods();
         ApiResponse<List<PeriodDTO>> response = ApiResponse.success(
@@ -59,6 +63,7 @@ public class PeriodController {
     }
 
     @PutMapping("/start-closing/{id}")
+    @PreAuthorize("hasAuthority('CFO') or hasAuthority('ACCOUNTANT')")
     public ResponseEntity<ApiResponse<PeriodDTO>> startClosingPeriod(@PathVariable("id") Long id) {
         PeriodDTO period = periodService.startClosingPeriod(id);
         ApiResponse<PeriodDTO> response = ApiResponse.success(
@@ -71,6 +76,7 @@ public class PeriodController {
     }
 
     @PutMapping("/lock/{id}")
+    @PreAuthorize("hasAuthority('CFO')")
     public ResponseEntity<ApiResponse<PeriodDTO>> lockPeriod(@PathVariable("id") Long id) {
         PeriodDTO period = periodService.lockPeriod(id);
         ApiResponse<PeriodDTO> response = ApiResponse.success(
