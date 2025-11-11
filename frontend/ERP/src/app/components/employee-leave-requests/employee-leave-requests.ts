@@ -7,6 +7,7 @@ import { ILeaveRequestResponse } from '../../core/interfaces/iLeaveRequestRespon
 import { NgxSpinnerService } from 'ngx-spinner';
 import { UserService } from '../../core/services/user.service';
 import { EmployeeService } from '../../core/services/employee.service';
+import { timeout } from 'rxjs/operators';
 @Component({
   selector: 'app-employee-leave-requests',
   imports: [SharedModule],
@@ -61,7 +62,6 @@ export class EmployeeLeaveRequests implements OnInit {
     }
 
     loadLeaveRequests() {
-        console.log('Loading leave requests...');
         this._NgxSpinnerService.show();
         this._employeeService.getLeaveRequests().subscribe({
             next: (res) => {
@@ -191,7 +191,9 @@ export class EmployeeLeaveRequests implements OnInit {
     requestLeaveAPI(data: ILeaveRequestRequest): void {
         this._NgxSpinnerService.show();
 
-        this._employeeService.requestLeave(data).subscribe({
+        this._employeeService.requestLeave(data)
+        .pipe(timeout(3000))
+        .subscribe({
             next: (res) => {
                 this._NgxSpinnerService.hide();
                 if (res.status === 200) {
@@ -205,7 +207,7 @@ export class EmployeeLeaveRequests implements OnInit {
             error: (err) => {
                 this._NgxSpinnerService.hide();
                 this.show('error', 'Error', err?.error?.cMessage || 'An error occurred while submitting the leave request');
-            }
+            },
         })
     }
 

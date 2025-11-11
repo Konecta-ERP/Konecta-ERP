@@ -12,14 +12,14 @@ export class UserService {
   private userSubject = new BehaviorSubject<User | null>(null);
   user$ = this.userSubject.asObservable(); // for components that want to subscribe
 
-  constructor(private _httpClient:HttpClient) {
-  }
+    constructor(private _httpClient:HttpClient) {
+    }
 
-  setUser(user: User): void {
-    this.userSubject.next({
-        ...user,
-        profilePictureUrl: user.profilePictureUrl || 'placeholderProfile.png'
-    });
+    setUser(user: User): void {
+        this.userSubject.next({
+            ...user,
+            profilePictureUrl: user.profilePictureUrl || 'placeholderProfile.png'
+        });
     }
 
     getUser(): User | null {
@@ -29,12 +29,23 @@ export class UserService {
     login( data: ILogin):Observable<any>{
             return this._httpClient.post(`${baseURL}/identity/auth/login`,data);
     }
-    logout():void{
+    logout():Boolean{
         localStorage.removeItem('token');
-        }
+        return true;
+    }
 
     authorized():boolean{
         return localStorage.getItem('token')!=null;
+    }
+
+    fromFinanceDepartment():boolean{
+        const user = this.getUser();
+        return user?.role === 'Finance';
+    }
+
+    fromHRDepartment():boolean{
+        const user = this.getUser();
+        return user?.role === 'HR';
     }
 
 

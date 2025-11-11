@@ -25,6 +25,7 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { IftaLabelModule } from 'primeng/iftalabel';
 import { DialogModule } from 'primeng/dialog'
 import { TableModule } from 'primeng/table';
+import { MenuModule } from 'primeng/menu';
 @NgModule({
   declarations: [],
   imports: [
@@ -49,7 +50,8 @@ import { TableModule } from 'primeng/table';
     DatePickerModule,
     IftaLabelModule,
     DialogModule,
-    TableModule
+    TableModule,
+    MenuModule
     ],
     exports: [
     MessageModule,
@@ -73,7 +75,8 @@ import { TableModule } from 'primeng/table';
     DatePickerModule,
     IftaLabelModule,
     DialogModule,
-    TableModule
+    TableModule,
+    MenuModule
     ],
     providers: [MessageService]
 

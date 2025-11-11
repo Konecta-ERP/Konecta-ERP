@@ -33,7 +33,12 @@
                 <p-avatar
                     image="https://primefaces.org/cdn/primeng/images/demo/avatar/amyelsner.png"
                     shape="circle"
-                />
+                    style="cursor: pointer"
+                    (click)="menu.toggle($event)"
+                ></p-avatar>
+
+                <!-- The dropdown menu -->
+                <p-menu #menu [popup]="true" [model]="userMenuItems"></p-menu>
             </div>
         </ng-template>
     </p-menubar>
