@@ -8,12 +8,13 @@ import com.konecta.financeservice.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/accounts")
+@RequestMapping("/api/finance/accounts")
 public class AccountController {
 
     private final AccountService accountService;
@@ -24,6 +25,7 @@ public class AccountController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('CFO')")
     public ResponseEntity<ApiResponse<AccountDTO>> createAccount(@RequestBody CreateAccountDTO dto) {
         AccountDTO account = accountService.createAccount(dto);
         ApiResponse<AccountDTO> response = ApiResponse.success(
@@ -36,6 +38,7 @@ public class AccountController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('CFO') or hasAuthority('ACCOUNTANT')")
     public ResponseEntity<ApiResponse<List<AccountDTO>>> getAllAccounts() {
         List<AccountDTO> accounts = accountService.getAllAccounts();
         ApiResponse<List<AccountDTO>> response = ApiResponse.success(
@@ -48,6 +51,7 @@ public class AccountController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('CFO')")
     public ResponseEntity<ApiResponse<AccountDTO>> updateAccount(@PathVariable("id") Long id, @RequestBody UpdateAccountDTO dto) {
         AccountDTO updatedAccount = accountService.updateAccount(id, dto);
         ApiResponse<AccountDTO> response = ApiResponse.success(
@@ -60,6 +64,7 @@ public class AccountController {
     }
 
     @PutMapping("/deactivate/{id}")
+    @PreAuthorize("hasAuthority('CFO')")
     public ResponseEntity<ApiResponse<AccountDTO>> deactivateAccount(@PathVariable("id") Long id) {
         AccountDTO updatedAccount = accountService.deactivateAccount(id);
         ApiResponse<AccountDTO> response = ApiResponse.success(

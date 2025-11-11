@@ -1,14 +1,13 @@
 package com.konecta.financeservice.controller;
 
 import com.konecta.financeservice.dto.*;
-import com.konecta.financeservice.dto.response.ApiResponse;
 import com.konecta.financeservice.service.AnalyticsService;
 import com.konecta.financeservice.service.PDFExportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -16,7 +15,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/pdf")
+@RequestMapping("/api/finance/pdf")
 public class PDFExportController {
 
     private final AnalyticsService analyticsService;
@@ -29,6 +28,7 @@ public class PDFExportController {
     }
 
     @GetMapping("trial-balance/{id}")
+    @PreAuthorize("hasAuthority('ACCOUNTANT')")
     public ResponseEntity<byte[]> exportTrialBalance(@PathVariable("id") Long periodId) {
         TrialBalanceReportDTO report = analyticsService.generateTrialBalance(periodId);
         byte[] bytes = pdfExportService.exportTrialBalance(report);
@@ -40,6 +40,7 @@ public class PDFExportController {
     }
 
     @GetMapping("/gl")
+    @PreAuthorize("hasAuthority('CFO')")
     public ResponseEntity<byte[]> exportGL(@RequestParam("fromDate") LocalDate fromDate,
                                            @RequestParam("toDate") LocalDate toDate,
                                            @RequestParam(name = "accountPKs", required = false) List<Long> accountPKs) throws IOException {
@@ -54,6 +55,7 @@ public class PDFExportController {
     }
 
     @GetMapping("/income-statement/{id}")
+    @PreAuthorize("hasAuthority('CFO') or hasAuthority('ACCOUNTANT')")
     public ResponseEntity<byte[]> exportIncomeStatement(@PathVariable("id") Long periodId) throws IOException {
         IncomeStatementDTO report = analyticsService.generateIncomeStatement(periodId);
         byte[] bytes = pdfExportService.exportIncomeStatement(report);
@@ -65,6 +67,7 @@ public class PDFExportController {
     }
 
     @GetMapping("/balance-sheet/{date}")
+    @PreAuthorize("hasAuthority('CFO') or hasAuthority('ACCOUNTANT')")
     public ResponseEntity<byte[]> exportBalanceSheet(@PathVariable("date") LocalDate asOfDate) {
         BalanceSheetReportDTO dto = analyticsService.generateBalanceSheet(asOfDate);
         byte[] bytes = pdfExportService.exportBalanceSheet(dto);
@@ -76,6 +79,7 @@ public class PDFExportController {
     }
 
     @GetMapping("/cash-flow/{id}")
+    @PreAuthorize("hasAuthority('CFO') or hasAuthority('ACCOUNTANT')")
     public ResponseEntity<byte[]> exportCashFlowPdf(@PathVariable("id") Long periodId) throws IOException {
         CashFlowReportDTO report = analyticsService.generateCashFlow(periodId);
         byte[] bytes = pdfExportService.exportCashFlow(report);

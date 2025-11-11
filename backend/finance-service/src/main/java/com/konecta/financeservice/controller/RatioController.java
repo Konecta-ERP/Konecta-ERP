@@ -6,12 +6,13 @@ import com.konecta.financeservice.service.RatioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("ratios")
+@RequestMapping("/api/finance/ratios")
 public class RatioController {
 
     private final RatioService ratioService;
@@ -22,6 +23,7 @@ public class RatioController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('CFO')")
     public ResponseEntity<ApiResponse<RatioDTO>> createRatio(@RequestBody CreateOrUpdateRatioDTO dto) {
         RatioDTO ratio = ratioService.createRatio(dto);
         ApiResponse<RatioDTO> response = ApiResponse.success(
@@ -34,6 +36,7 @@ public class RatioController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('CFO')")
     public ResponseEntity<ApiResponse<RatioDTO>> updateRatio(@PathVariable("id") Long id, @RequestBody CreateOrUpdateRatioDTO dto) {
         RatioDTO updatedRatio = ratioService.updateRatio(id, dto);
         ApiResponse<RatioDTO> response = ApiResponse.success(
@@ -46,6 +49,7 @@ public class RatioController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('CFO')")
     public ResponseEntity<ApiResponse<List<RatioDTO>>> getAllRatios() {
         List<RatioDTO> ratios = ratioService.getALlRatios();
         ApiResponse<List<RatioDTO>> response = ApiResponse.success(
@@ -58,6 +62,7 @@ public class RatioController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('CFO')")
     public ResponseEntity<ApiResponse<RatioDTO>> getRatio(@PathVariable("id") Long id) {
         RatioDTO ratio = ratioService.getRatio(id);
         ApiResponse<RatioDTO> response = ApiResponse.success(

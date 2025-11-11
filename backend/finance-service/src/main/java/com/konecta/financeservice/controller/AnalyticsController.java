@@ -6,13 +6,14 @@ import com.konecta.financeservice.service.AnalyticsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/analytics")
+@RequestMapping("/api/finance/analytics")
 public class AnalyticsController {
 
     private final AnalyticsService analyticsService;
@@ -23,6 +24,7 @@ public class AnalyticsController {
     }
 
     @GetMapping("/trial-balance/{id}")
+    @PreAuthorize("hasAuthority('ACCOUNTANT')")
     public ResponseEntity<ApiResponse<TrialBalanceReportDTO>> getTrialBalanceReport(@PathVariable("id") Long periodId) {
         TrialBalanceReportDTO dto = analyticsService.generateTrialBalance(periodId);
         ApiResponse<TrialBalanceReportDTO> response = ApiResponse.success(
@@ -35,6 +37,7 @@ public class AnalyticsController {
     }
 
     @GetMapping("/gl")
+    @PreAuthorize("hasAuthority('CFO')")
     public ResponseEntity<ApiResponse<GLResponseDTO>> getGL(
             @RequestParam("fromDate") LocalDate fromDate,
             @RequestParam("toDate") LocalDate toDate,
@@ -51,6 +54,7 @@ public class AnalyticsController {
     }
 
     @GetMapping("/income-statement/{id}")
+    @PreAuthorize("hasAuthority('CFO') or hasAuthority('ACCOUNTANT')")
     public ResponseEntity<ApiResponse<IncomeStatementDTO>> getIncomeStatement(@PathVariable("id") Long periodId) {
         IncomeStatementDTO dto = analyticsService.generateIncomeStatement(periodId);
         ApiResponse<IncomeStatementDTO> response = ApiResponse.success(
@@ -63,6 +67,7 @@ public class AnalyticsController {
     }
 
     @GetMapping("/balance-sheet/{date}")
+    @PreAuthorize("hasAuthority('CFO') or hasAuthority('ACCOUNTANT')")
     public ResponseEntity<ApiResponse<BalanceSheetReportDTO>> getBalanceSheet(@PathVariable("date") LocalDate asOfDate) {
         BalanceSheetReportDTO dto = analyticsService.generateBalanceSheet(asOfDate);
         ApiResponse<BalanceSheetReportDTO> response = ApiResponse.success(
@@ -75,6 +80,7 @@ public class AnalyticsController {
     }
 
     @GetMapping("/cash-flow/{id}")
+    @PreAuthorize("hasAuthority('CFO') or hasAuthority('ACCOUNTANT')")
     public ResponseEntity<ApiResponse<CashFlowReportDTO>> getCashFlowReport(@PathVariable("id") Long periodId) {
         CashFlowReportDTO dto = analyticsService.generateCashFlow(periodId);
         ApiResponse<CashFlowReportDTO> response = ApiResponse.success(
