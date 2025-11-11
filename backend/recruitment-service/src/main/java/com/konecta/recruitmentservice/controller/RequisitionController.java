@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.konecta.recruitmentservice.dto.CreateRequisitionDto;
 import com.konecta.recruitmentservice.dto.JobRequisitionDto;
 import com.konecta.recruitmentservice.dto.UpdateRequisitionDto;
+import com.konecta.recruitmentservice.dto.UpdateRequisitionStatusDto;
 import com.konecta.recruitmentservice.dto.response.ApiResponse;
 import com.konecta.recruitmentservice.model.enums.RequisitionStatus;
 import com.konecta.recruitmentservice.service.RequisitionService;
@@ -35,6 +37,7 @@ public class RequisitionController {
   }
 
   @PostMapping
+  @PreAuthorize("hasAuthority('ASSOCIATE')")
   public ResponseEntity<ApiResponse<JobRequisitionDto>> createRequisition(
       @Valid @RequestBody CreateRequisitionDto dto) {
     JobRequisitionDto newReq = requisitionService.createRequisition(dto);
@@ -47,6 +50,7 @@ public class RequisitionController {
   }
 
   @GetMapping("/search")
+  @PreAuthorize("hasAuthority('ASSOCIATE') or hasAuthority('MANAGER') or hasAuthority('ADMIN')")
   public ResponseEntity<ApiResponse<List<JobRequisitionDto>>> searchRequisitions(
       @RequestParam(name = "departmentId", required = false) Integer departmentId,
       @RequestParam(name = "status", required = false) RequisitionStatus status) {
@@ -61,6 +65,7 @@ public class RequisitionController {
   }
 
   @GetMapping("/{id}")
+  @PreAuthorize("hasAuthority('ASSOCIATE') or hasAuthority('MANAGER') or hasAuthority('ADMIN')")
   public ResponseEntity<ApiResponse<JobRequisitionDto>> getRequisition(
       @PathVariable Integer id) {
     JobRequisitionDto req = requisitionService.getRequisition(id);
@@ -73,6 +78,7 @@ public class RequisitionController {
   }
 
   @PatchMapping("/{id}")
+  @PreAuthorize("hasAuthority('ASSOCIATE')")
   public ResponseEntity<ApiResponse<JobRequisitionDto>> updateRequisition(
       @PathVariable Integer id,
       @Valid @RequestBody UpdateRequisitionDto dto) {
@@ -83,6 +89,21 @@ public class RequisitionController {
         HttpStatus.OK.value(),
         "Requisition updated successfully.",
         "Requisition " + id + " was updated.");
+    return ResponseEntity.ok(response);
+  }
+
+  @PatchMapping("/{id}/status")
+  @PreAuthorize("hasAuthority('MANAGER')")
+  public ResponseEntity<ApiResponse<JobRequisitionDto>> updateRequisitionStatus(
+      @PathVariable Integer id,
+      @Valid @RequestBody UpdateRequisitionStatusDto dto) {
+
+    JobRequisitionDto updatedReq = requisitionService.updateRequisitionStatus(id, dto);
+    ApiResponse<JobRequisitionDto> response = ApiResponse.success(
+        updatedReq,
+        HttpStatus.OK.value(),
+        "Requisition status updated.",
+        "Requisition " + id + " status set to " + dto.getStatus());
     return ResponseEntity.ok(response);
   }
 }

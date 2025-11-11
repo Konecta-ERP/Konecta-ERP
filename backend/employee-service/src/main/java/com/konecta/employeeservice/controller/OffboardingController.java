@@ -8,6 +8,7 @@ import com.konecta.employeeservice.service.OffboardingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,8 +22,9 @@ public class OffboardingController {
   }
 
   @PostMapping("/employees/{employeeId}/offboard")
+  @PreAuthorize("hasAuthority('ADMIN')")
   public ResponseEntity<ApiResponse<OffboardingChecklistDto>> initiateOffboarding(
-      @PathVariable Integer employeeId,
+      @PathVariable(name = "employeeId") Integer employeeId,
       @RequestBody InitiateOffboardingDto dto) {
 
     OffboardingChecklistDto checklist = offboardingService.initiateOffboarding(employeeId, dto);
@@ -35,8 +37,9 @@ public class OffboardingController {
   }
 
   @GetMapping("/employees/{employeeId}/offboarding-checklist")
+  @PreAuthorize("hasAuthority('ADMIN')")
   public ResponseEntity<ApiResponse<OffboardingChecklistDto>> getChecklist(
-      @PathVariable Integer employeeId) {
+      @PathVariable(name = "employeeId") Integer employeeId) {
 
     OffboardingChecklistDto checklist = offboardingService.getChecklistForEmployee(employeeId);
     ApiResponse<OffboardingChecklistDto> response = ApiResponse.success(
@@ -48,8 +51,9 @@ public class OffboardingController {
   }
 
   @PutMapping("/offboarding-checklists/{checklistId}")
+  @PreAuthorize("hasAuthority('ADMIN')")
   public ResponseEntity<ApiResponse<OffboardingChecklistDto>> updateChecklist(
-      @PathVariable Integer checklistId,
+      @PathVariable(name = "checklistId") Integer checklistId,
       @RequestBody UpdateChecklistDto dto) {
 
     OffboardingChecklistDto checklist = offboardingService.updateChecklist(checklistId, dto);

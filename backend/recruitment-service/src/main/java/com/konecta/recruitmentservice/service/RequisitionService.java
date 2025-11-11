@@ -3,6 +3,7 @@ package com.konecta.recruitmentservice.service;
 import com.konecta.recruitmentservice.dto.CreateRequisitionDto;
 import com.konecta.recruitmentservice.dto.JobRequisitionDto;
 import com.konecta.recruitmentservice.dto.UpdateRequisitionDto;
+import com.konecta.recruitmentservice.dto.UpdateRequisitionStatusDto;
 import com.konecta.recruitmentservice.entity.JobRequisition;
 import com.konecta.recruitmentservice.model.enums.RequisitionStatus;
 import com.konecta.recruitmentservice.repository.JobRequisitionRepository;
@@ -60,12 +61,27 @@ public class RequisitionService {
     JobRequisition req = requisitionRepository.findById(requisitionId)
         .orElseThrow(() -> new EntityNotFoundException("JobRequisition not found with id: " + requisitionId));
 
-    // Apply updates only if they are present in the DTO
-    dto.getReason().ifPresent(req::setReason);
-    dto.getPriority().ifPresent(req::setPriority);
-    dto.getOpenings().ifPresent(req::setOpenings);
-    dto.getStatus().ifPresent(req::setStatus);
+    // Apply updates only if they are present in the DTO (nullable fields)
+    if (dto.getReason() != null) {
+      req.setReason(dto.getReason());
+    }
+    if (dto.getPriority() != null) {
+      req.setPriority(dto.getPriority());
+    }
+    if (dto.getOpenings() != null) {
+      req.setOpenings(dto.getOpenings());
+    }
 
+    JobRequisition savedReq = requisitionRepository.save(req);
+    return convertToDto(savedReq);
+  }
+
+  @Transactional
+  public JobRequisitionDto updateRequisitionStatus(Integer requisitionId, UpdateRequisitionStatusDto dto) {
+    JobRequisition req = requisitionRepository.findById(requisitionId)
+        .orElseThrow(() -> new EntityNotFoundException("JobRequisition not found with id: " + requisitionId));
+
+    req.setStatus(dto.getStatus());
     JobRequisition savedReq = requisitionRepository.save(req);
     return convertToDto(savedReq);
   }

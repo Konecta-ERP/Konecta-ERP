@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.List;
 
 @Repository
 public interface AttendanceRecordRepository extends JpaRepository<AttendanceRecord, Integer> {
@@ -23,4 +24,9 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
    * used to prevent clocking in twice.
    */
   boolean existsByEmployeeIdAndDate(Integer employeeId, LocalDate date);
+
+  List<com.konecta.employeeservice.entity.AttendanceRecord> findByEmployeeIdAndDateBetween(
+      Integer employeeId,
+      LocalDate start,
+      LocalDate end);
 }

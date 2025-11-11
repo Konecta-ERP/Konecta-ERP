@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -39,6 +40,7 @@ public class JobPostController {
   }
 
   @PostMapping
+  @PreAuthorize("hasAuthority('ASSOCIATE') or hasAuthority('MANAGER') or hasAuthority('ADMIN')")
   public ResponseEntity<ApiResponse<JobPostDto>> createJobPost(
       @Valid @RequestBody CreateJobPostDto dto) {
     JobPostDto newPost = jobPostService.createJobPost(dto);
@@ -64,6 +66,7 @@ public class JobPostController {
   }
 
   @PatchMapping("/{id}/active")
+  @PreAuthorize("hasAuthority('ASSOCIATE') or hasAuthority('MANAGER') or hasAuthority('ADMIN')")
   public ResponseEntity<ApiResponse<JobPostDto>> setJobPostActive(
       @PathVariable Integer id,
       @RequestBody Map<String, Boolean> activeUpdate) {
@@ -112,6 +115,7 @@ public class JobPostController {
   }
 
   @GetMapping("/{postId}/applicants")
+  @PreAuthorize("hasAuthority('ASSOCIATE') or hasAuthority('MANAGER') or hasAuthority('ADMIN')")
   public ResponseEntity<ApiResponse<List<ApplicantDto>>> getApplicantsForPost(
       @PathVariable Integer postId) {
 
