@@ -6,6 +6,7 @@ import {  ILeaveRequestRequest } from '../../core/interfaces/iLeaveRequestReques
 import { ILeaveRequestResponse } from '../../core/interfaces/iLeaveRequestResponse';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { UserService } from '../../core/services/user.service';
+import { EmployeeService } from '../../core/services/employee.service';
 @Component({
   selector: 'app-employee-leave-requests',
   imports: [SharedModule],
@@ -17,7 +18,8 @@ export class EmployeeLeaveRequests implements OnInit {
     constructor(
         private _messageService: MessageService,
         private _NgxSpinnerService: NgxSpinnerService,
-        private _userService: UserService
+        private _userService: UserService,
+        private _employeeService: EmployeeService
     ) {
         this.initFormControls();
         this.initFormGroup();
@@ -61,7 +63,7 @@ export class EmployeeLeaveRequests implements OnInit {
     loadLeaveRequests() {
         console.log('Loading leave requests...');
         this._NgxSpinnerService.show();
-        this._userService.getLeaveRequests().subscribe({
+        this._employeeService.getLeaveRequests().subscribe({
             next: (res) => {
                 this._NgxSpinnerService.hide();
                 if (res.status === 200) {
@@ -97,7 +99,7 @@ export class EmployeeLeaveRequests implements OnInit {
 
     deleteRequestAPI(request: ILeaveRequestResponse) {
         this._NgxSpinnerService.show();
-        this._userService.deleteLeaveRequest(request.id).subscribe({
+        this._employeeService.deleteLeaveRequest(request.id).subscribe({
             next: (res) => {
                 this._NgxSpinnerService.hide();
                 if (res.status === 204) {
@@ -189,7 +191,7 @@ export class EmployeeLeaveRequests implements OnInit {
     requestLeaveAPI(data: ILeaveRequestRequest): void {
         this._NgxSpinnerService.show();
 
-        this._userService.requestLeave(data).subscribe({
+        this._employeeService.requestLeave(data).subscribe({
             next: (res) => {
                 this._NgxSpinnerService.hide();
                 if (res.status === 200) {

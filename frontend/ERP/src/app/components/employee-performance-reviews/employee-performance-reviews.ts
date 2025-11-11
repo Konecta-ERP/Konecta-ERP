@@ -5,6 +5,7 @@ import { MessageService } from 'primeng/api';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { SharedModule } from '../../shared/module/shared/shared-module';
 import { IFeedbackResponse } from '../../core/interfaces/i-feedback-response';
+import { EmployeeService } from '../../core/services/employee.service';
 @Component({
   selector: 'app-employee-performance-reviews',
   imports: [PerformanceReviewCard, SharedModule],
@@ -17,7 +18,8 @@ export class EmployeePerformanceReviews {
     constructor(
         private _userService: UserService,
         private _messageService: MessageService,
-        private _spinner: NgxSpinnerService
+        private _spinner: NgxSpinnerService,
+        private _employeeService: EmployeeService
     ) {}
 
     ngOnInit(): void {
@@ -45,7 +47,7 @@ export class EmployeePerformanceReviews {
         console.log('Loading performance reviews...');
         this._spinner.show();
 
-        this._userService.getPerformanceReviews().subscribe({
+        this._employeeService.getPerformanceReviews().subscribe({
         next: (res) => {
             this._spinner.hide();
             if (res.status === 200) {

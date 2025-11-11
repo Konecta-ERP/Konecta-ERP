@@ -3,7 +3,6 @@ import { User } from '../interfaces/iUser';
 import { BehaviorSubject } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { baseURL } from '../apiRoot/baseURL';
-import { ILeaveRequestRequest } from '../interfaces/iLeaveRequestRequest';
 import { Observable } from 'rxjs';
 import { ILogin } from '../interfaces/ilogin';
 @Injectable({
@@ -27,10 +26,6 @@ export class UserService {
         return this.userSubject.value;
     }
 
-    requestLeave(data:ILeaveRequestRequest):Observable<any> {
-        return this._httpClient.post(`${baseURL}/leaves/request`,data);
-    }
-
     login( data: ILogin):Observable<any>{
             return this._httpClient.post(`${baseURL}/identity/auth/login`,data);
     }
@@ -42,20 +37,6 @@ export class UserService {
         return localStorage.getItem('token')!=null;
     }
 
-    getLeaveRequests():Observable<any>{
-        return this._httpClient.get(`${baseURL}/leaves/employee/requests`);
-    }
 
-    deleteLeaveRequest(id:string):Observable<any>{
-        return this._httpClient.delete(`${baseURL}/leaves/request/${id}`);
-    }
-
-    getPerformanceReviews():Observable<any>{
-        return this._httpClient.get(`${baseURL}/performance-reviews/employee/reviews`);
-    }
-
-    getEmployeeGoals():Observable<any>{
-        return this._httpClient.get(`${baseURL}/employee-goals/employee/goals`);
-    }
 
 }

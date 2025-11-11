@@ -4,6 +4,7 @@ import { UserService } from '../../core/services/user.service';
 import { MessageService } from 'primeng/api';
 import { IEmployeeGoalResponse } from '../../core/interfaces/iEmployeeGoalResponse';
 import { NgxSpinnerService } from 'ngx-spinner';
+import { EmployeeService } from '../../core/services/employee.service';
 @Component({
     selector: 'app-employee-goals',
     imports: [SharedModule],
@@ -20,6 +21,7 @@ export class EmployeeGoals implements OnInit {
         private _userService: UserService,
         private _messageService: MessageService,
         private _NgxSpinnerService: NgxSpinnerService,
+        private _employeeService: EmployeeService
     ){}
 
 
@@ -35,7 +37,7 @@ export class EmployeeGoals implements OnInit {
     loadEmployeeGoals(): void {
         console.log('Loading employee goals...');
         this._NgxSpinnerService.show();
-        this._userService.getEmployeeGoals().subscribe({
+        this._employeeService.getEmployeeGoals().subscribe({
             next: (res) => {
                 this._NgxSpinnerService.hide();
                 if (res.status === 200) {
