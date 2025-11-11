@@ -20,7 +20,7 @@ import org.springframework.web.client.RestTemplate;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    // inject the load balanced RestTemplate bean from FinanceServiceApplication
+    // inject the load balanced RestTemplate bean from ServiceExampleApplication
     private final RestTemplate restTemplate;
 
     @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")

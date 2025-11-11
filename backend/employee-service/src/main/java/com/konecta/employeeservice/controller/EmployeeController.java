@@ -23,7 +23,7 @@ import com.konecta.employeeservice.service.EmployeeService;
 import com.konecta.employeeservice.service.PayrollService;
 
 @RestController
-@RequestMapping("/employees")
+@RequestMapping("/api/employees")
 public class EmployeeController {
 
   private final EmployeeService employeeService;

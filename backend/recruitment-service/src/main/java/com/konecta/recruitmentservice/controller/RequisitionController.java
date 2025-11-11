@@ -26,7 +26,7 @@ import com.konecta.recruitmentservice.service.RequisitionService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/job-requisitions")
+@RequestMapping("/api/job-requisitions")
 public class RequisitionController {
 
   private final RequisitionService requisitionService;

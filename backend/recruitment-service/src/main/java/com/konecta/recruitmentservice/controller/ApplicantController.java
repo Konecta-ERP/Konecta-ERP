@@ -27,7 +27,7 @@ public class ApplicantController {
     this.applicantService = applicantService;
   }
 
-  @GetMapping("/applicants/{applicantId}")
+  @GetMapping("/api/applicants/{applicantId}")
   @PreAuthorize("hasAuthority('ASSOCIATE') or hasAuthority('MANAGER') or hasAuthority('ADMIN')")
   public ResponseEntity<ApiResponse<ApplicantDto>> getApplicant(
       @PathVariable Integer applicantId) {
@@ -41,7 +41,7 @@ public class ApplicantController {
     return ResponseEntity.ok(response);
   }
 
-  @PatchMapping("/applicants/{applicantId}/status")
+  @PatchMapping("/api/applicants/{applicantId}/status")
   @PreAuthorize("hasAuthority('MANAGER')")
   public ResponseEntity<ApiResponse<ApplicantDto>> updateApplicantStatus(
       @PathVariable Integer applicantId,

@@ -21,7 +21,7 @@ public class OffboardingController {
     this.offboardingService = offboardingService;
   }
 
-  @PostMapping("/employees/{employeeId}/offboard")
+  @PostMapping("/api/employees/{employeeId}/offboard")
   @PreAuthorize("hasAuthority('ADMIN')")
   public ResponseEntity<ApiResponse<OffboardingChecklistDto>> initiateOffboarding(
       @PathVariable(name = "employeeId") Integer employeeId,
@@ -36,7 +36,7 @@ public class OffboardingController {
     return new ResponseEntity<>(response, HttpStatus.CREATED);
   }
 
-  @GetMapping("/employees/{employeeId}/offboarding-checklist")
+  @GetMapping("/api/employees/{employeeId}/offboarding-checklist")
   @PreAuthorize("hasAuthority('ADMIN')")
   public ResponseEntity<ApiResponse<OffboardingChecklistDto>> getChecklist(
       @PathVariable(name = "employeeId") Integer employeeId) {
@@ -50,7 +50,7 @@ public class OffboardingController {
     return ResponseEntity.ok(response);
   }
 
-  @PutMapping("/offboarding-checklists/{checklistId}")
+  @PutMapping("/api/offboarding-checklists/{checklistId}")
   @PreAuthorize("hasAuthority('ADMIN')")
   public ResponseEntity<ApiResponse<OffboardingChecklistDto>> updateChecklist(
       @PathVariable(name = "checklistId") Integer checklistId,

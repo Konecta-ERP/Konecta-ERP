@@ -26,7 +26,7 @@ public class InterviewController {
     this.interviewService = interviewService;
   }
 
-  @PostMapping("/applicants/{applicantId}/interviews")
+  @PostMapping("/api/applicants/{applicantId}/interviews")
   @PreAuthorize("hasAuthority('ASSOCIATE')")
   public ResponseEntity<ApiResponse<InterviewDto>> scheduleInterview(
       @PathVariable Integer applicantId,

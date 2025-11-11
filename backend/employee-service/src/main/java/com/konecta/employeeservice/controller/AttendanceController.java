@@ -30,7 +30,7 @@ public class AttendanceController {
     this.employeeService = employeeService;
   }
 
-  @PostMapping("/employees/{id}/clock-in")
+  @PostMapping("/api/employees/{id}/clock-in")
   @PreAuthorize("isAuthenticated()")
   public ResponseEntity<ApiResponse<AttendanceRecordDto>> clockIn(@PathVariable(name = "id") Integer id,
       Authentication authentication) {
@@ -59,7 +59,7 @@ public class AttendanceController {
     return ResponseEntity.ok(response);
   }
 
-  @PostMapping("/employees/{id}/clock-out")
+  @PostMapping("/api/employees/{id}/clock-out")
   @PreAuthorize("isAuthenticated()")
   public ResponseEntity<ApiResponse<AttendanceRecordDto>> clockOut(@PathVariable(name = "id") Integer id,
       Authentication authentication) {
