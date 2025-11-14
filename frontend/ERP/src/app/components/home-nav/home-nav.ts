@@ -36,13 +36,13 @@ export class HomeNav {
             },
         ];
 
-        if (this._userService.fromFinanceDepartment()) {
+        if (this._userService.fromFinanceDepartment()||true) {
             this.items.push({
                 label: 'Finance',
                 path: 'finance'
             });
         }
-        if (this._userService.fromHRDepartment()) {
+        if (this._userService.fromHRDepartment()||true) {
             this.items.push({
                 label: 'HR',
                 path: 'hr'

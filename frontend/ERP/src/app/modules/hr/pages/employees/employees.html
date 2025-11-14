@@ -1,0 +1,65 @@
+<div class="flex justify-center items-center min-h-screen bg-surface-50 p-4">
+    <p-card
+        class="w-full sm:w-10/12 md:w-8/12 lg:w-1/2 shadow-lg rounded-2xl"
+        header="Employee Search"
+    >
+        <div class="flex flex-col gap-5">
+            <!-- Name -->
+            <div class="flex flex-col">
+                <label class="text-gray-600 font-medium mb-1">Name</label>
+                <input
+                    pInputText
+                    type="text"
+                    placeholder="Enter employee name"
+                    [(ngModel)]="filters.name"
+                    class="w-full"
+                />
+            </div>
+            <!-- position -->
+            <div class="flex flex-col">
+                <label class="text-gray-600 font-medium mb-1">position</label>
+                <input
+                    pInputText
+                    type="text"
+                    placeholder="Enter employee position"
+                    [(ngModel)]="filters.position"
+                    class="w-full"
+                />
+            </div>
+            <!-- Department -->
+            <div class="flex flex-col">
+                <label class="text-gray-600 font-medium mb-1">Department</label>
+                <p-select
+                    [options]="departments"
+                    [(ngModel)]="filters.department"
+                    placeholder="Select Department"
+                    class="w-full"
+                />
+            </div>
+
+            <!-- Search Button -->
+            <div class="flex justify-center mt-4">
+                <button
+                    pButton
+                    label="Search"
+                    icon="pi pi-search"
+                    class="p-button-rounded p-button-primary px-6"
+                    (click)="onSearch()"
+                ></button>
+            </div>
+        </div>
+        @for (employee of employeeList; track $index) { }
+    </p-card>
+</div>
+
+<ngx-spinner
+    bdColor="rgba(0, 0, 0, 0.8)"
+    size="large"
+    color="#ffd700"
+    type="timer"
+    [fullScreen]="true"
+>
+    <p style="color: #ffd700">Konnection flowing...</p>
+</ngx-spinner>
+
+<p-toast position="top-center" />

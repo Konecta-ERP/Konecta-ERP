@@ -1,0 +1,60 @@
+<div
+    class="p-card surface-card border-round-lg shadow-2 hover:shadow-4 transition-all duration-300 cursor-pointer overflow-hidden"
+    (click)="onCardClick()"
+>
+    <!-- Card Header with Background -->
+    <div
+        class="relative h-32 bg-gradient-to-br from-blue-500 to-blue-600 flex align-items-end justify-content-center pb-3"
+    >
+        <!-- Profile Picture -->
+        <div class="absolute" style="bottom: -2.5rem">
+            <img
+                [src]="employee.profilePictureUrl || 'placeholderProfile.png'"
+                [alt]="employee.firstName + ' ' + employee.lastName"
+                class="border-circle w-20 h-20 lg:w-24 lg:h-24 border-4 border-white shadow-3 object-cover"
+            />
+        </div>
+    </div>
+
+    <!-- Card Body -->
+    <div class="pt-14 px-4 pb-4 text-center">
+        <!-- Name -->
+        <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">
+            {{ employee.firstName }} {{ employee.lastName }}
+        </h3>
+
+        <!-- Position -->
+        <p class="text-blue-600 font-semibold text-sm mb-3 truncate">
+            {{ employee.position }}
+        </p>
+
+        <!-- Department Badge -->
+        <div class="flex justify-content-center mb-3">
+            <span
+                class="inline-flex align-items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 border-round-full text-xs font-medium"
+            >
+                <i class="pi pi-building text-xs"></i>
+                {{ employee.departmentName }}
+            </span>
+        </div>
+
+        <!-- Divider -->
+        <div class="border-top-1 border-gray-200 my-3"></div>
+
+        <!-- Action Button -->
+        <button
+            class="w-full py-2 px-4 bg-white border-1 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-200 border-round-lg font-semibold text-sm flex align-items-center justify-content-center gap-2"
+            (click)="onViewProfile($event)"
+        >
+            <i class="pi pi-user"></i>
+            View Profile
+        </button>
+    </div>
+
+    <!-- Hover Indicator -->
+    <div
+        class="absolute top-0 right-0 m-3 opacity-0 hover-opacity-100 transition-opacity duration-300"
+    >
+        <i class="pi pi-arrow-right text-white text-xl"></i>
+    </div>
+</div>

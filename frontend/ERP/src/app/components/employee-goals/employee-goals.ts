@@ -18,7 +18,6 @@ export class EmployeeGoals implements OnInit {
         this.loadEmployeeGoals();
     }
     constructor(
-        private _userService: UserService,
         private _messageService: MessageService,
         private _NgxSpinnerService: NgxSpinnerService,
         private _employeeService: EmployeeService

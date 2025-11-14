@@ -5,6 +5,7 @@ import { baseURL } from '../apiRoot/baseURL';
 import { ILeaveRequestRequest } from '../interfaces/iLeaveRequestRequest';
 import { Observable } from 'rxjs';
 import { UserService } from './user.service';
+import { IEmployeeSearchFilter } from '../interfaces/iEmployeeSearchFilter';
 @Injectable({
   providedIn: 'root'
 })
@@ -45,6 +46,18 @@ export class EmployeeService {
 
     getEmployeeGoals():Observable<any>{
         return this._httpClient.get(`${baseURL}/employee-goals/employee/goals`);
+    }
+
+    searchEmployees(filters: IEmployeeSearchFilter): Observable<any> {
+        const params = new URLSearchParams();
+
+        if (filters.name) params.set('name', filters.name);
+        if (filters.department) params.set('department', filters.department);
+        if (filters.position) params.set('position', filters.position);
+
+        const url = `${baseURL}/employees/search?${params.toString()}`;
+
+        return this._httpClient.get(url);
     }
 
 }
