@@ -99,7 +99,7 @@ export class Login {
             this.show('error', 'Error', errorMessage);
         }
     });
-}
+    }
 
     show(severity: string='info', summary: string='Info', detail: string='Message Content'): void {
         this._messageService.add({ severity, summary, detail, life: 3000 });

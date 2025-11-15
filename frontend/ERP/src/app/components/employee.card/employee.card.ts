@@ -3,7 +3,7 @@ import { SharedModule } from '../../shared/module/shared/shared-module';
 import { iEmployeeSearchResponse } from '../../core/interfaces/iEmployeeSearchResponse';
 import { Router } from '@angular/router';
 @Component({
-  selector: 'app-employee.card',
+  selector: 'app-employee-card',
   imports: [SharedModule],
   templateUrl: './employee.card.html',
   styleUrl: './employee.card.css',

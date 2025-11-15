@@ -26,6 +26,8 @@ import { IftaLabelModule } from 'primeng/iftalabel';
 import { DialogModule } from 'primeng/dialog'
 import { TableModule } from 'primeng/table';
 import { MenuModule } from 'primeng/menu';
+import { TagModule} from 'primeng/tag';
+import { Paginator } from 'primeng/paginator';
 @NgModule({
   declarations: [],
   imports: [
@@ -51,7 +53,9 @@ import { MenuModule } from 'primeng/menu';
     IftaLabelModule,
     DialogModule,
     TableModule,
-    MenuModule
+    MenuModule,
+    TagModule,
+    Paginator
     ],
     exports: [
     MessageModule,
@@ -76,7 +80,9 @@ import { MenuModule } from 'primeng/menu';
     IftaLabelModule,
     DialogModule,
     TableModule,
-    MenuModule
+    MenuModule,
+    TagModule,
+    Paginator
     ],
     providers: [MessageService]
 

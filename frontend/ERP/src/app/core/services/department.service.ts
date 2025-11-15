@@ -9,23 +9,34 @@ import { baseURL } from '../apiRoot/baseURL';
 })
 export class DepartmentService {
     private departmentsSubject = new BehaviorSubject<IDepartment[]>([]);
-
     departments$ = this.departmentsSubject.asObservable();
 
     constructor(private _httpClient: HttpClient) {}
 
-    getDepartments(): Observable<IDepartment[]> {
-        const currentDepartments = this.departmentsSubject.value;
-        if (currentDepartments && currentDepartments.length > 0) {
-            return of(currentDepartments);
-        } else {
-            return this.loadDepartmentsFromApi();
-        }
+    // Get departments (returns cached if available)
+    getDepartments(): Observable<any> {
+        return this._httpClient.get(`${baseURL}/departments`);
     }
 
-    loadDepartmentsFromApi(): Observable<IDepartment[]> {
-        return this._httpClient.get<IDepartment[]>(`${baseURL}/departments`).pipe(
-            tap((departments) => this.departmentsSubject.next(departments))
-        );
+    // Save departments to cache
+    setDepartments(departments: IDepartment[]): void {
+        this.departmentsSubject.next(departments);
+        console.log('Departments cached:', this.departmentsSubject.value);
+    }
+
+    // Get cached departments
+    getCachedDepartments(): IDepartment[] {
+        console.log('Retrieving cached departments:', this.departmentsSubject.value);
+        return this.departmentsSubject.value;
+    }
+
+    // Check if departments are cached
+    hasCachedDepartments(): boolean {
+        return this.departmentsSubject.value.length > 0;
+    }
+
+    // Clear cache
+    clearCache(): void {
+        this.departmentsSubject.next([]);
     }
 }

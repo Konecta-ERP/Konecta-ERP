@@ -20,9 +20,12 @@ export class Employees implements OnInit {
 
     filters: IEmployeeSearchFilter = {};
     employeeList:iEmployeeSearchResponse[] = [];
-
+    isLoading = false;
+    pageSize = 9;
+    totalRecords = 0;
+    viewMode: 'grid' | 'list' = 'grid';
     departments: IDepartment[] = [];
-
+    dropDownDepartments: { label: string; value: string }[] = [];
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -48,14 +51,18 @@ export class Employees implements OnInit {
         });
 
         // ✅ Load departments for dropdown
-        this._departmentService.getDepartments().subscribe((departments) => {
-            this.departments = departments;
-        });
+        if (this._departmentService.hasCachedDepartments()) {
+            this.departments = this._departmentService.getCachedDepartments();
+        } else {
+            // Load from API if no cache
+            this.loadDepartments();
+        }
     }
 
     onSearch(): void {
         const queryParams: Record<string, string> = {};
         Object.entries(this.filters).forEach(([key, value]) => {
+            console.log('Filter value:', key, value);
         if (value && value.trim() !== '') {
             queryParams[key] = value.trim();
         }
@@ -93,8 +100,42 @@ export class Employees implements OnInit {
             }
         });
     }
+    onClearFilters(): void {
+        this.filters = {
+        name: '',
+        position: '',
+        department: ''
+        };
+        this.employeeList = [];
+    }
+
+  onPageChange(event: any): void {
+    // Handle pagination
+    console.log('Page changed:', event);
+  }
 
     show(severity: string='info', summary: string='Info', detail: string='Message Content'): void {
         this._messageService.add({ severity, summary, detail, life: 3000 });
+    }
+
+    loadDepartments(): void {
+        this._departmentService.getDepartments().subscribe({
+            next: (res) => {
+                if (res.status === 200 && res.data) {
+                    this._departmentService.setDepartments(res.data);
+
+                    this.departments = this._departmentService.getCachedDepartments();
+                    this.dropDownDepartments = this.departments.map(dept => ({
+                        label: dept.name,
+                        value: dept.name
+                    }));
+                } else {
+                    this.show('error', 'Error', res.cMessage || 'Failed to load departments');
+                }
+            },
+            error: (err) => {
+                this.show('error', 'Error', err?.error?.cMessage || 'An error occurred while loading departments');
+            }
+        });
     }
 }
