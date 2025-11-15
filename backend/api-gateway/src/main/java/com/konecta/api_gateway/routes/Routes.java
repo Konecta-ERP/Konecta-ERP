@@ -44,6 +44,7 @@ public class Routes {
                 .route(path("/api/leaves/**"), http("lb://employee-service"))
                 .route(path("/api/offboarding/**"), http("lb://employee-service"))
                 .route(path("/api/performance/**"), http("lb://employee-service"))
+                .route(path("/api/leave-requests/**"), http("lb://employee-service"))
                 .build();
     }
 
