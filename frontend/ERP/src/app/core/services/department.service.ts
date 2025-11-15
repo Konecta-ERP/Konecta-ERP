@@ -39,4 +39,13 @@ export class DepartmentService {
     clearCache(): void {
         this.departmentsSubject.next([]);
     }
+
+    getDepartmentIdByName(name: string): number | null {
+        const departments = this.departmentsSubject.value;
+        const department = departments.find(dept => dept.name === name);
+        if (!department) {
+            return null;
+        }
+        return department.id
+    }
 }

@@ -21,8 +21,13 @@ export class EmployeeService {
             throw new Error('User not logged in or missing ID');
         }
 
-        const employeeId = user.id;
+        const employeeId = user.employeeId;
+        console.log("Requesting leave for employeeId:", employeeId, "with data:", data);
         return this._httpClient.post(`${baseURL}/employees/${employeeId}/leave-requests`, data);
+    }
+
+    updateLeaveRequest(leaveId:string, data: any): Observable<any> {
+        return this._httpClient.patch(`${baseURL}/leave-request/${leaveId}`, data);
     }
 
 
@@ -31,13 +36,32 @@ export class EmployeeService {
         if (!user || !user.id) {
             throw new Error('User not logged in or missing ID');
         }
-        const employeeId = user.id;
+        const employeeId = user.employeeId;
 
         return this._httpClient.get(`${baseURL}/employees/${employeeId}/leave-requests`);
     }
 
+    getEmployeeByUserId(userId:string):Observable<any>{
+        console.log("Fetching employee details for userId:", userId);
+        return this._httpClient.get(`${baseURL}/employees/by-user/${userId}`);
+    }
+
+    getLeaveRequestPerDepartment(id:Number):Observable<any>{
+        return this._httpClient.get(`${baseURL}/employees/department/requests`);
+    }
+
     deleteLeaveRequest(id:string):Observable<any>{
-        return this._httpClient.delete(`${baseURL}/leaves/request/${id}`);
+        return this._httpClient.delete(`${baseURL}/leave-requests/${id}`);
+    }
+
+    getLeaveBalance():Observable<any>{
+        const user = this._userService.getUser();
+        if (!user || !user.id) {
+            throw new Error('User not logged in or missing ID');
+        }
+        const employeeId = user.id;
+
+        return this._httpClient.get(`${baseURL}/employees/${employeeId}/leave-balance`);
     }
 
     getPerformanceReviews():Observable<any>{
@@ -45,7 +69,12 @@ export class EmployeeService {
     }
 
     getEmployeeGoals():Observable<any>{
-        return this._httpClient.get(`${baseURL}/employee-goals/employee/goals`);
+        const user = this._userService.getUser();
+        if (!user || !user.id) {
+            throw new Error('User not logged in or missing ID');
+        }
+        const employeeId = user.employeeId;
+        return this._httpClient.get(`${baseURL}/employees/${employeeId}/goals`);
     }
 
     searchEmployees(filters: IEmployeeSearchFilter): Observable<any> {
@@ -59,5 +88,6 @@ export class EmployeeService {
 
         return this._httpClient.get(url);
     }
+
 
 }

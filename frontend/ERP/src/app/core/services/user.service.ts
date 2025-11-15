@@ -20,9 +20,16 @@ export class UserService {
             ...user,
             profilePictureUrl: user.profilePictureUrl || 'placeholderProfile.png'
         });
+        localStorage.setItem('user', JSON.stringify(this.userSubject.value));
     }
 
     getUser(): User | null {
+        if (!this.userSubject.value) {
+            const userData = localStorage.getItem('user');
+            if (userData) {
+                this.userSubject.next(JSON.parse(userData));
+            }
+        }
         return this.userSubject.value;
     }
 
@@ -31,6 +38,7 @@ export class UserService {
     }
     logout():Boolean{
         localStorage.removeItem('token');
+        localStorage.removeItem('user');
         return true;
     }
 

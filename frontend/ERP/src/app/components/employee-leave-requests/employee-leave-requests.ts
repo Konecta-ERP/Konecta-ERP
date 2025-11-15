@@ -51,10 +51,9 @@ export class EmployeeLeaveRequests implements OnInit {
     ];
 
     requestTypes = [
-        { name: 'Annual Leave', value: 'ANNUAL' },
+        { name: 'holidays', value: 'VACATION' },
         { name: 'Sick Leave', value: 'SICK' },
-        { name: 'Personal Leave', value: 'PERSONAL' },
-        { name: 'Emergency Leave', value: 'EMERGENCY' }
+        { name: 'unpaid', value: 'UNPAID' }
     ];
 
     ngOnInit() {
@@ -98,6 +97,7 @@ export class EmployeeLeaveRequests implements OnInit {
     }
 
     deleteRequestAPI(request: ILeaveRequestResponse) {
+        console.log(request);
         this._NgxSpinnerService.show();
         this._employeeService.deleteLeaveRequest(request.id).subscribe({
             next: (res) => {
@@ -178,7 +178,7 @@ export class EmployeeLeaveRequests implements OnInit {
                 startDate: periodValue[0],
                 endDate: periodValue[1],
                 reason: this.reason.value,
-                requestType: this.requestType.value
+                requestType: this.requestType.value.value
             };
 
             this.requestLeaveAPI(data);
@@ -196,7 +196,7 @@ export class EmployeeLeaveRequests implements OnInit {
         .subscribe({
             next: (res) => {
                 this._NgxSpinnerService.hide();
-                if (res.status === 200) {
+                if (res.status === 201) {
                     this.show('success', 'Success', res.cMessage || 'Leave request submitted successfully');
                     this.hideDialog();
                     this.loadLeaveRequests();
