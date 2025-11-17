@@ -1,0 +1,638 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: microservices
+
+---
+
+# Shared Network is default within the namespace; no explicit network is needed.
+
+# PersistentVolumeClaims for databases
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: identity-data-pvc
+  namespace: microservices
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: employee-data-pvc
+  namespace: microservices
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: recruitment-data-pvc
+  namespace: microservices
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: finance-data-pvc
+  namespace: microservices
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+
+# Discovery Server Deployment and Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: discovery-server
+  namespace: microservices
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: discovery-server
+  template:
+    metadata:
+      labels:
+        app: discovery-server
+    spec:
+      containers:
+        - name: discovery-server
+          image: docker.io/library/backend-discovery-server:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8761
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8761
+            initialDelaySeconds: 40
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: discovery-server
+  namespace: microservices
+spec:
+  selector:
+    app: discovery-server
+  ports:
+    - protocol: TCP
+      port: 8761
+      targetPort: 8761
+  type: ClusterIP
+
+---
+
+# API Gateway Deployment and Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  namespace: microservices
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+    spec:
+      containers:
+        - name: api-gateway
+          image: docker.io/library/backend-api-gateway:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: EUREKA_SERVER
+              value: http://discovery-server.microservices.svc.cluster.local:8761/eureka/
+            - name: CORS_ALLOWED_ORIGINS
+              value: "*"
+            - name: CORS_ALLOW_CREDENTIALS
+              value: "false"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway
+  namespace: microservices
+spec:
+  selector:
+    app: api-gateway
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+
+---
+
+# Identity DB Deployment and Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: identity-db
+  namespace: microservices
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: identity-db
+  template:
+    metadata:
+      labels:
+        app: identity-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:17
+          env:
+            - name: POSTGRES_DB
+              value: identity_db
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: postgres
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: identity-data
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "postgres", "-d", "identity_db"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+      volumes:
+        - name: identity-data
+          persistentVolumeClaim:
+            claimName: identity-data-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: identity-db
+  namespace: microservices
+spec:
+  selector:
+    app: identity-db
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP
+
+---
+
+# Identity Service Deployment and Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: identity-service
+  namespace: microservices
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: identity-service
+  template:
+    metadata:
+      labels:
+        app: identity-service
+    spec:
+      containers:
+        - name: identity-service
+          image: docker.io/library/backend-identity-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_URL
+              value: jdbc:postgresql://identity-db.microservices.svc.cluster.local:5432/identity_db
+            - name: DB_USERNAME
+              value: postgres
+            - name: DB_PASSWORD
+              value: postgres
+            - name: EUREKA_SERVER
+              value: http://discovery-server.microservices.svc.cluster.local:8761/eureka/
+          readinessProbe:
+            httpGet:
+              path: /api/identity/auth/.well-known/jwks.json
+              port: 8080
+            initialDelaySeconds: 90
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: identity-service
+  namespace: microservices
+spec:
+  selector:
+    app: identity-service
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+
+---
+
+# Employee DB Deployment and Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: employee-db
+  namespace: microservices
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: employee-db
+  template:
+    metadata:
+      labels:
+        app: employee-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:17
+          env:
+            - name: POSTGRES_DB
+              value: employee_db
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: postgres
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: employee-data
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "postgres", "-d", "employee_db"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+      volumes:
+        - name: employee-data
+          persistentVolumeClaim:
+            claimName: employee-data-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: employee-db
+  namespace: microservices
+spec:
+  selector:
+    app: employee-db
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP
+
+---
+
+# Employee Service Deployment and Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: employee-service
+  namespace: microservices
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: employee-service
+  template:
+    metadata:
+      labels:
+        app: employee-service
+    spec:
+      containers:
+        - name: employee-service
+          image: docker.io/library/backend-employee-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_URL
+              value: jdbc:postgresql://employee-db.microservices.svc.cluster.local:5432/employee_db
+            - name: DB_USERNAME
+              value: postgres
+            - name: DB_PASSWORD
+              value: postgres
+            - name: EUREKA_SERVER
+              value: http://discovery-server.microservices.svc.cluster.local:8761/eureka/
+            - name: JWT_JWK_URI
+              value: http://identity-service.microservices.svc.cluster.local:8080/api/identity/auth/.well-known/jwks.json
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 90
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: employee-service
+  namespace: microservices
+spec:
+  selector:
+    app: employee-service
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+
+---
+
+# Recruitment DB Deployment and Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recruitment-db
+  namespace: microservices
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: recruitment-db
+  template:
+    metadata:
+      labels:
+        app: recruitment-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:17
+          env:
+            - name: POSTGRES_DB
+              value: recruitment_db
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: postgres
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: recruitment-data
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "postgres", "-d", "recruitment_db"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+      volumes:
+        - name: recruitment-data
+          persistentVolumeClaim:
+            claimName: recruitment-data-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: recruitment-db
+  namespace: microservices
+spec:
+  selector:
+    app: recruitment-db
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP
+
+---
+
+# Recruitment Service Deployment and Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recruitment-service
+  namespace: microservices
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: recruitment-service
+  template:
+    metadata:
+      labels:
+        app: recruitment-service
+    spec:
+      containers:
+        - name: recruitment-service
+          image: docker.io/library/backend-recruitment-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_URL
+              value: jdbc:postgresql://recruitment-db.microservices.svc.cluster.local:5432/recruitment_db
+            - name: DB_USERNAME
+              value: postgres
+            - name: DB_PASSWORD
+              value: postgres
+            - name: EUREKA_SERVER
+              value: http://discovery-server.microservices.svc.cluster.local:8761/eureka/
+            - name: JWT_JWK_URI
+              value: http://identity-service.microservices.svc.cluster.local:8080/api/identity/auth/.well-known/jwks.json
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 90
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: recruitment-service
+  namespace: microservices
+spec:
+  selector:
+    app: recruitment-service
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+
+---
+
+# Finance DB Deployment and Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: finance-db
+  namespace: microservices
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: finance-db
+  template:
+    metadata:
+      labels:
+        app: finance-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:17
+          env:
+            - name: POSTGRES_DB
+              value: finance_db
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: postgres
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: finance-data
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "postgres", "-d", "finance_db"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+      volumes:
+        - name: finance-data
+          persistentVolumeClaim:
+            claimName: finance-data-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: finance-db
+  namespace: microservices
+spec:
+  selector:
+    app: finance-db
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP
+
+---
+
+# Finance Service Deployment and Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: finance-service
+  namespace: microservices
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: finance-service
+  template:
+    metadata:
+      labels:
+        app: finance-service
+    spec:
+      containers:
+        - name: finance-service
+          image: docker.io/library/backend-finance-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_URL
+              value: jdbc:postgresql://finance-db.microservices.svc.cluster.local:5432/finance_db
+            - name: DB_USERNAME
+              value: postgres
+            - name: DB_PASSWORD
+              value: postgres
+            - name: EUREKA_SERVER
+              value: http://discovery-server.microservices.svc.cluster.local:8761/eureka/
+            - name: JWT_JWK_URI
+              value: http://identity-service.microservices.svc.cluster.local:8080/api/identity/auth/.well-known/jwks.json
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 90
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: finance-service
+  namespace: microservices
+spec:
+  selector:
+    app: finance-service
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
