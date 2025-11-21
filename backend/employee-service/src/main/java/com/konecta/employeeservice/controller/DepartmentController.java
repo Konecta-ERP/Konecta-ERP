@@ -26,7 +26,7 @@ import com.konecta.employeeservice.service.DepartmentService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/departments")
+@RequestMapping("/api/departments")
 public class DepartmentController {
 
   private final DepartmentService departmentService;
