@@ -24,6 +24,19 @@ public class DepartmentController {
     this.departmentService = departmentService;
   }
 
+  @GetMapping("/{id}/leave-requests/next-month")
+  @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('ADMIN')")
+  public ResponseEntity<ApiResponse<List<EmployeeLeavesDto>>> getDepartmentLeavesNextMonth(
+      @PathVariable(name = "id") Integer id) {
+    List<EmployeeLeavesDto> result = departmentService.getEmployeesLeavesForNextMonth(id);
+    ApiResponse<List<EmployeeLeavesDto>> response = ApiResponse.success(
+        result,
+        HttpStatus.OK.value(),
+        "Department leave requests retrieved.",
+        "Retrieved " + result.size() + " employees with next-month leave requests for department " + id);
+    return ResponseEntity.ok(response);
+  }
+
   @PostMapping
   @PreAuthorize("hasAuthority('ADMIN')")
   public ResponseEntity<ApiResponse<DepartmentDto>> createDepartment(@RequestBody CreateOrUpdateDepartmentDto dto) {
