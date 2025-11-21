@@ -22,6 +22,7 @@ import java.util.UUID;
 
 import com.konecta.employeeservice.dto.response.ApiResponse;
 import com.konecta.employeeservice.service.DepartmentService;
+import com.konecta.employeeservice.service.EmployeeService;
 
 import java.util.List;
 
@@ -30,11 +31,11 @@ import java.util.List;
 public class DepartmentController {
 
   private final DepartmentService departmentService;
-  private final com.konecta.employeeservice.service.EmployeeService employeeService;
+  private final EmployeeService employeeService;
 
   @Autowired
   public DepartmentController(DepartmentService departmentService,
-      com.konecta.employeeservice.service.EmployeeService employeeService) {
+      EmployeeService employeeService) {
     this.departmentService = departmentService;
     this.employeeService = employeeService;
   }

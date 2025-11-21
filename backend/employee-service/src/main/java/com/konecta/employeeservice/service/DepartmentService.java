@@ -110,7 +110,7 @@ public class DepartmentService {
     return dto;
   }
 
-  public java.util.List<EmployeeLeavesDto> getEmployeesLeavesForNextMonth(Integer departmentId) {
+  public List<EmployeeLeavesDto> getEmployeesLeavesForNextMonth(Integer departmentId) {
     if (!departmentRepository.existsById(departmentId)) {
       throw new EntityNotFoundException("Department not found with id: " + departmentId);
     }
@@ -119,12 +119,12 @@ public class DepartmentService {
     java.time.LocalDate start = nextMonth.atDay(1);
     java.time.LocalDate end = nextMonth.atEndOfMonth();
 
-    java.util.List<Employee> employees = employeeRepository.findByDepartmentId(departmentId);
+    List<Employee> employees = employeeRepository.findByDepartmentId(departmentId);
 
-    java.util.List<EmployeeLeavesDto> result = new java.util.ArrayList<>();
+    List<EmployeeLeavesDto> result = new ArrayList<>();
     for (Employee e : employees) {
       EmployeeDetailsDto empDto = employeeService.getEmployeeDetailsById(e.getId());
-      java.util.List<LeaveRequestDto> leaves = leaveService.getRequestsForEmployeeInRange(e.getId(), start, end);
+      List<LeaveRequestDto> leaves = leaveService.getRequestsForEmployeeInRange(e.getId(), start, end);
       EmployeeLeavesDto el = new EmployeeLeavesDto();
       el.setEmployee(empDto);
       el.setLeaveRequests(leaves);

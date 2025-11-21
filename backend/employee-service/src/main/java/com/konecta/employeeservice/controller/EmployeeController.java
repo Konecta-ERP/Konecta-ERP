@@ -11,6 +11,8 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import java.util.Objects;
+import java.util.UUID;
+
 import org.springframework.web.bind.annotation.*;
 
 import com.konecta.employeeservice.dto.CreateEmployeeRequestDto;
@@ -75,7 +77,7 @@ public class EmployeeController {
   @GetMapping("/by-user/{userId}")
   @PreAuthorize("isAuthenticated()")
   public ResponseEntity<ApiResponse<EmployeeDetailsDto>> getEmployeeByUserId(
-      @PathVariable("userId") java.util.UUID userId,
+      @PathVariable("userId") UUID userId,
       Authentication authentication) {
     // Only the user themself may call this endpoint
     String jwtUserId = null;

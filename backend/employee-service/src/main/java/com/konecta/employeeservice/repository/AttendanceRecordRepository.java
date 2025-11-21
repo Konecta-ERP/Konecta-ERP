@@ -25,7 +25,7 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
      */
     boolean existsByEmployeeIdAndDate(Integer employeeId, LocalDate date);
 
-    List<com.konecta.employeeservice.entity.AttendanceRecord> findByEmployeeIdAndDateBetween(
+    List<AttendanceRecord> findByEmployeeIdAndDateBetween(
             Integer employeeId,
             LocalDate start,
             LocalDate end);
@@ -34,6 +34,6 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
      * Find the most recent attendance record for an employee (by date then clock-in
      * time).
      */
-    java.util.Optional<com.konecta.employeeservice.entity.AttendanceRecord> findTopByEmployeeIdOrderByDateDescClockInTimeDesc(
+    Optional<AttendanceRecord> findTopByEmployeeIdOrderByDateDescClockInTimeDesc(
             Integer employeeId);
 }
