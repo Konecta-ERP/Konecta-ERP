@@ -63,6 +63,16 @@ public class AttendanceService {
     return convertToDto(savedRecord);
   }
 
+  public AttendanceRecordDto getLatestAttendanceRecord(Integer employeeId) {
+    employeeRepository.findById(employeeId)
+        .orElseThrow(() -> new EntityNotFoundException("Employee not found with id: " + employeeId));
+
+    java.util.Optional<AttendanceRecord> opt = attendanceRepository
+        .findTopByEmployeeIdOrderByDateDescClockInTimeDesc(employeeId);
+
+    return opt.map(this::convertToDto).orElse(null);
+  }
+
   // --- DTO Converter ---
   private AttendanceRecordDto convertToDto(AttendanceRecord record) {
     AttendanceRecordDto dto = new AttendanceRecordDto();
