@@ -8,20 +8,35 @@ import org.springframework.web.bind.annotation.*;
 
 import com.konecta.employeeservice.dto.CreateOrUpdateDepartmentDto;
 import com.konecta.employeeservice.dto.DepartmentDto;
+import com.konecta.employeeservice.dto.EmployeeLeavesDto;
+import com.konecta.employeeservice.dto.EmployeeDetailsDto;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.access.AccessDeniedException;
+import jakarta.persistence.EntityNotFoundException;
+import java.util.NoSuchElementException;
+import org.springframework.dao.EmptyResultDataAccessException;
+import java.util.Objects;
+import java.util.UUID;
+
 import com.konecta.employeeservice.dto.response.ApiResponse;
 import com.konecta.employeeservice.service.DepartmentService;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/departments")
+@RequestMapping("/departments")
 public class DepartmentController {
 
   private final DepartmentService departmentService;
+  private final com.konecta.employeeservice.service.EmployeeService employeeService;
 
   @Autowired
-  public DepartmentController(DepartmentService departmentService) {
+  public DepartmentController(DepartmentService departmentService,
+      com.konecta.employeeservice.service.EmployeeService employeeService) {
     this.departmentService = departmentService;
+    this.employeeService = employeeService;
   }
 
   @GetMapping("/{id}/leave-requests/next-month")
@@ -34,6 +49,39 @@ public class DepartmentController {
         HttpStatus.OK.value(),
         "Department leave requests retrieved.",
         "Retrieved " + result.size() + " employees with next-month leave requests for department " + id);
+    return ResponseEntity.ok(response);
+  }
+
+  @GetMapping("/{id}/employees")
+  @PreAuthorize("isAuthenticated()")
+  public ResponseEntity<ApiResponse<List<EmployeeDetailsDto>>> getEmployeesInDepartment(
+      @PathVariable(name = "id") Integer id,
+      Authentication authentication) {
+    // Ensure the caller is in the same department as requested
+    String jwtUserId = null;
+    if (authentication instanceof JwtAuthenticationToken) {
+      jwtUserId = ((JwtAuthenticationToken) authentication).getToken().getClaimAsString("userId");
+    } else if (authentication.getPrincipal() instanceof Jwt) {
+      jwtUserId = ((Jwt) authentication.getPrincipal()).getClaimAsString("userId");
+    }
+
+    try {
+      UUID uid = UUID.fromString(jwtUserId);
+      Integer requesterDepartmentId = employeeService.getDepartmentIdForUser(uid);
+      if (Objects.isNull(requesterDepartmentId) || !Objects.equals(requesterDepartmentId, id)) {
+        throw new AccessDeniedException("Access denied: must be an employee in the requested department");
+      }
+    } catch (EntityNotFoundException | NoSuchElementException | EmptyResultDataAccessException
+        | IllegalArgumentException ex) {
+      throw new AccessDeniedException("Access denied: must be an employee in the requested department");
+    }
+
+    List<EmployeeDetailsDto> employees = departmentService.getEmployeesInDepartment(id);
+    ApiResponse<List<EmployeeDetailsDto>> response = ApiResponse.success(
+        employees,
+        HttpStatus.OK.value(),
+        "Employees retrieved.",
+        "Retrieved " + employees.size() + " employees for department " + id);
     return ResponseEntity.ok(response);
   }
 

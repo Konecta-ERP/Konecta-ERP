@@ -15,6 +15,7 @@ import com.konecta.employeeservice.dto.EmployeeLeavesDto;
 import com.konecta.employeeservice.dto.EmployeeDetailsDto;
 import com.konecta.employeeservice.dto.LeaveRequestDto;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -130,6 +131,19 @@ public class DepartmentService {
       result.add(el);
     }
 
+    return result;
+  }
+
+  public List<EmployeeDetailsDto> getEmployeesInDepartment(Integer departmentId) {
+    if (!departmentRepository.existsById(departmentId)) {
+      throw new EntityNotFoundException("Department not found with id: " + departmentId);
+    }
+
+    List<Employee> employees = employeeRepository.findByDepartmentId(departmentId);
+    List<EmployeeDetailsDto> result = new ArrayList<>();
+    for (Employee e : employees) {
+      result.add(employeeService.getEmployeeDetailsById(e.getId()));
+    }
     return result;
   }
 }

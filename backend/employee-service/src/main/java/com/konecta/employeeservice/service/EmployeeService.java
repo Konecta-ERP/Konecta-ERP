@@ -3,6 +3,7 @@ package com.konecta.employeeservice.service;
 import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +61,12 @@ public class EmployeeService {
     Employee employee = employeeRepository.findByUserId(userId)
         .orElseThrow(() -> new EntityNotFoundException("Employee not found with userId: " + userId));
     return convertToDto(employee);
+  }
+
+  public Integer getDepartmentIdForUser(UUID userId) {
+    Employee employee = employeeRepository.findByUserId(userId)
+        .orElseThrow(() -> new EntityNotFoundException("Employee not found with userId: " + userId));
+    return employee.getDepartment() == null ? null : employee.getDepartment().getId();
   }
 
   @Transactional
