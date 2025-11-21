@@ -88,6 +88,35 @@ public class AttendanceController {
     return ResponseEntity.ok(response);
   }
 
+  @GetMapping("/api/employees/{id}/attendance/latest")
+  @PreAuthorize("isAuthenticated()")
+  public ResponseEntity<ApiResponse<AttendanceRecordDto>> getLatestAttendance(@PathVariable(name = "id") Integer id,
+      Authentication authentication) {
+    // Only the employee themselves may call this
+    String jwtUserId = extractUserIdClaim(authentication);
+    EmployeeDetailsDto emp;
+    try {
+      emp = employeeService.getEmployeeDetailsById(id);
+    } catch (EntityNotFoundException | NoSuchElementException | EmptyResultDataAccessException
+        | IllegalArgumentException ex) {
+      throw new AccessDeniedException("Access denied: can only view your own attendance record");
+    }
+
+    String employeeUserId = emp.getUserId() == null ? null : emp.getUserId().toString();
+    if (jwtUserId == null || !jwtUserId.equals(employeeUserId)) {
+      throw new AccessDeniedException("Access denied: can only view your own attendance record");
+    }
+
+    AttendanceRecordDto latest = attendanceService.getLatestAttendanceRecord(id);
+
+    ApiResponse<AttendanceRecordDto> response = ApiResponse.success(
+        latest,
+        HttpStatus.OK.value(),
+        latest == null ? "No attendance records." : "Latest attendance retrieved.",
+        "Latest attendance for employee " + id);
+    return ResponseEntity.ok(response);
+  }
+
   private String extractUserIdClaim(Authentication authentication) {
     if (authentication == null)
       return null;

@@ -2,7 +2,10 @@ package com.konecta.employeeservice.service;
 
 import jakarta.persistence.EntityNotFoundException;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,10 +59,16 @@ public class EmployeeService {
     return convertToDto(employee);
   }
 
-  public EmployeeDetailsDto getEmployeeDetailsByUserId(java.util.UUID userId) {
+  public EmployeeDetailsDto getEmployeeDetailsByUserId(UUID userId) {
     Employee employee = employeeRepository.findByUserId(userId)
         .orElseThrow(() -> new EntityNotFoundException("Employee not found with userId: " + userId));
     return convertToDto(employee);
+  }
+
+  public Integer getDepartmentIdForUser(UUID userId) {
+    Employee employee = employeeRepository.findByUserId(userId)
+        .orElseThrow(() -> new EntityNotFoundException("Employee not found with userId: " + userId));
+    return employee.getDepartment() == null ? null : employee.getDepartment().getId();
   }
 
   @Transactional
@@ -72,7 +81,7 @@ public class EmployeeService {
     String passwordToUse = dto.getPassword();
     String roleToUse = dto.getRole() != null && !dto.getRole().isBlank() ? dto.getRole() : "ASSOCIATE";
 
-    var createUserPayload = new java.util.HashMap<String, Object>();
+    var createUserPayload = new HashMap<String, Object>();
     createUserPayload.put("firstName", dto.getFirstName());
     createUserPayload.put("lastName", dto.getLastName());
     createUserPayload.put("email", dto.getEmail());
@@ -95,26 +104,26 @@ public class EmployeeService {
 
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
-    headers.setAccept(java.util.List.of(MediaType.APPLICATION_JSON));
+    headers.setAccept(List.of(MediaType.APPLICATION_JSON));
     if (bearerToken != null && !bearerToken.isBlank()) {
       headers.setBearerAuth(bearerToken);
     }
 
     // Prepare request entity
-    HttpEntity<java.util.Map<String, Object>> requestEntity = new HttpEntity<>(createUserPayload, headers);
-    java.util.UUID createdUserId;
+    HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(createUserPayload, headers);
+    UUID createdUserId;
     try {
       // Log the outgoing payload at DEBUG, masking the password
       if (logger.isDebugEnabled()) {
-        var masked = new java.util.HashMap<>(createUserPayload);
+        var masked = new HashMap<>(createUserPayload);
         if (masked.containsKey("password")) {
           masked.put("password", "[MASKED]");
         }
         logger.debug("POST {} -> payload: {}", identityUrl, masked);
       }
 
-      ResponseEntity<java.util.Map<String, Object>> resp = restTemplate.exchange(identityUrl, HttpMethod.POST,
-          requestEntity, new ParameterizedTypeReference<java.util.Map<String, Object>>() {
+      ResponseEntity<Map<String, Object>> resp = restTemplate.exchange(identityUrl, HttpMethod.POST,
+          requestEntity, new ParameterizedTypeReference<Map<String, Object>>() {
           });
 
       if (logger.isDebugEnabled()) {
@@ -129,14 +138,14 @@ public class EmployeeService {
       }
 
       @SuppressWarnings("unchecked")
-      java.util.Map<String, Object> identityResponse = (java.util.Map<String, Object>) resp.getBody();
+      Map<String, Object> identityResponse = (Map<String, Object>) resp.getBody();
 
       if (identityResponse == null) {
         throw new IllegalStateException("Identity service returned empty body (raw response: " + resp + ")");
       }
 
       Object dataObj = identityResponse.get("data");
-      if (!(dataObj instanceof java.util.Map)) {
+      if (!(dataObj instanceof Map)) {
         // Try some common alternative shapes and include the raw response for debugging
         String raw = identityResponse.toString();
         throw new IllegalStateException(
@@ -144,12 +153,12 @@ public class EmployeeService {
       }
 
       @SuppressWarnings("unchecked")
-      java.util.Map<String, Object> data = (java.util.Map<String, Object>) dataObj;
+      Map<String, Object> data = (Map<String, Object>) dataObj;
       Object idObj = data.get("id");
       if (idObj == null) {
         throw new IllegalStateException("Identity service did not return created user id; response data: " + data);
       }
-      createdUserId = java.util.UUID.fromString(idObj.toString());
+      createdUserId = UUID.fromString(idObj.toString());
     } catch (HttpClientErrorException e) {
       throw new IllegalStateException(
           "Identity service error: " + e.getStatusCode() + " " + e.getResponseBodyAsString(), e);
@@ -279,17 +288,17 @@ public class EmployeeService {
     }
 
     HttpHeaders headers = new HttpHeaders();
-    headers.setAccept(java.util.List.of(MediaType.APPLICATION_JSON));
+    headers.setAccept(List.of(MediaType.APPLICATION_JSON));
     if (bearerToken != null && !bearerToken.isBlank()) {
       headers.setBearerAuth(bearerToken);
     }
 
     HttpEntity<Void> entity = new HttpEntity<>(headers);
 
-    java.util.Map<String, Object> body = null;
+    Map<String, Object> body = null;
     try {
-      ResponseEntity<java.util.Map<String, Object>> resp = restTemplate.exchange(identityUrl, HttpMethod.GET,
-          entity, new org.springframework.core.ParameterizedTypeReference<java.util.Map<String, Object>>() {
+      ResponseEntity<Map<String, Object>> resp = restTemplate.exchange(identityUrl, HttpMethod.GET,
+          entity, new org.springframework.core.ParameterizedTypeReference<Map<String, Object>>() {
           });
 
       if (resp == null || !resp.getStatusCode().is2xxSuccessful()) {
@@ -319,7 +328,7 @@ public class EmployeeService {
     }
 
     Object dataObj = body.get("data");
-    if (!(dataObj instanceof java.util.Map)) {
+    if (!(dataObj instanceof Map)) {
       if (logger.isDebugEnabled()) {
         logger.debug("Unexpected identity response shape for userId={}: {}", dto.getUserId(), body);
       }
@@ -327,7 +336,7 @@ public class EmployeeService {
     }
 
     @SuppressWarnings("unchecked")
-    java.util.Map<String, Object> data = (java.util.Map<String, Object>) dataObj;
+    Map<String, Object> data = (Map<String, Object>) dataObj;
 
     // Map known fields
     Object email = data.get("email");
