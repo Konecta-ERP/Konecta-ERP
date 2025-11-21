@@ -1,6 +1,13 @@
 import { HttpInterceptorFn } from '@angular/common/http';
-import { inject } from '@angular/core';
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
+
+    if (req.url.includes('/identity/auth/login')) {
+        return next(req);
+    }
+
+
+
+
   const token = localStorage.getItem('token');
 
   // Clone request and add authorization header if token exists

@@ -75,6 +75,7 @@ export class Login {
 
     loginAPI(data: ILogin): void {
     this._NgxSpinnerService.show();
+    console.log('Attempting login with data:', data);
 
     this._userService.login(data).subscribe({
         next: (res) => {
@@ -99,7 +100,7 @@ export class Login {
         },
         error: (err) => {
             this._NgxSpinnerService.hide();
-
+            console.log('Login failed (HTTP error):', err);
             const errorMessage = err.error?.cMessage || err.error?.sMessage || 'An unexpected server error occurred';
             this.show('error', 'Error', errorMessage);
         }

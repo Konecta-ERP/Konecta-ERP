@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FullCalendarModule } from '@fullcalendar/angular';
 import { FullCalendarPlugins } from './../../../../shared/functions/fullcalendar-plugins';
 import { SharedModule } from '../../../../shared/module/shared/shared-module';
@@ -13,7 +13,7 @@ import { ILeaveRequestResponse } from '../../../../core/interfaces/iLeaveRequest
   templateUrl: './my-team.html',
   styleUrl: './my-team.css',
 })
-export class MyTeam {
+export class MyTeam implements OnInit {
 
     constructor(
         private _messageService: MessageService,
@@ -24,12 +24,19 @@ export class MyTeam {
         this.loadLeaveRequests();
     }
     leaveRequests: ILeaveRequestResponse[] = [];
-    leaveCounts: Record<string, number> = {
-        '2025-11-01': 3,
-        '2025-11-02': 1,
-        '2025-11-03': 5,
-        '2025-11-04': 0
-    };
+    leaveCounts: Record<string, number> = {};
+
+    ngOnInit(): void {
+        this.loadLeaveRequests();
+        this.leaveCounts = this.leaveRequests.reduce((acc: Record<string, number>, request) => {
+            for (let d = new Date(request.startDate); d <= new Date(request.endDate); d.setDate(d.getDate() + 1)) {
+                const dateStr = d.toISOString().split('T')[0];
+                acc[dateStr] = (acc[dateStr] || 0) + 1;
+            }
+            return acc;
+        }, {});
+
+    }
 
     calendarOptions = {
         plugins: FullCalendarPlugins,
