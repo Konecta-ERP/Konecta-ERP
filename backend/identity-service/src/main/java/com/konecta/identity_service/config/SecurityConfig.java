@@ -43,7 +43,12 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/identity/auth/**").permitAll()
+                        .requestMatchers(
+                                "/api/identity/auth/login",
+                                "/api/identity/auth/.well-known/jwks.json",
+                                "/api/identity/forgot-password",
+                                "/api/identity/verify-otp"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
@@ -85,14 +90,21 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        JwtGrantedAuthoritiesConverter rolesConverter = new JwtGrantedAuthoritiesConverter();
+        rolesConverter.setAuthoritiesClaimName("roles");
+        rolesConverter.setAuthorityPrefix("");
 
-        grantedAuthoritiesConverter.setAuthoritiesClaimName("roles");
-
-        grantedAuthoritiesConverter.setAuthorityPrefix("");
+        JwtGrantedAuthoritiesConverter scopeConverter = new JwtGrantedAuthoritiesConverter();
+        scopeConverter.setAuthoritiesClaimName("scope");
+        scopeConverter.setAuthorityPrefix("SCOPE_");
 
         JwtAuthenticationConverter jwtConverter = new JwtAuthenticationConverter();
-        jwtConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+        jwtConverter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            var roles = rolesConverter.convert(jwt);
+            var scopes = scopeConverter.convert(jwt);
+            roles.addAll(scopes);
+            return roles;
+        });
 
         return jwtConverter;
     }

@@ -3,7 +3,7 @@ package com.konecta.identity_service.controller;
 import com.konecta.identity_service.dto.response.ApiResponse;
 import com.konecta.identity_service.dto.request.LoginRequest;
 import com.konecta.identity_service.dto.response.LoginResponse;
-import com.konecta.identity_service.service.AuthService; // Import interface
+import com.konecta.identity_service.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,4 +36,5 @@ public class AuthController {
         Map<String, Object> response = authService.getPublicKey();
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
 }

@@ -1,8 +1,6 @@
 package com.konecta.identity_service.service;
 
-import com.konecta.identity_service.dto.request.ChangePasswordRequest;
-import com.konecta.identity_service.dto.request.CreateUserRequest;
-import com.konecta.identity_service.dto.request.UpdateUserRequest;
+import com.konecta.identity_service.dto.request.*;
 import com.konecta.identity_service.dto.response.UserResponse;
 import com.konecta.identity_service.entity.Role;
 
@@ -21,4 +19,7 @@ public interface UserService {
     UserResponse activateUserById(UUID id);
     UserResponse deactivateUserById(UUID id);
     void updatePassword(UUID id, ChangePasswordRequest request);
+    void generateOtp(ForgetPasswordRequest request );
+    String getPasswordResetToken(VerifyOtpRequest request);
+    void resetPassword(String email, String newPassword);
 }
