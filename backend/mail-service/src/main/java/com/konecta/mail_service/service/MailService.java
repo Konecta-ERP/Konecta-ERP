@@ -14,7 +14,9 @@ public class MailService {
     public MailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
     }
-
+    // Password Reset OTP
+    // <p>Your One-Time Password (OTP) is: <strong>${otp}</strong></p>
+    // <p>This OTP will expire <strong>${duration}</strong> minutes from the time this email was sent.</p>
     public void sendEmail(EmailRequest request) throws MessagingException {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);

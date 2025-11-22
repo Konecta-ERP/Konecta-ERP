@@ -9,6 +9,8 @@ import com.konecta.identity_service.exception.InvalidRequestException;
 import com.konecta.identity_service.exception.ResourceNotFoundException;
 import com.konecta.identity_service.mapper.UserMapper;
 import com.konecta.identity_service.repository.UserRepository;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,16 +29,22 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final StringRedisTemplate redisTemplate;
+    private final RabbitTemplate rabbitTemplate;
     private static final SecureRandom secureRandom = new SecureRandom();
     private static final int OTP_LENGTH = 6;
+    @Value("${app.rabbitmq.otp-exchange}")
+    private String otpExchange;
+    @Value("${app.rabbitmq.otp-routing-key}")
+    private String otpRoutingKey;
 
 
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder, JwtService jwtService, StringRedisTemplate redisTemplate) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder, JwtService jwtService, StringRedisTemplate redisTemplate, RabbitTemplate rabbitTemplate) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.redisTemplate = redisTemplate;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     @Override
@@ -188,7 +196,13 @@ public class UserServiceImpl implements UserService {
         String otp = String.format("%06d", secureRandom.nextInt((int) Math.pow(10, OTP_LENGTH)));
         redisTemplate.opsForValue().set("otp:" + request.getEmail(), otp, Duration.ofMinutes(5));
 
-        // TODO: Call MailService here
+        EmailRequest emailRequest = EmailRequest.builder()
+                .recipient(request.getEmail())
+                .subject("Konecta Password Reset OTP")
+                .content("Your OTP for password reset is: " + otp)
+                .build();
+
+        rabbitTemplate.convertAndSend(otpExchange, otpRoutingKey, emailRequest);
         System.out.println("DEBUG: OTP for " + request.getEmail() + " is " + otp);
     }
 
