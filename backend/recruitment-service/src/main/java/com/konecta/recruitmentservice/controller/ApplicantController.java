@@ -28,7 +28,7 @@ public class ApplicantController {
   }
 
   @GetMapping("/api/applicants/{applicantId}")
-  @PreAuthorize("hasAuthority('ASSOCIATE') or hasAuthority('MANAGER') or hasAuthority('ADMIN')")
+  @PreAuthorize("hasAuthority('HR_ASSOCIATE') or hasAuthority('HR_MANAGER') or hasAuthority('HR_ADMIN')")
   public ResponseEntity<ApiResponse<ApplicantDto>> getApplicant(
       @PathVariable Integer applicantId) {
 
@@ -42,7 +42,7 @@ public class ApplicantController {
   }
 
   @PatchMapping("/api/applicants/{applicantId}/status")
-  @PreAuthorize("hasAuthority('MANAGER')")
+  @PreAuthorize("hasAuthority('HR_MANAGER')")
   public ResponseEntity<ApiResponse<ApplicantDto>> updateApplicantStatus(
       @PathVariable Integer applicantId,
       @Valid @RequestBody UpdateApplicantStatusDto dto) {

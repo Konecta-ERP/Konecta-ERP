@@ -31,7 +31,7 @@ public class AttendanceController {
   }
 
   @PostMapping("/api/employees/{id}/clock-in")
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("hasAuthority('EMP')")
   public ResponseEntity<ApiResponse<AttendanceRecordDto>> clockIn(@PathVariable(name = "id") Integer id,
       Authentication authentication) {
     // Only allow the employee themselves to clock in
@@ -60,7 +60,7 @@ public class AttendanceController {
   }
 
   @PostMapping("/api/employees/{id}/clock-out")
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("hasAuthority('EMP')")
   public ResponseEntity<ApiResponse<AttendanceRecordDto>> clockOut(@PathVariable(name = "id") Integer id,
       Authentication authentication) {
     // Only allow the employee themselves to clock out
@@ -89,7 +89,7 @@ public class AttendanceController {
   }
 
   @GetMapping("/api/employees/{id}/attendance/latest")
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("hasAuthority('EMP')")
   public ResponseEntity<ApiResponse<AttendanceRecordDto>> getLatestAttendance(@PathVariable(name = "id") Integer id,
       Authentication authentication) {
     // Only the employee themselves may call this
