@@ -32,6 +32,7 @@ public class UserServiceImpl implements UserService {
     private final RabbitTemplate rabbitTemplate;
     private static final SecureRandom secureRandom = new SecureRandom();
     private static final int OTP_LENGTH = 6;
+    private static final int OTP_DURATION = 15;
     @Value("${app.rabbitmq.otp-exchange}")
     private String otpExchange;
     @Value("${app.rabbitmq.otp-routing-key}")
@@ -186,7 +187,6 @@ public class UserServiceImpl implements UserService {
         return userMapper.toUserResponse(updatedUser);
     }
 
-
     @Override
     public void generateOtp(ForgetPasswordRequest request) {
         userRepository.findByEmail(request.getEmail())
@@ -194,12 +194,15 @@ public class UserServiceImpl implements UserService {
                         "User not found."));
 
         String otp = String.format("%06d", secureRandom.nextInt((int) Math.pow(10, OTP_LENGTH)));
-        redisTemplate.opsForValue().set("otp:" + request.getEmail(), otp, Duration.ofMinutes(5));
+        redisTemplate.opsForValue().set("otp:" + request.getEmail(), otp, Duration.ofMinutes(15));
 
         EmailRequest emailRequest = EmailRequest.builder()
                 .recipient(request.getEmail())
                 .subject("Konecta Password Reset OTP")
-                .content("Your OTP for password reset is: " + otp)
+                .content("<p>Your request for a One-Time Password (OTP) has been processed. Please use the code below to reset your password:</p>\n" +
+                            "<div class=\"otp-block\">" + otp +"</div>\n" +
+                            "<p style=\"text-align: center;\">This OTP will expire in <span class=\"expiry-time\">"+
+                            OTP_DURATION  +"minutes</span>.</p>")
                 .build();
 
         rabbitTemplate.convertAndSend(otpExchange, otpRoutingKey, emailRequest);
