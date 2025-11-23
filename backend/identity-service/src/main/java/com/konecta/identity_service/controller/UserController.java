@@ -1,9 +1,6 @@
 package com.konecta.identity_service.controller;
 
-import com.konecta.identity_service.dto.request.AssignRoleRequest;
-import com.konecta.identity_service.dto.request.ChangePasswordRequest;
-import com.konecta.identity_service.dto.request.CreateUserRequest;
-import com.konecta.identity_service.dto.request.UpdateUserRequest;
+import com.konecta.identity_service.dto.request.*;
 import com.konecta.identity_service.dto.response.ApiResponse;
 import com.konecta.identity_service.dto.response.UserResponse;
 import com.konecta.identity_service.service.UserService;
@@ -11,9 +8,12 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -139,5 +139,33 @@ public class UserController {
         ApiResponse<?> response = ApiResponse.success(
                 200, "Password updated successfully.", "Password changed.");
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<String>> forgotPassword(@RequestBody @Valid ForgetPasswordRequest request) {
+        userService.generateOtp(request);
+        return ResponseEntity.ok(ApiResponse.success(null, 200,
+                "OTP sent via email",
+                "OTP sent to " + request.getEmail()));
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<ApiResponse<Map<String, String>>> verifyOtp(@RequestBody @Valid VerifyOtpRequest request) {
+        String resetToken = userService.getPasswordResetToken(request);
+        return ResponseEntity.ok(ApiResponse.success(Map.of("resetToken",resetToken), 200,
+                "OTP Verified",
+                "Token for reset provided"));
+    }
+
+    @PostMapping("/reset-password")
+    @PreAuthorize("hasAuthority('SCOPE_PWD_RESET')")
+    public ResponseEntity<ApiResponse<String>> resetPassword(
+            @RequestBody @Valid ResetPasswordRequest request,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        String email = jwt.getSubject();
+        userService.resetPassword(email, request.getNewPassword());
+
+        return ResponseEntity.ok(ApiResponse.success(null, 200, "Password successfully reset", null));
     }
 }
