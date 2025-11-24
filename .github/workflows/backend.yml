@@ -31,13 +31,21 @@ jobs:
           fi
           echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
           echo "Generated VERSION_TAG=$VERSION_TAG"
-      
-      - name: Debug OIDC claims
+      - name: Debug OIDC token claims
         run: |
-          TOKEN=$(curl -s \
+          echo "Requesting GitHub OIDC token..."
+          RAW_TOKEN=$(curl -s \
             -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
             "$ACTIONS_ID_TOKEN_REQUEST_URL")
-          echo "$TOKEN" | jq -r '.value' | jwt decode -
+
+          ID_TOKEN=$(echo "$RAW_TOKEN" | jq -r '.value')
+
+          echo "----- HEADER -----"
+          echo "$ID_TOKEN" | awk -F '.' '{print $1}' | base64 --decode 2>/dev/null | jq .
+
+          echo "----- PAYLOAD -----"
+          echo "$ID_TOKEN" | awk -F '.' '{print $2}' | base64 --decode 2>/dev/null | jq .
+          
       - name: OIDC Auth to Google Cloud
         uses: google-github-actions/auth@v2
         with:
