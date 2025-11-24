@@ -31,15 +31,21 @@ jobs:
           fi
           echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
           echo "Generated VERSION_TAG=$VERSION_TAG"
-          
-      - name: Build docker-compose images
-        run: docker compose -f backend/docker-compose.yml build
+      
+      - name: Debug OIDC claims
+        run: |
+          TOKEN=$(curl -s \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL")
+          echo "$TOKEN" | jq -r '.value' | jwt decode -
       - name: OIDC Auth to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
-
+            
+      - name: Build docker-compose images
+        run: docker compose -f backend/docker-compose.yml build
       - name: Setup gcloud
         uses: google-github-actions/setup-gcloud@v2
         with:
