@@ -34,13 +34,14 @@ import com.konecta.employeeservice.entity.Employee;
 import com.konecta.employeeservice.repository.DepartmentRepository;
 import com.konecta.employeeservice.repository.EmployeeRepository;
 import com.konecta.employeeservice.service.specification.EmployeeSpecification;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 public class EmployeeService {
   private static final Logger logger = LoggerFactory.getLogger(EmployeeService.class);
 
   private final EmployeeRepository employeeRepository;
-  private final org.springframework.web.client.RestTemplate restTemplate;
+  private final RestTemplate restTemplate;
   private final DepartmentRepository departmentRepository;
 
   @Autowired
@@ -74,19 +75,13 @@ public class EmployeeService {
   @Transactional
   public EmployeeDetailsDto createEmployee(CreateEmployeeRequestDto dto) {
     // Delegate user creation to Identity service
-    // Password is now mandatory; throw exception if missing or blank
-    if (dto.getPassword() == null || dto.getPassword().isBlank()) {
-      throw new IllegalArgumentException("Password is required when creating an employee.");
-    }
-    String passwordToUse = dto.getPassword();
-    String roleToUse = dto.getRole() != null && !dto.getRole().isBlank() ? dto.getRole() : "ASSOCIATE";
+    String roleToUse = dto.getRole() != null && !dto.getRole().isBlank() ? dto.getRole() : "HR_ASSOCIATE";
 
     var createUserPayload = new HashMap<String, Object>();
     createUserPayload.put("firstName", dto.getFirstName());
     createUserPayload.put("lastName", dto.getLastName());
     createUserPayload.put("email", dto.getEmail());
     createUserPayload.put("phone", dto.getPhoneNumber());
-    createUserPayload.put("password", passwordToUse);
     createUserPayload.put("role", roleToUse);
 
     // Identity returns ApiResponse<UserResponse>. We'll POST and extract data.id
@@ -113,15 +108,6 @@ public class EmployeeService {
     HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(createUserPayload, headers);
     UUID createdUserId;
     try {
-      // Log the outgoing payload at DEBUG, masking the password
-      if (logger.isDebugEnabled()) {
-        var masked = new HashMap<>(createUserPayload);
-        if (masked.containsKey("password")) {
-          masked.put("password", "[MASKED]");
-        }
-        logger.debug("POST {} -> payload: {}", identityUrl, masked);
-      }
-
       ResponseEntity<Map<String, Object>> resp = restTemplate.exchange(identityUrl, HttpMethod.POST,
           requestEntity, new ParameterizedTypeReference<Map<String, Object>>() {
           });
