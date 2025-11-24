@@ -1,19 +1,128 @@
-<div class="card p-4 max-w-6xl mx-auto">
-    <div style="height: 650px">
-        <full-calendar [options]="calendarOptions"></full-calendar>
+<div class="card p-4 max-w-6xl mx-auto flex flex-column gap-5">
+    <!-- Calendar Section -->
+    <div class="border-round-xl shadow-2 p-3 bg-white">
+        <h2 class="text-2xl font-bold text-900 mb-3">Team Leave Calendar</h2>
+
+        <div style="height: 650px">
+            <full-calendar [options]="calendarOptions"></full-calendar>
+        </div>
     </div>
 
-    <!-- Toast for notifications -->
+    <!-- Toast -->
     <p-toast position="top-center" />
+
+    <!-- Leave Details Dialog -->
+    <p-dialog
+        header="Leave Details for {{ selectedDate }}"
+        [(visible)]="displayDate"
+        [modal]="true"
+        [style]="{ width: '40vw' }"
+        [breakpoints]="{ '960px': '75vw', '640px': '95vw' }"
+    >
+        <div class="flex flex-column gap-3">
+            @for (item of employeesLeavesOnDate; track $index) {
+            <div class="p-3 border-round-xl surface-card shadow-1">
+                <h3 class="text-xl font-bold text-900 mb-2">
+                    {{ item.employee.firstName }} {{ item.employee.lastName }}
+                </h3>
+
+                <ul class="mt-2">
+                    @for (leave of item.leaveRequests; track $index) {
+                    <li class="mb-3">
+                        <strong class="text-700">Leave Type:</strong> {{ leave.requestType }} <br />
+                        <strong class="text-700">Status:</strong> {{ leave.status }} <br />
+                        <strong class="text-700">Duration:</strong>
+                        {{ leave.startDate }} → {{ leave.endDate }}
+                    </li>
+                    }
+                </ul>
+            </div>
+            }
+        </div>
+
+        <ng-template pTemplate="footer">
+            <p-button
+                label="Close"
+                icon="pi pi-times"
+                styleClass="p-button-text"
+                (onClick)="displayDate = false"
+            ></p-button>
+        </ng-template>
+    </p-dialog>
+
+    <!-- My Team Section -->
+    <div class="mt-2">
+        <div class="flex align-items-center justify-content-between mb-4 px-2">
+            <h3 class="text-2xl font-bold text-900 m-0">My Team</h3>
+
+            @if (employeesLeaves.length > 0) {
+            <div class="flex gap-2">
+                <p-button
+                    icon="pi pi-th-large"
+                    [rounded]="true"
+                    [outlined]="viewMode !== 'grid'"
+                    severity="secondary"
+                    (onClick)="viewMode = 'grid'"
+                ></p-button>
+
+                <p-button
+                    icon="pi pi-list"
+                    [rounded]="true"
+                    [outlined]="viewMode !== 'list'"
+                    severity="secondary"
+                    (onClick)="viewMode = 'list'"
+                ></p-button>
+            </div>
+            }
+        </div>
+
+        <!-- Empty State -->
+        @if (employeesLeaves.length === 0) {
+        <p-card styleClass="shadow-2 border-round-xl">
+            <div
+                class="flex flex-column align-items-center justify-content-center py-6 px-4 text-center"
+            >
+                <div
+                    class="bg-blue-50 border-circle w-8rem h-8rem flex align-items-center justify-content-center mb-4"
+                >
+                    <i class="pi pi-users text-6xl text-blue-400"></i>
+                </div>
+
+                <h3 class="text-2xl font-bold text-900 mb-2">No Employees Found</h3>
+
+                <p class="text-600 text-lg max-w-30rem">
+                    Your department does not have any registered employees yet. Please contact HR or
+                    system administrator for assistance.
+                </p>
+            </div>
+        </p-card>
+        }
+
+        <!-- Grid -->
+        @else {
+        <div
+            [ngClass]="{
+                'grid gap-4': viewMode === 'grid',
+                'flex flex-column gap-3': viewMode === 'list'
+            }"
+        >
+            @for (x of employeesLeaves; track x.employee.employeeId) {
+            <div class="col-12 md:col-6 lg:col-4" [ngClass]="{ 'w-full': viewMode === 'list' }">
+                <app-employee-card [employee]="x.employee"></app-employee-card>
+            </div>
+            }
+        </div>
+        }
+    </div>
 
     <!-- Spinner -->
     <ngx-spinner
-        bdColor="rgba(0, 0, 0, 0.8)"
+        bdColor="rgba(0, 0, 0, 0.65)"
         size="large"
         color="#ffd700"
         type="timer"
         [fullScreen]="true"
     >
-        <p style="color: #ffd700">Konnection flowing...</p>
+        <p style="color: #ffd700">Loading your team...</p>
     </ngx-spinner>
 </div>

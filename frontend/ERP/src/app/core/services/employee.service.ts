@@ -47,7 +47,7 @@ export class EmployeeService {
     }
 
     getLeaveRequestPerDepartment(id:Number):Observable<any>{
-        return this._httpClient.get(`${baseURL}/employees/department/requests`);
+        return this._httpClient.get(`${baseURL}/departments/${id}/leave-requests/next-month`);
     }
 
     deleteLeaveRequest(id:string):Observable<any>{
