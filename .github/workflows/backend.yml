@@ -33,7 +33,7 @@ jobs:
           echo "Generated VERSION_TAG=$VERSION_TAG"
           
       - name: Build docker-compose images
-        run: docker compose build
+        run: docker compose -f backend/docker-compose.yml build
       - name: OIDC Auth to Google Cloud
         uses: google-github-actions/auth@v2
         with:
