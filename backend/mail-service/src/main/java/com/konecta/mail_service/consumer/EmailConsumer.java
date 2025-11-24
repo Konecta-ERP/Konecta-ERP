@@ -28,4 +28,17 @@ public class EmailConsumer {
             throw new AmqpRejectAndDontRequeueException("Mail service failed to process request for " + request.getRecipient());
         }
     }
+
+    @RabbitListener(queues = "${app.rabbitmq.welcome-queue}")
+    public void handleWelcomeRequest(@Payload EmailRequest request) {
+        System.out.println("Received WELCOME request for: " + request.getRecipient());
+        try {
+            mailService.sendEmail(request);
+            System.out.println("WELCOME Email sent successfully to: " + request.getRecipient());
+        } catch (Exception e) {
+            System.err.println("Failed to send welcome email to " + request.getRecipient() + ": " + e.getMessage());
+            // Re-throw exception to reject the message and prevent re-queueing
+            throw new AmqpRejectAndDontRequeueException("Mail service failed to process welcome request for " + request.getRecipient());
+        }
+    }
 }

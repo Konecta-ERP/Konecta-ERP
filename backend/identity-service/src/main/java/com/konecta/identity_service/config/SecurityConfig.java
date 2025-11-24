@@ -66,6 +66,11 @@ public class SecurityConfig {
     }
 
     @Bean
+    public PasswordGenerator passwordGenerator() {
+        return new PasswordGenerator(16);
+    }
+
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }

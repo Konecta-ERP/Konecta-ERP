@@ -13,10 +13,19 @@ public class RabbitMQConfig {
     @Value("${app.rabbitmq.otp-exchange}")
     private String otpExchange;
 
+    @Value("${app.rabbitmq.welcome-exchange}")
+    private String welcomeExchange;
+
     @Bean
     public TopicExchange otpExchange() {
         return new TopicExchange(otpExchange);
     }
+
+    @Bean
+    public TopicExchange welcomeExchange() {
+        return new TopicExchange(welcomeExchange);
+    }
+
     @Bean
     public MessageConverter jsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
