@@ -35,7 +35,7 @@ public class PerformanceController {
   }
 
   @PostMapping("/api/employees/{id}/goals")
-  @PreAuthorize("hasAuthority('HR_MANAGER')")
+  @PreAuthorize("hasAuthority('MANAGER')")
   public ResponseEntity<ApiResponse<GoalDto>> assignGoalToEmployee(
       @PathVariable(name = "id") Integer id,
       @RequestBody CreateGoalDto goalDto) {
@@ -50,7 +50,7 @@ public class PerformanceController {
   }
 
   @PostMapping("/api/employees/{id}/feedback")
-  @PreAuthorize("hasAuthority('HR_MANAGER') or hasAuthority('HR_EMP')")
+  @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('HR_EMP')")
   public ResponseEntity<ApiResponse<FeedbackDto>> giveFeedbackToEmployee(
       @PathVariable(name = "id") Integer id,
       @RequestBody CreateFeedbackDto feedbackDto) {
@@ -133,7 +133,7 @@ public class PerformanceController {
   }
 
   @DeleteMapping("/api/goals/{id}")
-  @PreAuthorize("hasAuthority('HR_MANAGER')")
+  @PreAuthorize("hasAuthority('MANAGER')")
   public ResponseEntity<ApiResponse<Object>> deleteGoal(@PathVariable(name = "id") Integer id) {
     performanceService.deleteGoal(id);
     ApiResponse<Object> response = ApiResponse.success(
@@ -144,7 +144,7 @@ public class PerformanceController {
   }
 
   @DeleteMapping("/api/feedback/{id}")
-  @PreAuthorize("hasAuthority('HR_MANAGER')")
+  @PreAuthorize("hasAuthority('MANAGER')")
   public ResponseEntity<ApiResponse<Object>> deleteFeedback(@PathVariable(name = "id") Integer id) {
     performanceService.deleteFeedback(id);
     ApiResponse<Object> response = ApiResponse.success(

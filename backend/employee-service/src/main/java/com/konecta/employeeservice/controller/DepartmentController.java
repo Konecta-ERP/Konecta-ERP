@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import com.konecta.employeeservice.dto.CreateOrUpdateDepartmentDto;
@@ -41,7 +42,7 @@ public class DepartmentController {
   }
 
   @GetMapping("/{id}/leave-requests/next-month")
-  @PreAuthorize("hasAuthority('HR_MANAGER') or hasAuthority('HR_ADMIN')")
+  @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('HR_ADMIN')")
   public ResponseEntity<ApiResponse<List<EmployeeLeavesDto>>> getDepartmentLeavesNextMonth(
       @PathVariable(name = "id") Integer id) {
     List<EmployeeLeavesDto> result = departmentService.getEmployeesLeavesForNextMonth(id);
@@ -123,10 +124,10 @@ public class DepartmentController {
   }
 
   @PutMapping("/{id}")
-  @PreAuthorize("hasAuthority('HR_ADMIN') or hasAuthority('HR_MANAGER')")
+  @PreAuthorize("hasAuthority('HR_ADMIN') or hasAuthority('MANAGER')")
   public ResponseEntity<ApiResponse<DepartmentDto>> updateDepartment(@PathVariable(name = "id") Integer id,
-      @RequestBody CreateOrUpdateDepartmentDto dto) {
-    DepartmentDto updatedDepartment = departmentService.updateDepartment(id, dto);
+      @RequestBody CreateOrUpdateDepartmentDto dto, @AuthenticationPrincipal Jwt jwt) {
+    DepartmentDto updatedDepartment = departmentService.updateDepartment(id, dto, jwt.getTokenValue());
     ApiResponse<DepartmentDto> response = ApiResponse.success(
         updatedDepartment,
         HttpStatus.OK.value(),
