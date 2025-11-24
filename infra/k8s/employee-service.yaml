@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
         - name: employee-service
-          image: docker.io/library/backend-employee-service:latest
-          imagePullPolicy: Never
+          image: europe-west1-docker.pkg.dev/erp-konecta-477213/erp-services/backend-employee-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:

@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
         - name: discovery-server
-          image: docker.io/library/backend-discovery-server:latest
-          imagePullPolicy: Never
+          image: europe-west1-docker.pkg.dev/erp-konecta-477213/erp-services/backend-discovery-server:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8761
 

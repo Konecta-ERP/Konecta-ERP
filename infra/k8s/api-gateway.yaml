@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
         - name: api-gateway
-          image: docker.io/library/backend-api-gateway:latest
-          imagePullPolicy: Never
+          image: europe-west1-docker.pkg.dev/erp-konecta-477213/erp-services/backend-api-gateway:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:
