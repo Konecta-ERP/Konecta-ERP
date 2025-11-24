@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: identity-db
+  namespace: microservices
+spec:
+  serviceName: identity-db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: identity-db
+  template:
+    metadata:
+      labels:
+        app: identity-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:17
+          env:
+            - name: POSTGRES_DB
+              value: identity_db
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: postgres
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: identity-data
+      volumes:
+        - name: identity-data
+          persistentVolumeClaim:
+            claimName: identity-data-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: identity-db
+  namespace: microservices
+spec:
+  clusterIP: None
+  selector:
+    app: identity-db
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
