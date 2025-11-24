@@ -50,7 +50,7 @@ jobs:
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
-          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_BUILD }}
             
       - name: Build docker-compose images
         run: docker compose -f backend/docker-compose.yml build
@@ -90,6 +90,12 @@ jobs:
             docker push "$REMOTE_IMG"
             docker push "$LATEST_REMOTE"
           done
+
+      - name: OIDC Auth to Google Cloud (for GKE deploy)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_GKE }}
 
       - name: Deploy to GKE (backend)
         run: |
