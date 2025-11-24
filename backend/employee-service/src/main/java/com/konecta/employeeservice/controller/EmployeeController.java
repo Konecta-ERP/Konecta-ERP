@@ -38,7 +38,7 @@ public class EmployeeController {
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("hasAuthority('EMP')")
   public ResponseEntity<ApiResponse<EmployeeDetailsDto>> getEmployeeById(@PathVariable(name = "id") Integer id,
       Authentication authentication) {
     // Allow managers and admins to access any employee
@@ -75,7 +75,7 @@ public class EmployeeController {
   }
 
   @GetMapping("/by-user/{userId}")
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("hasAuthority('EMP')")
   public ResponseEntity<ApiResponse<EmployeeDetailsDto>> getEmployeeByUserId(
       @PathVariable("userId") UUID userId,
       Authentication authentication) {
@@ -101,7 +101,7 @@ public class EmployeeController {
   }
 
   @PostMapping
-  @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('ADMIN')")
+  @PreAuthorize("hasAuthority('HR_MANAGER') or hasAuthority('HR_ADMIN')")
   public ResponseEntity<ApiResponse<EmployeeDetailsDto>> createEmployee(
       @RequestBody CreateEmployeeRequestDto createDto) {
     EmployeeDetailsDto newEmployee = employeeService.createEmployee(createDto);
@@ -115,7 +115,7 @@ public class EmployeeController {
 
   // GET /employees/search?name=John&department=Engineering&position=Manager
   @GetMapping("/search")
-  @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('ADMIN')")
+  @PreAuthorize("hasAuthority('HR_MANAGER') or hasAuthority('HR_ADMIN')")
   public ResponseEntity<ApiResponse<List<EmployeeDetailsDto>>> searchEmployees(
       @RequestParam(name = "name", required = false) String name,
       @RequestParam(name = "department", required = false) String department,
@@ -130,7 +130,7 @@ public class EmployeeController {
   }
 
   @PatchMapping("/{id}")
-  @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('ADMIN')")
+  @PreAuthorize("hasAuthority('HR_MANAGER') or hasAuthority('HR_ADMIN')")
   public ResponseEntity<ApiResponse<EmployeeDetailsDto>> updateEmployee(
       @PathVariable(name = "id") Integer id,
       @RequestBody UpdateEmployeeRequestDto updateDto) {
@@ -144,7 +144,7 @@ public class EmployeeController {
   }
 
   @GetMapping("/{id}/payroll")
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("hasAuthority('EMP')")
   public ResponseEntity<ApiResponse<PayrollSummaryDto>> getPayrollForEmployee(
       @PathVariable(name = "id") Integer id,
       @RequestBody PayrollCalculationRequest request,

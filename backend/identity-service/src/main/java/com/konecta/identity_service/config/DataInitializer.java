@@ -27,7 +27,7 @@ public class DataInitializer implements CommandLineRunner {
             admin.setEmail("admin@email.com");
             admin.setPhone("+01234567890");
             admin.setPasswordHash(passwordEncoder.encode("password"));
-            admin.setRole(Role.ADMIN);
+            admin.setRole(Role.HR_ADMIN);
             admin.setActive(true);
             userRepository.save(admin);
         }
@@ -39,7 +39,7 @@ public class DataInitializer implements CommandLineRunner {
             emp.setEmail("hr_associate@email.com");
             emp.setPhone("+01234567891");
             emp.setPasswordHash(passwordEncoder.encode("password"));
-            emp.setRole(Role.ASSOCIATE);
+            emp.setRole(Role.HR_ASSOCIATE);
             emp.setActive(true);
             userRepository.save(emp);
         }
@@ -50,7 +50,7 @@ public class DataInitializer implements CommandLineRunner {
             emp.setEmail("hr_manager@email.com");
             emp.setPhone("+01234567892");
             emp.setPasswordHash(passwordEncoder.encode("password"));
-            emp.setRole(Role.MANAGER);
+            emp.setRole(Role.HR_MANAGER);
             emp.setActive(true);
             userRepository.save(emp);
         }
