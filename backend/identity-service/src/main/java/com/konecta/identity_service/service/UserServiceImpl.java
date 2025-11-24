@@ -1,8 +1,7 @@
 package com.konecta.identity_service.service;
 
-import com.konecta.identity_service.dto.request.ChangePasswordRequest;
-import com.konecta.identity_service.dto.request.CreateUserRequest;
-import com.konecta.identity_service.dto.request.UpdateUserRequest;
+import com.konecta.identity_service.config.PasswordGenerator;
+import com.konecta.identity_service.dto.request.*;
 import com.konecta.identity_service.dto.response.UserResponse;
 import com.konecta.identity_service.entity.Role;
 import com.konecta.identity_service.entity.User;
@@ -11,10 +10,15 @@ import com.konecta.identity_service.exception.InvalidRequestException;
 import com.konecta.identity_service.exception.ResourceNotFoundException;
 import com.konecta.identity_service.mapper.UserMapper;
 import com.konecta.identity_service.repository.UserRepository;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -23,12 +27,32 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final PasswordGenerator passwordGenerator;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private final StringRedisTemplate redisTemplate;
+    private final RabbitTemplate rabbitTemplate;
+    private static final SecureRandom secureRandom = new SecureRandom();
+    private static final int OTP_LENGTH = 6;
+    private static final int OTP_DURATION = 15;
+    @Value("${app.rabbitmq.otp-exchange}")
+    private String otpExchange;
+    @Value("${app.rabbitmq.otp-routing-key}")
+    private String otpRoutingKey;
+    @Value("${app.rabbitmq.welcome-exchange}")
+    private String welcomeExchange;
+    @Value("${app.rabbitmq.welcome-routing-key}")
+    private String welcomeRoutingKey;
 
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
+
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, PasswordGenerator passwordGenerator, PasswordEncoder passwordEncoder, JwtService jwtService, StringRedisTemplate redisTemplate, RabbitTemplate rabbitTemplate) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.passwordGenerator = passwordGenerator;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
+        this.redisTemplate = redisTemplate;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     @Override
@@ -46,11 +70,23 @@ public class UserServiceImpl implements UserService {
             );
         }
 
+        String randomPassword = passwordGenerator.generate();
         User user = userMapper.toEntity(request);
-        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        user.setPasswordHash(passwordEncoder.encode(randomPassword));
         user.setActive(true);
-
         User savedUser = userRepository.save(user);
+
+        EmailRequest email = EmailRequest.builder()
+                .recipient(savedUser.getEmail())
+                .subject("Welcome to Konecta!")
+                .content("<p>Your account has been created. Here are your login details:</p>"
+                        + "<p><strong>Email:</strong> " + savedUser.getEmail() + "</p>"
+                        + "<p><strong>Temporary Password:</strong> " + randomPassword + "</p>"
+                        + "<p>Please log in and change your password immediately.</p>")
+                .build();
+        rabbitTemplate.convertAndSend(welcomeExchange, welcomeRoutingKey, email);
+        System.out.println("DEBUG: Welcome email message published for " + savedUser.getEmail());
+
         return userMapper.toUserResponse(savedUser);
     }
 
@@ -168,5 +204,49 @@ public class UserServiceImpl implements UserService {
         user.setActive(isActive);
         User updatedUser = userRepository.save(user);
         return userMapper.toUserResponse(updatedUser);
+    }
+
+    @Override
+    public void generateOtp(ForgetPasswordRequest request) {
+        userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("No user exists with email " + request.getEmail(),
+                        "Email not found."));
+
+        String otp = String.format("%06d", secureRandom.nextInt((int) Math.pow(10, OTP_LENGTH)));
+        redisTemplate.opsForValue().set("otp:" + request.getEmail(), otp, Duration.ofMinutes(15));
+
+        EmailRequest emailRequest = EmailRequest.builder()
+                .recipient(request.getEmail())
+                .subject("Konecta Password Reset OTP")
+                .content("<p>Your request for a One-Time Password (OTP) has been processed. Please use the code below to reset your password:</p>\n" +
+                            "<div class=\"otp-block\">" + otp +"</div>\n" +
+                            "<p style=\"text-align: center;\">This OTP will expire in <span class=\"expiry-time\">"+
+                            OTP_DURATION  +" minutes</span>.</p>")
+                .build();
+
+        rabbitTemplate.convertAndSend(otpExchange, otpRoutingKey, emailRequest);
+        System.out.println("DEBUG: OTP for " + request.getEmail() + " is " + otp);
+    }
+
+    @Override
+    public String getPasswordResetToken(VerifyOtpRequest request) {
+        String redisKey = "otp:" + request.getEmail();
+        String storedOtp = redisTemplate.opsForValue().get(redisKey);
+        if (storedOtp == null || !storedOtp.equals(request.getOtp())) {
+            throw new InvalidRequestException("Invalid or expired Redis key otp:" + request.getEmail(), "Invalid or expired OTP");
+        }
+        redisTemplate.delete(redisKey);
+
+        return jwtService.generatePasswordResetToken(request.getEmail());
+    }
+
+    @Override
+    public void resetPassword(String email, String newPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("No user exists with email " + email,
+                        "User not found."));
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 }

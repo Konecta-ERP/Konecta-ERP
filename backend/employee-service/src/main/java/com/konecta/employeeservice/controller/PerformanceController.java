@@ -35,7 +35,7 @@ public class PerformanceController {
   }
 
   @PostMapping("/api/employees/{id}/goals")
-  @PreAuthorize("hasAuthority('MANAGER')")
+  @PreAuthorize("hasAuthority('HR_MANAGER')")
   public ResponseEntity<ApiResponse<GoalDto>> assignGoalToEmployee(
       @PathVariable(name = "id") Integer id,
       @RequestBody CreateGoalDto goalDto) {
@@ -50,7 +50,7 @@ public class PerformanceController {
   }
 
   @PostMapping("/api/employees/{id}/feedback")
-  @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('HR_EMP')")
+  @PreAuthorize("hasAuthority('HR_MANAGER') or hasAuthority('HR_EMP')")
   public ResponseEntity<ApiResponse<FeedbackDto>> giveFeedbackToEmployee(
       @PathVariable(name = "id") Integer id,
       @RequestBody CreateFeedbackDto feedbackDto) {
@@ -65,7 +65,7 @@ public class PerformanceController {
   }
 
   @GetMapping("/api/employees/{id}/goals")
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("hasAuthority('EMP')")
   public ResponseEntity<ApiResponse<List<GoalDto>>> getEmployeeGoals(@PathVariable(name = "id") Integer id,
       Authentication authentication) {
 
@@ -99,7 +99,7 @@ public class PerformanceController {
   }
 
   @GetMapping("/api/employees/{id}/feedback")
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("hasAuthority('EMP')")
   public ResponseEntity<ApiResponse<List<FeedbackDto>>> getEmployeeFeedback(@PathVariable(name = "id") Integer id,
       Authentication authentication) {
 
@@ -133,7 +133,7 @@ public class PerformanceController {
   }
 
   @DeleteMapping("/api/goals/{id}")
-  @PreAuthorize("hasAuthority('MANAGER')")
+  @PreAuthorize("hasAuthority('HR_MANAGER')")
   public ResponseEntity<ApiResponse<Object>> deleteGoal(@PathVariable(name = "id") Integer id) {
     performanceService.deleteGoal(id);
     ApiResponse<Object> response = ApiResponse.success(
@@ -144,7 +144,7 @@ public class PerformanceController {
   }
 
   @DeleteMapping("/api/feedback/{id}")
-  @PreAuthorize("hasAuthority('MANAGER')")
+  @PreAuthorize("hasAuthority('HR_MANAGER')")
   public ResponseEntity<ApiResponse<Object>> deleteFeedback(@PathVariable(name = "id") Integer id) {
     performanceService.deleteFeedback(id);
     ApiResponse<Object> response = ApiResponse.success(

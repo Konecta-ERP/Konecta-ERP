@@ -37,7 +37,7 @@ public class RequisitionController {
   }
 
   @PostMapping
-  @PreAuthorize("hasAuthority('ASSOCIATE')")
+  @PreAuthorize("hasAuthority('HR_ASSOCIATE')")
   public ResponseEntity<ApiResponse<JobRequisitionDto>> createRequisition(
       @Valid @RequestBody CreateRequisitionDto dto) {
     JobRequisitionDto newReq = requisitionService.createRequisition(dto);
@@ -50,7 +50,7 @@ public class RequisitionController {
   }
 
   @GetMapping("/search")
-  @PreAuthorize("hasAuthority('ASSOCIATE') or hasAuthority('MANAGER') or hasAuthority('ADMIN')")
+  @PreAuthorize("hasAuthority('HR_ASSOCIATE') or hasAuthority('HR_MANAGER') or hasAuthority('HR_ADMIN')")
   public ResponseEntity<ApiResponse<List<JobRequisitionDto>>> searchRequisitions(
       @RequestParam(name = "departmentId", required = false) Integer departmentId,
       @RequestParam(name = "status", required = false) RequisitionStatus status) {
@@ -65,7 +65,7 @@ public class RequisitionController {
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAuthority('ASSOCIATE') or hasAuthority('MANAGER') or hasAuthority('ADMIN')")
+  @PreAuthorize("hasAuthority('HR_ASSOCIATE') or hasAuthority('HR_MANAGER') or hasAuthority('HR_ADMIN')")
   public ResponseEntity<ApiResponse<JobRequisitionDto>> getRequisition(
       @PathVariable Integer id) {
     JobRequisitionDto req = requisitionService.getRequisition(id);
@@ -78,7 +78,7 @@ public class RequisitionController {
   }
 
   @PatchMapping("/{id}")
-  @PreAuthorize("hasAuthority('ASSOCIATE')")
+  @PreAuthorize("hasAuthority('HR_ASSOCIATE')")
   public ResponseEntity<ApiResponse<JobRequisitionDto>> updateRequisition(
       @PathVariable Integer id,
       @Valid @RequestBody UpdateRequisitionDto dto) {
@@ -93,7 +93,7 @@ public class RequisitionController {
   }
 
   @PatchMapping("/{id}/status")
-  @PreAuthorize("hasAuthority('MANAGER')")
+  @PreAuthorize("hasAuthority('HR_MANAGER')")
   public ResponseEntity<ApiResponse<JobRequisitionDto>> updateRequisitionStatus(
       @PathVariable Integer id,
       @Valid @RequestBody UpdateRequisitionStatusDto dto) {

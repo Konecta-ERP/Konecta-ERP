@@ -27,7 +27,7 @@ public class OfferController {
   }
 
   @PostMapping("/api/applicants/{applicantId}/offer")
-  @PreAuthorize("hasAuthority('MANAGER')")
+  @PreAuthorize("hasAuthority('HR_MANAGER')")
   public ResponseEntity<ApiResponse<OfferDto>> makeOffer(
       @PathVariable Integer applicantId,
       @Valid @RequestBody MakeOfferDto dto) {
