@@ -191,7 +191,7 @@ public class UserServiceImpl implements UserService {
     public void generateOtp(ForgetPasswordRequest request) {
         userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("No user exists with email " + request.getEmail(),
-                        "User not found."));
+                        "Email not found."));
 
         String otp = String.format("%06d", secureRandom.nextInt((int) Math.pow(10, OTP_LENGTH)));
         redisTemplate.opsForValue().set("otp:" + request.getEmail(), otp, Duration.ofMinutes(15));
@@ -202,7 +202,7 @@ public class UserServiceImpl implements UserService {
                 .content("<p>Your request for a One-Time Password (OTP) has been processed. Please use the code below to reset your password:</p>\n" +
                             "<div class=\"otp-block\">" + otp +"</div>\n" +
                             "<p style=\"text-align: center;\">This OTP will expire in <span class=\"expiry-time\">"+
-                            OTP_DURATION  +"minutes</span>.</p>")
+                            OTP_DURATION  +" minutes</span>.</p>")
                 .build();
 
         rabbitTemplate.convertAndSend(otpExchange, otpRoutingKey, emailRequest);
