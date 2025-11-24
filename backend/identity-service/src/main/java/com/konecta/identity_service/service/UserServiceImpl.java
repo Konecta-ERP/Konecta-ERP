@@ -1,5 +1,6 @@
 package com.konecta.identity_service.service;
 
+import com.konecta.identity_service.config.PasswordGenerator;
 import com.konecta.identity_service.dto.request.*;
 import com.konecta.identity_service.dto.response.UserResponse;
 import com.konecta.identity_service.entity.Role;
@@ -26,6 +27,7 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final PasswordGenerator passwordGenerator;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final StringRedisTemplate redisTemplate;
@@ -37,11 +39,16 @@ public class UserServiceImpl implements UserService {
     private String otpExchange;
     @Value("${app.rabbitmq.otp-routing-key}")
     private String otpRoutingKey;
+    @Value("${app.rabbitmq.welcome-exchange}")
+    private String welcomeExchange;
+    @Value("${app.rabbitmq.welcome-routing-key}")
+    private String welcomeRoutingKey;
 
 
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder, JwtService jwtService, StringRedisTemplate redisTemplate, RabbitTemplate rabbitTemplate) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, PasswordGenerator passwordGenerator, PasswordEncoder passwordEncoder, JwtService jwtService, StringRedisTemplate redisTemplate, RabbitTemplate rabbitTemplate) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.passwordGenerator = passwordGenerator;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.redisTemplate = redisTemplate;
@@ -63,11 +70,23 @@ public class UserServiceImpl implements UserService {
             );
         }
 
+        String randomPassword = passwordGenerator.generate();
         User user = userMapper.toEntity(request);
-        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        user.setPasswordHash(passwordEncoder.encode(randomPassword));
         user.setActive(true);
-
         User savedUser = userRepository.save(user);
+
+        EmailRequest email = EmailRequest.builder()
+                .recipient(savedUser.getEmail())
+                .subject("Welcome to Konecta!")
+                .content("<p>Your account has been created. Here are your login details:</p>"
+                        + "<p><strong>Email:</strong> " + savedUser.getEmail() + "</p>"
+                        + "<p><strong>Temporary Password:</strong> " + randomPassword + "</p>"
+                        + "<p>Please log in and change your password immediately.</p>")
+                .build();
+        rabbitTemplate.convertAndSend(welcomeExchange, welcomeRoutingKey, email);
+        System.out.println("DEBUG: Welcome email message published for " + savedUser.getEmail());
+
         return userMapper.toUserResponse(savedUser);
     }
 
