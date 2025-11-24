@@ -10,6 +10,7 @@ import { ILeaveRequestResponse } from '../../../../core/interfaces/iLeaveRequest
 import { IEmployeesLeaves } from '../../../../core/interfaces/iEmployeesLeaves';
 import { FullCalendarComponent } from '@fullcalendar/angular';
 import { EmployeeCard } from '../../../../components/employee.card/employee.card';
+import { User } from '../../../../core/interfaces/iUser';
 @Component({
   selector: 'app-my-team',
   imports: [FullCalendarModule, SharedModule, EmployeeCard],
@@ -36,6 +37,11 @@ export class MyTeam implements OnInit {
     selectedCounts: { approved: number; pending: number; available: number } | null = null;
     viewMode: 'grid' | 'list' = 'grid';
     totalRecords = 0;
+
+    displayLeaveRequestDetails: boolean = false;
+    selectedRequest: ILeaveRequestResponse | null = null;
+    selectedEmployee: User | null = null;
+
     ngOnInit(): void {
         this.loadLeaveRequests();
     }
@@ -208,8 +214,87 @@ export class MyTeam implements OnInit {
         return this.employeesLeavesOnDate;
     }
 
+    viewLeaveDetails(leave: ILeaveRequestResponse, employee: User): void {
+        this.selectedRequest = leave;
+        this.displayLeaveRequestDetails = true;
+        this.selectedEmployee = employee;
+    }
+
+    approveLeave(leave: ILeaveRequestResponse|null): void {
+
+        if (!leave) {
+            this.show('error', 'Error', 'No leave request selected');
+            return;
+        }
+        this.approveLeaveAPI(leave.id);
+    }
+
+    rejectLeave(leave: ILeaveRequestResponse| null): void {
+        if (!leave) {
+            this.show('error', 'Error', 'No leave request selected');
+            return;
+        }
+        this.rejectLeaveAPI(leave.id);
+    }
+
+    approveLeaveAPI(leaveId: string): void {
+        this.processingAction = true;
+        this._NgxSpinnerService.show();
+        this._employeeService.acceptleaveRequest(leaveId).subscribe({
+            next: (res) => {
+                this._NgxSpinnerService.hide();
+                this.processingAction = false;
+                if (res.status === 200) {
+                    this.show('success', 'Success', 'Leave request approved successfully');
+                    this.displayLeaveRequestDetails = false;
+                    this.loadLeaveRequests();
+                } else {
+                    this.show('error', 'Error', res.cMessage || 'Failed to approve leave request');
+                }
+            },
+            error: (err) => {
+                this._NgxSpinnerService.hide();
+                this.processingAction = false;
+                this.show('error', 'Error', err?.error?.cMessage || 'An error occurred while approving leave request');
+            }
+        });
+    }
+
+    rejectLeaveAPI(leaveId: string): void {
+        this.processingAction = true;
+        this._NgxSpinnerService.show();
+        this._employeeService.rejectleaveRequest(leaveId).subscribe({
+            next: (res) => {
+                this._NgxSpinnerService.hide();
+                this.processingAction = false;
+                if (res.status === 200) {
+                    this.show('success', 'Success', 'Leave request rejected successfully');
+                    this.displayLeaveRequestDetails = false;
+                    this.loadLeaveRequests();
+                } else {
+                    this.show('error', 'Error', res.cMessage || 'Failed to reject leave request');
+                }
+            },
+            error: (err) => {
+                this._NgxSpinnerService.hide();
+                this.processingAction = false;
+                this.show('error', 'Error', err?.error?.cMessage || 'An error occurred while rejecting leave request');
+            }
+        });
+    }
+
 
     show(severity: string='info', summary: string='Info', detail: string='Message Content'): void {
         this._messageService.add({ severity, summary, detail, life: 3000 });
+    }
+
+    processingAction = false; // For button disabled state
+
+    calculateDuration(startDate: Date, endDate: Date): number {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const diffTime = end.getTime() - start.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        return diffDays;
     }
 }

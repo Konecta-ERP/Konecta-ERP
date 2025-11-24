@@ -8,36 +8,148 @@
         </div>
     </div>
 
-    <!-- Toast -->
-    <p-toast position="top-center" />
-
-    <!-- Leave Details Dialog -->
+    <!-- Leave Details per day Dialog -->
     <p-dialog
         header="Leave Details for {{ selectedDate }}"
         [(visible)]="displayDate"
         [modal]="true"
-        [style]="{ width: '40vw' }"
-        [breakpoints]="{ '960px': '75vw', '640px': '95vw' }"
+        [style]="{ width: '70vw' }"
+        [breakpoints]="{ '960px': '85vw', '640px': '95vw' }"
     >
-        <div class="flex flex-column gap-3">
-            @for (item of employeesLeavesOnDate; track $index) {
-            <div class="p-3 border-round-xl surface-card shadow-1">
-                <h3 class="text-xl font-bold text-900 mb-2">
+        <!-- Table for large screens -->
+        <div class="hidden md:block">
+            <p-table
+                [value]="employeesLeavesOnDate"
+                [paginator]="true"
+                [rows]="10"
+                [showCurrentPageReport]="true"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} employees"
+                [rowsPerPageOptions]="[10, 25, 50]"
+                styleClass="p-datatable-striped"
+            >
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th pSortableColumn="employee.firstName">
+                            Employee Name <p-sortIcon field="employee.firstName"></p-sortIcon>
+                        </th>
+                        <th pSortableColumn="leaveRequests[0].requestType">
+                            Leave Type
+                            <p-sortIcon field="leaveRequests[0].requestType"></p-sortIcon>
+                        </th>
+                        <th pSortableColumn="leaveRequests[0].startDate">
+                            Start Date <p-sortIcon field="leaveRequests[0].startDate"></p-sortIcon>
+                        </th>
+                        <th pSortableColumn="leaveRequests[0].endDate">
+                            End Date <p-sortIcon field="leaveRequests[0].endDate"></p-sortIcon>
+                        </th>
+                        <th pSortableColumn="leaveRequests[0].status">
+                            Status <p-sortIcon field="leaveRequests[0].status"></p-sortIcon>
+                        </th>
+                        <th>Actions</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-item let-expanded="expanded">
+                    <ng-container *ngFor="let leave of item.leaveRequests; let first = first">
+                        <tr>
+                            <td *ngIf="first" [attr.rowspan]="item.leaveRequests.length">
+                                <div class="font-semibold text-900">
+                                    {{ item.employee.firstName }} {{ item.employee.lastName }}
+                                </div>
+                            </td>
+                            <td>{{ leave.requestType }}</td>
+                            <td>{{ leave.startDate | date : 'MMM d, y' }}</td>
+                            <td>{{ leave.endDate | date : 'MMM d, y' }}</td>
+                            <td>
+                                <span
+                                    class="px-3 py-1 rounded-full text-sm font-medium"
+                                    [ngClass]="{
+                                        'bg-yellow-100 text-yellow-800': leave.status === 'PENDING',
+                                        'bg-green-100 text-green-800': leave.status === 'APPROVED',
+                                        'bg-red-100 text-red-800': leave.status === 'REJECTED'
+                                    }"
+                                >
+                                    {{ leave.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="flex gap-2">
+                                    <p-button
+                                        icon="pi pi-eye"
+                                        styleClass="p-button-rounded p-button-text p-button-sm"
+                                        (onClick)="viewLeaveDetails(leave, item.employee)"
+                                        pTooltip="View Details"
+                                    ></p-button>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-container>
+                </ng-template>
+
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="6" class="text-center py-8">
+                            <div class="flex flex-col items-center gap-3">
+                                <i class="pi pi-calendar-times text-4xl text-gray-400"></i>
+                                <p class="text-gray-600 dark:text-gray-300">
+                                    No leave requests found for this date
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+
+        <!-- Mobile Card View -->
+        <div class="block md:hidden space-y-4">
+            <div
+                *ngFor="let item of employeesLeavesOnDate"
+                class="border rounded-xl p-4 bg-white dark:bg-gray-800 shadow-sm"
+            >
+                <h3 class="font-semibold text-lg text-gray-800 dark:text-white mb-3">
                     {{ item.employee.firstName }} {{ item.employee.lastName }}
                 </h3>
 
-                <ul class="mt-2">
-                    @for (leave of item.leaveRequests; track $index) {
-                    <li class="mb-3">
-                        <strong class="text-700">Leave Type:</strong> {{ leave.requestType }} <br />
-                        <strong class="text-700">Status:</strong> {{ leave.status }} <br />
-                        <strong class="text-700">Duration:</strong>
-                        {{ leave.startDate }} → {{ leave.endDate }}
-                    </li>
-                    }
-                </ul>
+                <div class="space-y-3">
+                    <div
+                        *ngFor="let leave of item.leaveRequests"
+                        class="pl-3 border-l-4"
+                        [ngClass]="{
+                            'border-yellow-400': leave.status === 'PENDING',
+                            'border-green-400': leave.status === 'APPROVED',
+                            'border-red-400': leave.status === 'REJECTED'
+                        }"
+                    >
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="font-medium text-gray-700 dark:text-gray-200">
+                                {{ leave.requestType }}
+                            </span>
+                            <span
+                                class="px-2 py-1 rounded-full text-xs font-medium"
+                                [ngClass]="{
+                                    'bg-yellow-100 text-yellow-800': leave.status === 'PENDING',
+                                    'bg-green-100 text-green-800': leave.status === 'APPROVED',
+                                    'bg-red-100 text-red-800': leave.status === 'REJECTED'
+                                }"
+                            >
+                                {{ leave.status }}
+                            </span>
+                        </div>
+                        <div class="text-sm text-gray-600 dark:text-gray-300">
+                            <p><strong>Start:</strong> {{ leave.startDate | date : 'MMM d, y' }}</p>
+                            <p><strong>End:</strong> {{ leave.endDate | date : 'MMM d, y' }}</p>
+                        </div>
+                        <div class="flex gap-2 mt-2">
+                            <p-button
+                                icon="pi pi-eye"
+                                styleClass="p-button-rounded p-button-text p-button-sm"
+                                (onClick)="viewLeaveDetails(leave, item.employee)"
+                            ></p-button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            }
         </div>
 
         <ng-template pTemplate="footer">
@@ -47,6 +159,267 @@
                 styleClass="p-button-text"
                 (onClick)="displayDate = false"
             ></p-button>
+        </ng-template>
+    </p-dialog>
+
+    <p-dialog
+        header="Leave Request Details"
+        [(visible)]="displayLeaveRequestDetails"
+        [modal]="true"
+        [style]="{ width: '50vw' }"
+        [breakpoints]="{ '960px': '75vw', '640px': '95vw' }"
+    >
+        <div *ngIf="selectedRequest && selectedEmployee" class="p-4">
+            <!-- Employee Header Card -->
+            <div
+                class="bg-gradient-to-r from-blue-500 to-indigo-600 p-6 rounded-2xl mb-6 shadow-lg"
+            >
+                <div class="flex items-center gap-4">
+                    <div
+                        class="bg-white text-blue-600 rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold shadow-md"
+                    >
+                        {{ selectedEmployee.firstName.charAt(0).toUpperCase()
+                        }}{{ selectedEmployee.lastName.charAt(0).toUpperCase() }}
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-2xl font-bold text-white mb-1">
+                            {{ selectedEmployee.firstName }} {{ selectedEmployee.lastName }}
+                        </h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leave Type Badge -->
+            <div class="mb-6 text-center">
+                <span
+                    class="inline-block px-6 py-3 bg-blue-50 text-blue-700 rounded-xl text-lg font-semibold"
+                >
+                    <i class="pi pi-calendar-plus mr-2"></i>
+                    {{ selectedRequest.requestType }}
+                </span>
+            </div>
+
+            <!-- Desktop View - Grid Layout -->
+            <div class="hidden md:grid md:grid-cols-2 gap-6 mb-6">
+                <div
+                    class="bg-gradient-to-br from-green-50 to-emerald-50 p-5 rounded-xl border-l-4 border-green-500 shadow-sm hover:shadow-md transition-shadow"
+                >
+                    <label
+                        class="font-bold text-green-700 flex items-center gap-2 mb-3 text-sm uppercase tracking-wide"
+                    >
+                        <i class="pi pi-calendar-plus text-xl"></i>
+                        Start Date
+                    </label>
+                    <p class="text-gray-800 text-xl font-semibold">
+                        {{ selectedRequest.startDate | date : 'EEEE, MMMM d, y' }}
+                    </p>
+                </div>
+
+                <div
+                    class="bg-gradient-to-br from-red-50 to-rose-50 p-5 rounded-xl border-l-4 border-red-500 shadow-sm hover:shadow-md transition-shadow"
+                >
+                    <label
+                        class="font-bold text-red-700 flex items-center gap-2 mb-3 text-sm uppercase tracking-wide"
+                    >
+                        <i class="pi pi-calendar-minus text-xl"></i>
+                        End Date
+                    </label>
+                    <p class="text-gray-800 text-xl font-semibold">
+                        {{ selectedRequest.endDate | date : 'EEEE, MMMM d, y' }}
+                    </p>
+                </div>
+
+                <div
+                    class="bg-gradient-to-br from-purple-50 to-violet-50 p-5 rounded-xl border-l-4 border-purple-500 shadow-sm hover:shadow-md transition-shadow"
+                >
+                    <label
+                        class="font-bold text-purple-700 flex items-center gap-2 mb-3 text-sm uppercase tracking-wide"
+                    >
+                        <i class="pi pi-clock text-xl"></i>
+                        Duration
+                    </label>
+                    <p class="text-gray-800 text-xl font-semibold">
+                        {{ calculateDuration(selectedRequest.startDate, selectedRequest.endDate) }}
+                        <span class="text-base text-gray-600 font-normal">
+                            {{
+                                calculateDuration(
+                                    selectedRequest.startDate,
+                                    selectedRequest.endDate
+                                ) === 1
+                                    ? 'day'
+                                    : 'days'
+                            }}
+                        </span>
+                    </p>
+                </div>
+
+                <div
+                    class="bg-gradient-to-br from-blue-50 to-cyan-50 p-5 rounded-xl border-l-4 border-blue-500 shadow-sm hover:shadow-md transition-shadow"
+                >
+                    <label
+                        class="font-bold text-blue-700 flex items-center gap-2 mb-3 text-sm uppercase tracking-wide"
+                    >
+                        <i class="pi pi-info-circle text-xl"></i>
+                        Status
+                    </label>
+                    <span
+                        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-base font-bold shadow-sm"
+                        [ngClass]="{
+                            'bg-yellow-200 text-yellow-900': selectedRequest.status === 'PENDING',
+                            'bg-green-200 text-green-900':
+                                selectedRequest.status === 'APPROVED' ||
+                                selectedRequest.status === 'ACCEPTED',
+                            'bg-red-200 text-red-900': selectedRequest.status === 'REJECTED'
+                        }"
+                    >
+                        <i
+                            class="pi"
+                            [ngClass]="{
+                                'pi-clock': selectedRequest.status === 'PENDING',
+                                'pi-check-circle':
+                                    selectedRequest.status === 'APPROVED' ||
+                                    selectedRequest.status === 'ACCEPTED',
+                                'pi-times-circle': selectedRequest.status === 'REJECTED'
+                            }"
+                        ></i>
+                        {{ selectedRequest.status }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Mobile View - Stacked Layout -->
+            <div class="block md:hidden space-y-4 mb-6">
+                <div
+                    class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-xl border-l-4 border-green-500 shadow-sm"
+                >
+                    <label
+                        class="font-bold text-green-700 flex items-center gap-2 mb-2 text-sm uppercase tracking-wide"
+                    >
+                        <i class="pi pi-calendar-plus text-lg"></i>
+                        Start Date
+                    </label>
+                    <p class="text-gray-800 text-lg font-semibold">
+                        {{ selectedRequest.startDate | date : 'EEEE, MMM d, y' }}
+                    </p>
+                </div>
+
+                <div
+                    class="bg-gradient-to-br from-red-50 to-rose-50 p-4 rounded-xl border-l-4 border-red-500 shadow-sm"
+                >
+                    <label
+                        class="font-bold text-red-700 flex items-center gap-2 mb-2 text-sm uppercase tracking-wide"
+                    >
+                        <i class="pi pi-calendar-minus text-lg"></i>
+                        End Date
+                    </label>
+                    <p class="text-gray-800 text-lg font-semibold">
+                        {{ selectedRequest.endDate | date : 'EEEE, MMM d, y' }}
+                    </p>
+                </div>
+
+                <div
+                    class="bg-gradient-to-br from-purple-50 to-violet-50 p-4 rounded-xl border-l-4 border-purple-500 shadow-sm"
+                >
+                    <label
+                        class="font-bold text-purple-700 flex items-center gap-2 mb-2 text-sm uppercase tracking-wide"
+                    >
+                        <i class="pi pi-clock text-lg"></i>
+                        Duration
+                    </label>
+                    <p class="text-gray-800 text-lg font-semibold">
+                        {{ calculateDuration(selectedRequest.startDate, selectedRequest.endDate) }}
+                        <span class="text-sm text-gray-600 font-normal">
+                            {{
+                                calculateDuration(
+                                    selectedRequest.startDate,
+                                    selectedRequest.endDate
+                                ) === 1
+                                    ? 'day'
+                                    : 'days'
+                            }}
+                        </span>
+                    </p>
+                </div>
+
+                <div
+                    class="bg-gradient-to-br from-blue-50 to-cyan-50 p-4 rounded-xl border-l-4 border-blue-500 shadow-sm"
+                >
+                    <label
+                        class="font-bold text-blue-700 flex items-center gap-2 mb-2 text-sm uppercase tracking-wide"
+                    >
+                        <i class="pi pi-info-circle text-lg"></i>
+                        Status
+                    </label>
+                    <span
+                        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold"
+                        [ngClass]="{
+                            'bg-yellow-200 text-yellow-900': selectedRequest.status === 'PENDING',
+                            'bg-green-200 text-green-900':
+                                selectedRequest.status === 'APPROVED' ||
+                                selectedRequest.status === 'ACCEPTED',
+                            'bg-red-200 text-red-900': selectedRequest.status === 'REJECTED'
+                        }"
+                    >
+                        <i
+                            class="pi"
+                            [ngClass]="{
+                                'pi-clock': selectedRequest.status === 'PENDING',
+                                'pi-check-circle':
+                                    selectedRequest.status === 'APPROVED' ||
+                                    selectedRequest.status === 'ACCEPTED',
+                                'pi-times-circle': selectedRequest.status === 'REJECTED'
+                            }"
+                        ></i>
+                        {{ selectedRequest.status }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Reason Section (Full Width) -->
+            <div
+                class="bg-gradient-to-br from-orange-50 to-amber-50 p-6 rounded-xl border-l-4 border-orange-500 shadow-sm"
+            >
+                <label
+                    class="font-bold text-orange-700 flex items-center gap-2 mb-3 text-sm uppercase tracking-wide"
+                >
+                    <i class="pi pi-file-edit text-xl"></i>
+                    Reason for Leave
+                </label>
+                <p class="text-gray-800 leading-relaxed text-base">
+                    {{ selectedRequest.reason || 'No reason provided' }}
+                </p>
+            </div>
+        </div>
+
+        <ng-template pTemplate="footer">
+            <div class="flex flex-wrap gap-3 justify-between w-full p-4 bg-gray-50 rounded-b-xl">
+                <!-- Left side - Close button -->
+                <p-button
+                    label="Close"
+                    icon="pi pi-times"
+                    (onClick)="displayLeaveRequestDetails = false"
+                    styleClass="p-button-text p-button-lg"
+                    severity="secondary"
+                ></p-button>
+
+                <!-- Right side - Action buttons (only for PENDING status) -->
+                <div class="flex gap-3" *ngIf="selectedRequest?.status === 'PENDING'">
+                    <p-button
+                        label="Reject"
+                        icon="pi pi-times-circle"
+                        (onClick)="rejectLeave(selectedRequest)"
+                        styleClass="p-button-danger p-button-lg"
+                        [disabled]="processingAction"
+                    ></p-button>
+                    <p-button
+                        label="Approve"
+                        icon="pi pi-check-circle"
+                        (onClick)="approveLeave(selectedRequest)"
+                        styleClass="p-button-success p-button-lg"
+                        [disabled]="processingAction"
+                    ></p-button>
+                </div>
+            </div>
         </ng-template>
     </p-dialog>
 
@@ -114,6 +487,8 @@
         </div>
         }
     </div>
+    <!-- Toast -->
+    <p-toast position="top-center" />
 
     <!-- Spinner -->
     <ngx-spinner

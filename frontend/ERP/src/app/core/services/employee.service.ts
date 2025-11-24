@@ -13,6 +13,7 @@ export class EmployeeService {
 
     constructor(private _httpClient:HttpClient, private _userService: UserService) {}
 
+    //leave request API calls
     requestLeave(data: ILeaveRequestRequest): Observable<any> {
         const user = this._userService.getUser();
 
@@ -41,11 +42,6 @@ export class EmployeeService {
         return this._httpClient.get(`${baseURL}/employees/${employeeId}/leave-requests`);
     }
 
-    getEmployeeByUserId(userId:string):Observable<any>{
-        console.log("Fetching employee details for userId:", userId);
-        return this._httpClient.get(`${baseURL}/employees/by-user/${userId}`);
-    }
-
     getLeaveRequestPerDepartment(id:Number):Observable<any>{
         return this._httpClient.get(`${baseURL}/departments/${id}/leave-requests/next-month`);
     }
@@ -63,6 +59,27 @@ export class EmployeeService {
 
         return this._httpClient.get(`${baseURL}/employees/${employeeId}/leave-balance`);
     }
+
+    acceptleaveRequest(leaveId:string):Observable<any>{
+        const body = {
+            status:"APPROVED"
+        };
+        return this._httpClient.patch(`${baseURL}/leave-requests/${leaveId}/status`, body);
+    }
+
+    rejectleaveRequest(leaveId:string):Observable<any>{
+        const body = {
+            status:"REJECTED"
+        };
+        return this._httpClient.patch(`${baseURL}/leave-requests/${leaveId}/status`, body);
+    }
+
+
+    getEmployeeByUserId(userId:string):Observable<any>{
+        console.log("Fetching employee details for userId:", userId);
+        return this._httpClient.get(`${baseURL}/employees/by-user/${userId}`);
+    }
+
 
     getPerformanceReviews():Observable<any>{
         return this._httpClient.get(`${baseURL}/performance-reviews/employee/reviews`);
