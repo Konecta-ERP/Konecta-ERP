@@ -11,7 +11,11 @@ import com.konecta.employeeservice.entity.Department;
 import com.konecta.employeeservice.entity.Employee;
 import com.konecta.employeeservice.repository.DepartmentRepository;
 import com.konecta.employeeservice.repository.EmployeeRepository;
+import com.konecta.employeeservice.dto.EmployeeLeavesDto;
+import com.konecta.employeeservice.dto.EmployeeDetailsDto;
+import com.konecta.employeeservice.dto.LeaveRequestDto;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,11 +24,16 @@ public class DepartmentService {
 
   private final DepartmentRepository departmentRepository;
   private final EmployeeRepository employeeRepository;
+  private final LeaveService leaveService;
+  private final EmployeeService employeeService;
 
   @Autowired
-  public DepartmentService(DepartmentRepository departmentRepository, EmployeeRepository employeeRepository) {
+  public DepartmentService(DepartmentRepository departmentRepository, EmployeeRepository employeeRepository,
+      LeaveService leaveService, EmployeeService employeeService) {
     this.departmentRepository = departmentRepository;
     this.employeeRepository = employeeRepository;
+    this.leaveService = leaveService;
+    this.employeeService = employeeService;
   }
 
   public List<DepartmentDto> getAllDepartments() {
@@ -99,5 +108,42 @@ public class DepartmentService {
       dto.setManagerName(null);
     }
     return dto;
+  }
+
+  public List<EmployeeLeavesDto> getEmployeesLeavesForNextMonth(Integer departmentId) {
+    if (!departmentRepository.existsById(departmentId)) {
+      throw new EntityNotFoundException("Department not found with id: " + departmentId);
+    }
+
+    java.time.YearMonth nextMonth = java.time.YearMonth.now().plusMonths(1);
+    java.time.LocalDate start = nextMonth.atDay(1);
+    java.time.LocalDate end = nextMonth.atEndOfMonth();
+
+    List<Employee> employees = employeeRepository.findByDepartmentId(departmentId);
+
+    List<EmployeeLeavesDto> result = new ArrayList<>();
+    for (Employee e : employees) {
+      EmployeeDetailsDto empDto = employeeService.getEmployeeDetailsById(e.getId());
+      List<LeaveRequestDto> leaves = leaveService.getRequestsForEmployeeInRange(e.getId(), start, end);
+      EmployeeLeavesDto el = new EmployeeLeavesDto();
+      el.setEmployee(empDto);
+      el.setLeaveRequests(leaves);
+      result.add(el);
+    }
+
+    return result;
+  }
+
+  public List<EmployeeDetailsDto> getEmployeesInDepartment(Integer departmentId) {
+    if (!departmentRepository.existsById(departmentId)) {
+      throw new EntityNotFoundException("Department not found with id: " + departmentId);
+    }
+
+    List<Employee> employees = employeeRepository.findByDepartmentId(departmentId);
+    List<EmployeeDetailsDto> result = new ArrayList<>();
+    for (Employee e : employees) {
+      result.add(employeeService.getEmployeeDetailsById(e.getId()));
+    }
+    return result;
   }
 }

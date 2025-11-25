@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 public class AttendanceService {
@@ -61,6 +62,16 @@ public class AttendanceService {
 
     AttendanceRecord savedRecord = attendanceRepository.save(record);
     return convertToDto(savedRecord);
+  }
+
+  public AttendanceRecordDto getLatestAttendanceRecord(Integer employeeId) {
+    employeeRepository.findById(employeeId)
+        .orElseThrow(() -> new EntityNotFoundException("Employee not found with id: " + employeeId));
+
+    Optional<AttendanceRecord> opt = attendanceRepository
+        .findTopByEmployeeIdOrderByDateDescClockInTimeDesc(employeeId);
+
+    return opt.map(this::convertToDto).orElse(null);
   }
 
   // --- DTO Converter ---

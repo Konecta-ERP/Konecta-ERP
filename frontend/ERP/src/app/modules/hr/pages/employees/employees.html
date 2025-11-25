@@ -1,0 +1,199 @@
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 md:p-6">
+    <div class="max-w-7xl mx-auto">
+        <!-- Search Card -->
+        <p-card styleClass="shadow-4 border-round-2xl mb-5">
+            <ng-template pTemplate="header">
+                <div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-5 border-round-top-2xl">
+                    <div class="flex align-items-center gap-3">
+                        <i class="pi pi-search text-white text-3xl"></i>
+                        <div>
+                            <h2 class="text-white text-3xl font-bold m-0">Employee Search</h2>
+                            <p class="text-blue-100 text-sm m-0 mt-1">
+                                Find employees by name, position, or department
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </ng-template>
+
+            <!-- Search Filters -->
+            <div class="grid gap-4 p-4">
+                <!-- Name Input -->
+                <div class="col-12 md:col-4">
+                    <label for="name" class="block text-900 font-semibold mb-2">
+                        <i class="pi pi-user mr-2 text-primary"></i>Name
+                    </label>
+                    <span class="p-input-icon-left w-full">
+                        <input
+                            id="name"
+                            pInputText
+                            type="text"
+                            placeholder="Search by name..."
+                            [(ngModel)]="filters.name"
+                            class="w-full"
+                        />
+                    </span>
+                </div>
+
+                <!-- Position Input -->
+                <div class="col-12 md:col-4">
+                    <label for="position" class="block text-900 font-semibold mb-2">
+                        <i class="pi pi-briefcase mr-2 text-primary"></i>Position
+                    </label>
+                    <span class="p-input-icon-left w-full">
+                        <input
+                            id="position"
+                            pInputText
+                            type="text"
+                            placeholder="Search by position..."
+                            [(ngModel)]="filters.position"
+                            class="w-full"
+                        />
+                    </span>
+                </div>
+
+                <!-- Department Dropdown -->
+                <div class="col-12 md:col-4">
+                    <label for="department" class="block text-900 font-semibold mb-2">
+                        <i class="pi pi-building mr-2 text-primary"></i>Department
+                    </label>
+                    <p-select
+                        id="department"
+                        [options]="dropDownDepartments"
+                        [(ngModel)]="filters.department"
+                        placeholder="Select department..."
+                        styleClass="w-full"
+                        [showClear]="true"
+                    >
+                        <ng-template pTemplate="selectedItem" let-option>
+                            <div class="flex align-items-center gap-2" *ngIf="option">
+                                <i class="pi pi-building"></i>
+                                <span>{{ option.label }}</span>
+                            </div>
+                        </ng-template>
+                        <ng-template pTemplate="item" let-option>
+                            <div class="flex align-items-center gap-2">
+                                <i class="pi pi-building"></i>
+                                <span>{{ option.label }}</span>
+                            </div>
+                        </ng-template>
+                    </p-select>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="col-12">
+                    <div class="flex gap-3 justify-content-center md:justify-content-end">
+                        <p-button
+                            label="Clear Filters"
+                            icon="pi pi-filter-slash"
+                            severity="secondary"
+                            [outlined]="true"
+                            (onClick)="onClearFilters()"
+                        ></p-button>
+                        <p-button
+                            label="Search Employees"
+                            icon="pi pi-search"
+                            severity="primary"
+                            (onClick)="onSearch()"
+                        ></p-button>
+                    </div>
+                </div>
+            </div>
+        </p-card>
+
+        <!-- Results Section -->
+        <div class="mt-5">
+            <!-- Results Header -->
+            <div class="flex align-items-center justify-content-between mb-4 px-2">
+                <div class="flex align-items-center gap-2">
+                    <h3 class="text-2xl font-bold text-900 m-0">Search Results</h3>
+                    @if(employeeList.length > 0) {
+                    <p-tag [value]="employeeList.length + ' Found'" severity="success"></p-tag>
+                    }
+                </div>
+
+                @if(employeeList.length > 0) {
+                <div class="flex gap-2">
+                    <p-button
+                        icon="pi pi-th-large"
+                        [outlined]="true"
+                        severity="secondary"
+                        [rounded]="true"
+                        (onClick)="viewMode = 'grid'"
+                        [disabled]="viewMode === 'grid'"
+                    ></p-button>
+                    <p-button
+                        icon="pi pi-list"
+                        [outlined]="true"
+                        severity="secondary"
+                        [rounded]="true"
+                        (onClick)="viewMode = 'list'"
+                        [disabled]="viewMode === 'list'"
+                    ></p-button>
+                </div>
+                }
+            </div>
+
+            <!-- Empty State -->
+            @if(employeeList.length === 0) {
+            <p-card styleClass="shadow-2 border-round-xl">
+                <div
+                    class="flex flex-column align-items-center justify-content-center py-6 px-4 text-center"
+                >
+                    <div
+                        class="bg-blue-50 border-circle w-8rem h-8rem flex align-items-center justify-content-center mb-4"
+                    >
+                        <i class="pi pi-search text-6xl text-blue-400"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-900 mb-2">No Employees Found</h3>
+                    <p class="text-600 text-lg mb-4 max-w-30rem">
+                        We couldn't find any employees matching your search criteria. Try adjusting
+                        your filters or clearing them to see all results.
+                    </p>
+                    <p-button
+                        label="Clear All Filters"
+                        icon="pi pi-filter-slash"
+                        severity="info"
+                        [outlined]="true"
+                        (onClick)="onClearFilters()"
+                    ></p-button>
+                </div>
+            </p-card>
+            }
+
+            <!-- Employee Grid -->
+            @else {
+            <div class="grid gap-4">
+                @for (employee of employeeList; track employee.id || $index) {
+                <div class="col-12 md:col-6 lg:col-4">
+                    <app-employee-card [employee]="employee"></app-employee-card>
+                </div>
+                }
+            </div>
+
+            <!-- Pagination (Optional) -->
+            @if(totalRecords > pageSize) {
+            <div class="flex justify-content-center mt-5">
+                <p-paginator
+                    [rows]="pageSize"
+                    [totalRecords]="totalRecords"
+                    [rowsPerPageOptions]="[9, 18, 27]"
+                    (onPageChange)="onPageChange($event)"
+                ></p-paginator>
+            </div>
+            } }
+        </div>
+    </div>
+</div>
+
+<ngx-spinner
+    bdColor="rgba(0, 0, 0, 0.8)"
+    size="large"
+    color="#ffd700"
+    type="timer"
+    [fullScreen]="true"
+>
+    <p style="color: #ffd700">Konnection flowing...</p>
+</ngx-spinner>
+
+<p-toast position="top-center" />

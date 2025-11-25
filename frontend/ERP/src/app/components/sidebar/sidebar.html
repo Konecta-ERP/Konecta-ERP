@@ -1,0 +1,43 @@
+<!-- sidebar.component.html -->
+<aside
+    class="flex flex-col w-64 min-h-screen bg-surface-100 border-r p-4 shadow-md transition-all duration-300 lg:w-64 md:w-56 sm:w-20 sm:items-center sm:p-2"
+>
+    <!-- Header -->
+    <div
+        class="text-lg font-semibold mb-6 text-primary tracking-wide flex items-center justify-between w-full"
+    >
+        <span class="sm:hidden">{{ basePath | titlecase }} Panel</span>
+        <button
+            class="lg:hidden text-primary hover:text-primary-600 transition"
+            (click)="toggleCollapse()"
+        >
+            <i
+                class="pi"
+                [class.pi-angle-double-left]="!collapsed"
+                [class.pi-angle-double-right]="collapsed"
+            ></i>
+        </button>
+    </div>
+
+    <!-- Sidebar items -->
+    <ul class="flex flex-col gap-2 w-full">
+        @for (item of filteredItems; track item.label) {
+        <li
+            routerLinkActive="!bg-primary text-white"
+            [routerLink]="['/home', basePath, item.route]"
+            class="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all duration-200 hover:bg-primary hover:text-white sm:justify-center sm:p-2"
+            [ngClass]="{ 'justify-center': collapsed }"
+        >
+            <i [class]="item.icon + ' text-lg'"></i>
+            @if (!collapsed) {
+            <span class="text-sm font-medium truncate">{{ item.label }}</span>
+            }
+        </li>
+        }
+    </ul>
+
+    <!-- Footer -->
+    <div class="mt-auto pt-6 border-t text-xs text-gray-500 text-center sm:hidden">
+        © {{ currentYear }} MyCompany
+    </div>
+</aside>

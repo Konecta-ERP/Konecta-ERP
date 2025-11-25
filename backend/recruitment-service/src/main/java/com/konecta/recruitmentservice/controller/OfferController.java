@@ -26,7 +26,7 @@ public class OfferController {
     this.offerService = offerService;
   }
 
-  @PostMapping("/applicants/{applicantId}/offer")
+  @PostMapping("/api/applicants/{applicantId}/offer")
   @PreAuthorize("hasAuthority('MANAGER')")
   public ResponseEntity<ApiResponse<OfferDto>> makeOffer(
       @PathVariable Integer applicantId,

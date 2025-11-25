@@ -116,6 +116,21 @@ public class LeaveService {
   }
 
   @Transactional(readOnly = true)
+  public List<LeaveRequestDto> getRequestsForEmployeeInRange(Integer employeeId, java.time.LocalDate start,
+      java.time.LocalDate end) {
+    // Reuse existing method which validates employee existence
+    List<LeaveRequestDto> all = getRequestsForEmployee(employeeId);
+
+    return all.stream()
+        .filter(r -> {
+          if (r.getStartDate() == null || r.getEndDate() == null) return false;
+          // keep requests that overlap [start, end]
+          return !(r.getEndDate().isBefore(start) || r.getStartDate().isAfter(end));
+        })
+        .collect(Collectors.toList());
+  }
+
+  @Transactional(readOnly = true)
   public LeaveRequestDto getRequestById(Integer requestId) {
     LeaveRequest request = leaveRequestRepository.findById(requestId)
         .orElseThrow(() -> new EntityNotFoundException("Leave request not found with id: " + requestId));

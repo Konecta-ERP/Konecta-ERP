@@ -1,0 +1,44 @@
+<p-card
+    class="cursor-pointer transition-all transition-duration-300 hover:shadow-5"
+    (click)="onCardClick()"
+>
+    <ng-template pTemplate="header">
+        <div class="flex justify-content-center pt-4">
+            <img
+                [src]="employee.profilePictureUrl || 'placeholderProfile.png'"
+                [alt]="employee.firstName + ' ' + employee.lastName"
+                class="border-circle w-8rem h-8rem shadow-3"
+                style="object-fit: cover"
+            />
+        </div>
+    </ng-template>
+
+    <div class="text-center">
+        <h3 class="text-2xl font-bold text-900 mb-2">
+            {{ employee.firstName }} {{ employee.lastName }}
+        </h3>
+
+        <p class="text-primary font-semibold mb-3">
+            {{ employee.position }}
+        </p>
+
+        <div class="flex justify-content-center mb-3">
+            <p-tag [value]="employee.departmentName" severity="info" [rounded]="true">
+                <ng-template pTemplate="icon">
+                    <i class="pi pi-building mr-2"></i>
+                </ng-template>
+            </p-tag>
+        </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <p-button
+            label="View Profile"
+            icon="pi pi-user"
+            [outlined]="true"
+            severity="primary"
+            styleClass="w-full"
+            (onClick)="onViewProfile($event)"
+        ></p-button>
+    </ng-template>
+</p-card>

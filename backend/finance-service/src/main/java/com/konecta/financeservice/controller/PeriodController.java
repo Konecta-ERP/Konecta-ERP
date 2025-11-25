@@ -50,7 +50,7 @@ public class PeriodController {
     }
 
     @GetMapping("/last")
-    @PreAuthorize("hasAuthority('CFO')")
+    @PreAuthorize("hasAuthority('CFO') or hasAuthority('ACCOUNTANT')")
     public ResponseEntity<ApiResponse<List<PeriodDTO>>> getLastSixPeriods() {
         List<PeriodDTO> periods = periodService.getLastSixPeriods();
         ApiResponse<List<PeriodDTO>> response = ApiResponse.success(

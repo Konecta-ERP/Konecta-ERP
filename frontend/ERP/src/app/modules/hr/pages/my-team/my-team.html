@@ -1,0 +1,19 @@
+<div class="card p-4 max-w-6xl mx-auto">
+    <div style="height: 650px">
+        <full-calendar [options]="calendarOptions"></full-calendar>
+    </div>
+
+    <!-- Toast for notifications -->
+    <p-toast position="top-center" />
+
+    <!-- Spinner -->
+    <ngx-spinner
+        bdColor="rgba(0, 0, 0, 0.8)"
+        size="large"
+        color="#ffd700"
+        type="timer"
+        [fullScreen]="true"
+    >
+        <p style="color: #ffd700">Konnection flowing...</p>
+    </ngx-spinner>
+</div>

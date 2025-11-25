@@ -36,7 +36,7 @@ public class LeaveController {
     this.employeeService = employeeService;
   }
 
-  @PostMapping("/employees/{employeeId}/leave-requests")
+  @PostMapping("/api/employees/{employeeId}/leave-requests")
   @PreAuthorize("isAuthenticated()")
   public ResponseEntity<ApiResponse<LeaveRequestDto>> submitLeaveRequest(
       @PathVariable(name = "employeeId") Integer employeeId,
@@ -72,7 +72,7 @@ public class LeaveController {
     return new ResponseEntity<>(response, HttpStatus.CREATED);
   }
 
-  @PatchMapping("/leave-requests/{requestId}/status")
+  @PatchMapping("/api/leave-requests/{requestId}/status")
   @PreAuthorize("hasAuthority('MANAGER')")
   public ResponseEntity<ApiResponse<LeaveRequestDto>> updateLeaveRequestStatus(
       @PathVariable(name = "requestId") Integer requestId,
@@ -87,7 +87,7 @@ public class LeaveController {
     return ResponseEntity.ok(response);
   }
 
-  @GetMapping("/employees/{employeeId}/leave-balance")
+  @GetMapping("/api/employees/{employeeId}/leave-balance")
   @PreAuthorize("isAuthenticated()")
   public ResponseEntity<ApiResponse<LeaveBalanceDto>> getEmployeeLeaveBalance(
       @PathVariable(name = "employeeId") Integer employeeId,
@@ -126,7 +126,7 @@ public class LeaveController {
     return ResponseEntity.ok(response);
   }
 
-  @GetMapping("/employees/{employeeId}/leave-requests")
+  @GetMapping("/api/employees/{employeeId}/leave-requests")
   @PreAuthorize("isAuthenticated()")
   public ResponseEntity<ApiResponse<List<LeaveRequestDto>>> getLeaveRequestsForEmployee(
       @PathVariable(name = "employeeId") Integer employeeId,
@@ -165,7 +165,7 @@ public class LeaveController {
     return ResponseEntity.ok(response);
   }
 
-  @GetMapping("/leave-requests/{requestId}")
+  @GetMapping("/api/leave-requests/{requestId}")
   @PreAuthorize("isAuthenticated()")
   public ResponseEntity<ApiResponse<LeaveRequestDto>> getLeaveRequestById(
       @PathVariable(name = "requestId") Integer requestId,
@@ -204,7 +204,7 @@ public class LeaveController {
     return ResponseEntity.ok(response);
   }
 
-  @DeleteMapping("/leave-requests/{requestId}")
+  @DeleteMapping("/api/leave-requests/{requestId}")
   @PreAuthorize("isAuthenticated()")
   public ResponseEntity<ApiResponse<Object>> deleteLeaveRequest(@PathVariable(name = "requestId") Integer requestId,
       Authentication authentication) {
