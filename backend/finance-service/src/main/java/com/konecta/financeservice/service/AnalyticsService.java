@@ -6,6 +6,7 @@ import com.konecta.financeservice.entity.Period;
 import com.konecta.financeservice.model.enums.AccountType;
 import com.konecta.financeservice.repository.AnalyticsRepository;
 import com.konecta.financeservice.repository.PeriodRepository;
+import com.konecta.financeservice.repository.AccountRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,12 +26,14 @@ public class AnalyticsService {
 
     private final AnalyticsRepository analyticsRepository;
     private final PeriodRepository periodRepository;
+    private final AccountRepository accountRepository;
     private final EntityManager entityManager;
 
     @Autowired
-    public AnalyticsService(AnalyticsRepository analyticsRepository, PeriodRepository periodRepository, EntityManager entityManager) {
+    public AnalyticsService(AnalyticsRepository analyticsRepository, PeriodRepository periodRepository, AccountRepository accountRepository, EntityManager entityManager) {
         this.analyticsRepository = analyticsRepository;
         this.periodRepository = periodRepository;
+        this.accountRepository = accountRepository;
         this.entityManager = entityManager;
     }
 
@@ -90,6 +93,10 @@ public class AnalyticsService {
     }
 
     public GLResponseDTO generateGLResponse(LocalDate fromDate, LocalDate toDate, List<Long> accountPKs) {
+        if (accountPKs == null || accountPKs.isEmpty()) {
+            List<Long> allAccountPKs = accountRepository.findAllActiveAccountPKs();
+            accountPKs = allAccountPKs;
+        }
         List<OpeningBalanceDTO> openings = fetchOpeningBalances(fromDate, accountPKs);
         List<GLRowDTO> entries = fetchEntries(fromDate, toDate, accountPKs);
         List<GLRowDTO> withRunning = computeRunningBalances(openings, entries);

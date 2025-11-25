@@ -28,7 +28,7 @@ public class ExcelExportController {
     }
 
     @GetMapping("/trial-balance/{id}")
-    @PreAuthorize("hasAuthority('ACCOUNTANT')")
+    @PreAuthorize("hasAuthority('CFO') or hasAuthority('ACCOUNTANT')")
     public ResponseEntity<byte[]> exportTrialBalance(@PathVariable("id") Long periodId) throws IOException {
         TrialBalanceReportDTO report = analyticsService.generateTrialBalance(periodId);
         byte[] bytes = excelExportService.exportTrialBalance(report);
@@ -41,7 +41,7 @@ public class ExcelExportController {
     }
 
     @GetMapping("/gl")
-    @PreAuthorize("hasAuthority('CFO')")
+    @PreAuthorize("hasAuthority('CFO') or hasAuthority('ACCOUNTANT')")
     public ResponseEntity<byte[]> exportGL(@RequestParam("fromDate") LocalDate fromDate,
                                            @RequestParam("toDate") LocalDate toDate,
                                            @RequestParam(name = "accountPKs", required = false) List<Long> accountPKs) throws IOException {

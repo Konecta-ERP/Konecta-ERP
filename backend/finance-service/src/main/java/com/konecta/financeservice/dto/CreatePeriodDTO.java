@@ -27,7 +27,7 @@ public class CreatePeriodDTO {
     private PeriodStatus status;
 
     @NotNull
-    private Long createdByUserId;
+    private String createdByUserId;
 
     private BigDecimal revenueBudget;
 

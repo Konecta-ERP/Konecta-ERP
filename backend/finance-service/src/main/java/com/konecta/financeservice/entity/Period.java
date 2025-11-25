@@ -37,7 +37,7 @@ public class Period {
     private PeriodStatus status = PeriodStatus.OPEN;
 
     @Column(name = "created_by_user_id", nullable = false)
-    private Long createdByUserId;
+    private String createdByUserId;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)

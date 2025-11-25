@@ -17,7 +17,7 @@ public class CreateJournalTransactionDTO {
     private String description;
 
     @NotNull
-    private Long postedByUserId;
+    private String postedByUserId;
 
     @NotNull
     private List<CreateJournalEntryDTO> entries;

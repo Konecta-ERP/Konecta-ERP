@@ -28,7 +28,7 @@ public class PDFExportController {
     }
 
     @GetMapping("trial-balance/{id}")
-    @PreAuthorize("hasAuthority('ACCOUNTANT')")
+    @PreAuthorize("hasAuthority('CFO') or hasAuthority('ACCOUNTANT')")
     public ResponseEntity<byte[]> exportTrialBalance(@PathVariable("id") Long periodId) {
         TrialBalanceReportDTO report = analyticsService.generateTrialBalance(periodId);
         byte[] bytes = pdfExportService.exportTrialBalance(report);
@@ -40,7 +40,7 @@ public class PDFExportController {
     }
 
     @GetMapping("/gl")
-    @PreAuthorize("hasAuthority('CFO')")
+    @PreAuthorize("hasAuthority('CFO') or hasAuthority('ACCOUNTANT')")
     public ResponseEntity<byte[]> exportGL(@RequestParam("fromDate") LocalDate fromDate,
                                            @RequestParam("toDate") LocalDate toDate,
                                            @RequestParam(name = "accountPKs", required = false) List<Long> accountPKs) throws IOException {

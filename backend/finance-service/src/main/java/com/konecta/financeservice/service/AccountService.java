@@ -79,10 +79,12 @@ public class AccountService {
     public AccountDTO deactivateAccount(Long id) {
         Account account = accountRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Account not found with id " + id));
-        if (account.getStatus() == AccountStatus.INACTIVE) {
-            throw new IllegalStateException("Account with id " + id + " is already inactive");
+        if (account.getStatus() == AccountStatus.INACTIVE)  {
+            account.setStatus(AccountStatus.ACTIVE);
         }
-        account.setStatus(AccountStatus.INACTIVE);
+        else {
+            account.setStatus(AccountStatus.INACTIVE);
+        }
         Account updatedAccount = accountRepository.save(account);
         return convertToDTO(updatedAccount);
     }
