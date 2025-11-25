@@ -32,17 +32,12 @@ jobs:
           echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
           echo "Generated VERSION_TAG=$VERSION_TAG"
 
-      - name: Setup GKE gcloud auth plugin
-        uses: "google-github-actions/setup-gcloud@v2"
-        with:
-            install_components: "gke-gcloud-auth-plugin"
-
       - name: OIDC Auth to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_BUILD }}
-            
+          
       - name: Build docker-compose images
         run: docker compose -f backend/docker-compose.yml build
       - name: Setup gcloud
@@ -88,6 +83,10 @@ jobs:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_GKE }}
 
+      - name: Setup GKE gcloud auth plugin
+        uses: "google-github-actions/setup-gcloud@v2"
+        with:
+            install_components: "gke-gcloud-auth-plugin"
       - name: Deploy to GKE (backend)
         run: |
           NAMESPACE=$([ "${{ github.ref_name }}" = "main" ] && echo "production" || echo "staging")
