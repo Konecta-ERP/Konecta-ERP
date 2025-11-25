@@ -1,0 +1,63 @@
+name: Infra CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout (full)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Determine version tag
+        run: |
+          COMMIT_HASH=$(git rev-parse --short HEAD)
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            VERSION_TAG="prod-${COMMIT_HASH}"
+          else
+            VERSION_TAG="dev-${COMMIT_HASH}"
+          fi
+          echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
+          echo "Generated VERSION_TAG=$VERSION_TAG"
+
+      - name: OIDC Auth to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_IAC }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.5
+
+      - name: Terraform init
+        working-directory: infra/terraform/envs/dev
+        run: terraform init -input=false
+
+      - name: Terraform fmt & validate
+        working-directory: infra/terraform/envs/dev
+        run: |
+          terraform fmt -check
+          terraform validate
+
+      - name: Terraform plan
+        working-directory: infra/terraform/envs/dev
+        run: terraform plan -out=tfplan
+
+      - name: Terraform apply (main only)
+        if: github.ref == 'refs/heads/main'
+        working-directory: infra/terraform/envs/dev
+        run: terraform apply -auto-approve tfplan
