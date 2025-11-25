@@ -73,7 +73,7 @@ public class LeaveController {
   }
 
   @PatchMapping("/api/leave-requests/{requestId}/status")
-  @PreAuthorize("hasAuthority('HR_MANAGER')")
+  @PreAuthorize("hasAuthority('MANAGER')")
   public ResponseEntity<ApiResponse<LeaveRequestDto>> updateLeaveRequestStatus(
       @PathVariable(name = "requestId") Integer requestId,
       @RequestBody UpdateLeaveStatusDto dto) {
