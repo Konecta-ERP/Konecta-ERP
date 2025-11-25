@@ -32,10 +32,10 @@ jobs:
           echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
           echo "Generated VERSION_TAG=$VERSION_TAG"
 
-      - name: Install GKE gcloud auth plugin
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install google-cloud-cli-gke-gcloud-auth-plugin -y
+      - name: Setup GKE gcloud auth plugin
+        uses: "google-github-actions/setup-gcloud@v2"
+        with:
+            install_components: "gke-gcloud-auth-plugin"
 
       - name: OIDC Auth to Google Cloud
         uses: google-github-actions/auth@v2
