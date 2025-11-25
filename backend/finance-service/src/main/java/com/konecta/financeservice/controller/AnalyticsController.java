@@ -24,7 +24,7 @@ public class AnalyticsController {
     }
 
     @GetMapping("/trial-balance/{id}")
-    @PreAuthorize("hasAuthority('ACCOUNTANT')")
+    @PreAuthorize("hasAuthority('CFO') or hasAuthority('ACCOUNTANT')")
     public ResponseEntity<ApiResponse<TrialBalanceReportDTO>> getTrialBalanceReport(@PathVariable("id") Long periodId) {
         TrialBalanceReportDTO dto = analyticsService.generateTrialBalance(periodId);
         ApiResponse<TrialBalanceReportDTO> response = ApiResponse.success(
@@ -37,7 +37,7 @@ public class AnalyticsController {
     }
 
     @GetMapping("/gl")
-    @PreAuthorize("hasAuthority('CFO')")
+    @PreAuthorize("hasAuthority('CFO') or hasAuthority('ACCOUNTANT')")
     public ResponseEntity<ApiResponse<GLResponseDTO>> getGL(
             @RequestParam("fromDate") LocalDate fromDate,
             @RequestParam("toDate") LocalDate toDate,

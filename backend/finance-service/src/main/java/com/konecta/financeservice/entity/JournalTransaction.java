@@ -34,7 +34,7 @@ public class JournalTransaction {
 
     // Foreign key to 'users' table - not in the finance db
     @Column(name = "posted_by_user_id", nullable = false)
-    private Long postedByUserId;
+    private String postedByUserId;
 
     @CreatedDate
     @Column(updatable = false)

@@ -154,7 +154,6 @@ export class Login {
         this.currentStep = 'forgot-password-email';
         this.forgotPasswordForm.reset();
     }
-
     submitForgotPasswordEmail() {
         if (this.forgotPasswordForm.valid) {
             this.forgotPasswordEmail = this.forgotPasswordForm.value.email;

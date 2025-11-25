@@ -23,7 +23,7 @@ public class PeriodDTO {
 
     private PeriodStatus status;
 
-    private Long createdByUserId;
+    private String createdByUserId;
 
     private LocalDateTime createdAt;
 
