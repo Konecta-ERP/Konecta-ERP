@@ -3,15 +3,19 @@ name: Infra CI/CD
 on:
   push:
     branches: [ main, develop ]
+    paths:
+      - 'infra/**'
   pull_request:
     branches: [ main, develop ]
+    paths:
+      - 'infra/**'
 
 permissions:
   contents: read
   id-token: write
 
 jobs:
-  backend:
+  infra:
     runs-on: ubuntu-latest
 
     steps:

@@ -357,19 +357,19 @@ module "monitoring" {
   source = "../../modules/monitoring"
 
   project_id             = var.project_id
-  alert_email            = "aminsherif659@gmail.com"  # Or use a variable
+  alert_email            = "aminsherif659@gmail.com" # Or use a variable
   enable_alerts          = true
   dashboard_display_name = "ERP Konecta - Dev Environment Monitoring"
 
   # Alert thresholds (all optional - have defaults)
-  latency_threshold_ms        = 2000  # 2 seconds
-  error_rate_threshold        = 0.05  # 5%
-  cpu_utilization_threshold   = 0.85  # 85%
+  latency_threshold_ms      = 2000 # 2 seconds
+  error_rate_threshold      = 0.05 # 5%
+  cpu_utilization_threshold = 0.85 # 85%
 
   # Alert durations (optional)
-  alert_duration_latency = 300  # 5 minutes
-  alert_duration_error   = 300  # 5 minutes
-  alert_duration_cpu     = 600  # 10 minutes
+  alert_duration_latency = 300 # 5 minutes
+  alert_duration_error   = 300 # 5 minutes
+  alert_duration_cpu     = 600 # 10 minutes
 
   depends_on = [module.gke_cluster, module.project_services]
 }
