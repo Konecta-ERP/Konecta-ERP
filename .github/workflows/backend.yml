@@ -90,6 +90,11 @@ jobs:
             docker push "$REMOTE_IMG"
             docker push "$LATEST_REMOTE"
           done
+      
+      - name: Install gke-gcloud-auth-plugin
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install google-cloud-sdk-gke-gcloud-auth-plugin -y
 
       - name: OIDC Auth to Google Cloud (for GKE deploy)
         uses: google-github-actions/auth@v2
