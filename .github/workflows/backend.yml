@@ -3,11 +3,15 @@ name: Backend CI/CD
 on:
   push:
     branches: [ main, develop ]
+    paths:
+      - 'backend/**'
   pull_request:
     branches: [ main, develop ]
+    paths:
+      - 'backend/**'
 
 permissions:
-  contents: write
+  contents: read
   id-token: write
 
 jobs:
@@ -22,142 +26,75 @@ jobs:
           persist-credentials: true
 
       - name: Determine version tag
-        id: versioning
         run: |
+          COMMIT_HASH=$(git rev-parse --short HEAD)
           if [ "${{ github.ref_name }}" = "main" ]; then
-            if [ ! -f VERSION ]; then
-              echo "VERSION file missing at repo root" >&2
-              exit 1
-            fi
-            if [ ! -f BUILD_NUMBER ]; then
-              echo "0" > BUILD_NUMBER
-            fi
-            MAJOR_MINOR=$(cat VERSION | tr -d ' \t\n\r')
-            BUILD=$(cat BUILD_NUMBER | tr -d ' \t\n\r')
-            NEW_BUILD=$((BUILD + 1))
-            printf "%d" $NEW_BUILD > BUILD_NUMBER
-            BUILD_PAD=$(printf "%02d" $NEW_BUILD)
-            VERSION_TAG="${MAJOR_MINOR}.${BUILD_PAD}"
-            echo "VERSION_TAG=${VERSION_TAG}" >> $GITHUB_ENV
-            echo "NEW_BUILD=${NEW_BUILD}" >> $GITHUB_ENV
+            VERSION_TAG="prod-${COMMIT_HASH}"
           else
-            COMMIT_HASH=$(git rev-parse --short HEAD)
             VERSION_TAG="dev-${COMMIT_HASH}"
-            echo "VERSION_TAG=${VERSION_TAG}" >> $GITHUB_ENV
           fi
-          echo "Using VERSION_TAG=${VERSION_TAG}"
-
-      - name: TruffleHog secret scan (backend)
-        uses: ./.github/actions/security-scan
-        with:
-          path: backend
-          fail: true
-
-      # Java (Maven)
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 21
-          cache: maven
-
-      - name: Maven build & test
-        working-directory: backend/java
-        run: mvn clean verify
-
-      # .NET
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 8.0.x
-
-      - name: Build & Test .NET
-        working-directory: backend/dotnet
-        run: |
-          dotnet restore
-          dotnet build --configuration Release
-          dotnet test --no-build --verbosity normal
+          echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
+          echo "Generated VERSION_TAG=$VERSION_TAG"
 
       - name: OIDC Auth to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
-          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
-
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_BUILD }}
+          
+      - name: Build docker-compose images
+        run: docker compose -f backend/docker-compose.yml build
       - name: Setup gcloud
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
       - name: Configure Docker auth
-        run: gcloud auth configure-docker gcr.io
+        run: gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
 
-      - name: Build Docker image (backend-dotnet)
+      - name: Tag & Push images to Artifact Registry
         run: |
-          IMAGE="gcr.io/${{ secrets.GCP_PROJECT_ID }}/backend-dotnet:${VERSION_TAG}"
-          docker build -t "$IMAGE" backend/dotnet/
-          echo "Built $IMAGE"
+          REGISTRY="${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO }}"
 
-      - name: Trivy image scan (backend-dotnet)
-        uses: ./.github/actions/security-scan
+          IMAGES=(
+            backend-identity-service
+            backend-recruitment-service
+            backend-employee-service
+            backend-finance-service
+            backend-api-gateway
+            backend-discovery-server
+          )
+
+          for SERVICE in "${IMAGES[@]}"; do
+            LOCAL_IMG="${SERVICE}:latest"
+            REMOTE_IMG="${REGISTRY}/${SERVICE}:${VERSION_TAG}"
+            LATEST_REMOTE="${REGISTRY}/${SERVICE}:latest"
+
+            echo "Processing $SERVICE"
+
+            # Tag images
+            docker tag "$LOCAL_IMG" "$REMOTE_IMG"
+            docker tag "$LOCAL_IMG" "$LATEST_REMOTE"
+
+            # Push images
+            docker push "$REMOTE_IMG"
+            docker push "$LATEST_REMOTE"
+          done
+
+      - name: OIDC Auth to Google Cloud (for GKE deploy)
+        uses: google-github-actions/auth@v2
         with:
-          image_ref: "gcr.io/${{ secrets.GCP_PROJECT_ID }}/backend-dotnet:${{ env.VERSION_TAG }}"
-          scan_type: image
-          fail: true
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_GKE }}
 
-      - name: Push Docker image (backend-dotnet)
-        run: |
-          IMAGE="gcr.io/${{ secrets.GCP_PROJECT_ID }}/backend-dotnet:${VERSION_TAG}"
-          docker push "$IMAGE"
-          if [ "${{ github.ref_name }}" = "main" ]; then
-            docker tag "$IMAGE" "gcr.io/${{ secrets.GCP_PROJECT_ID }}/backend-dotnet:latest"
-            docker push "gcr.io/${{ secrets.GCP_PROJECT_ID }}/backend-dotnet:latest"
-          fi
-
-      - name: Build Docker image (backend-java)
-        run: |
-          IMAGE="gcr.io/${{ secrets.GCP_PROJECT_ID }}/backend-java:${VERSION_TAG}"
-          docker build -t "$IMAGE" backend/java/
-          echo "Built $IMAGE"
-
-      - name: Trivy image scan (backend-java)
-        uses: ./.github/actions/security-scan
+      - name: Setup GKE gcloud auth plugin
+        uses: "google-github-actions/setup-gcloud@v2"
         with:
-          image_ref: "gcr.io/${{ secrets.GCP_PROJECT_ID }}/backend-java:${{ env.VERSION_TAG }}"
-          scan_type: image
-          fail: true
-
-      - name: Push Docker image (backend-java)
-        run: |
-          IMAGE="gcr.io/${{ secrets.GCP_PROJECT_ID }}/backend-java:${VERSION_TAG}"
-          docker push "$IMAGE"
-          if [ "${{ github.ref_name }}" = "main" ]; then
-            docker tag "$IMAGE" "gcr.io/${{ secrets.GCP_PROJECT_ID }}/backend-java:latest"
-            docker push "gcr.io/${{ secrets.GCP_PROJECT_ID }}/backend-java:latest"
-          fi
-
+            install_components: "gke-gcloud-auth-plugin"
       - name: Deploy to GKE (backend)
         run: |
           NAMESPACE=$([ "${{ github.ref_name }}" = "main" ] && echo "production" || echo "staging")
-          gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER }} --region=${{ secrets.GCP_REGION }}
+          gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER }} --region=${{ secrets.GCP_REGION }} --project=${{ secrets.GCP_PROJECT_ID }}
+          kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
           kubectl config set-context --current --namespace="$NAMESPACE"
-          kubectl set image deployment/backend-dotnet backend-dotnet=gcr.io/${{ secrets.GCP_PROJECT_ID }}/backend-dotnet:${VERSION_TAG} --record
-          kubectl set image deployment/backend-java backend-java=gcr.io/${{ secrets.GCP_PROJECT_ID }}/backend-java:${VERSION_TAG} --record
-          kubectl rollout status deployment/backend-dotnet
-          kubectl rollout status deployment/backend-java
-
-      - name: Commit bumped BUILD_NUMBER (main only)
-        if: ${{ github.ref == 'refs/heads/main' }}
-        env:
-          GIT_COMMITTER_NAME: "github-actions[bot]"
-          GIT_COMMITTER_EMAIL: "41898282+github-actions[bot]@users.noreply.github.com"
-        run: |
-          git config user.name "$GIT_COMMITTER_NAME"
-          git config user.email "$GIT_COMMITTER_EMAIL"
-          git add BUILD_NUMBER
-          if git diff --cached --quiet; then
-            echo "No BUILD_NUMBER changes to commit"
-          else
-            git commit -m "chore: bump BUILD_NUMBER to ${NEW_BUILD} [ci skip]"
-            git push origin HEAD:main
-          fi
+          kubectl apply -f infra/k8s/

@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recruitment-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: recruitment-service
+  template:
+    metadata:
+      labels:
+        app: recruitment-service
+    spec:
+      containers:
+        - name: recruitment-service
+          image: europe-west1-docker.pkg.dev/erp-konecta-477213/erp-services/backend-recruitment-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: DB_URL
+              value: jdbc:postgresql://recruitment-db.$(NAMESPACE).svc.cluster.local:5432/recruitment_db
+            - name: DB_USERNAME
+              value: postgres
+            - name: DB_PASSWORD
+              value: postgres
+            - name: EUREKA_SERVER
+              value: http://discovery-server.$(NAMESPACE).svc.cluster.local:8761/eureka/
+            - name: JWT_JWK_URI
+              value: http://identity-service.$(NAMESPACE).svc.cluster.local:8080/api/identity/auth/.well-known/jwks.json
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: recruitment-service
+spec:
+  selector:
+    app: recruitment-service
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
