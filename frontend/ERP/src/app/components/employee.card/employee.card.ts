@@ -16,14 +16,10 @@ export class EmployeeCard {
     constructor(private router: Router) {}
 
     onCardClick(): void {
-        // Navigate to employee detail page
-        // this.router.navigate(['/employees', this.employee.id]);
-        this.cardClick.emit(this.employee);
+        this.router.navigate(['/home/profile', this.employee.employeeId]);
     }
 
     onViewProfile(event: Event): void {
-        event.stopPropagation(); // Prevent card click
-        // Navigate to employee profile
-        // this.router.navigate(['/employees', this.employee.id, 'profile']);
+        event.stopPropagation();
     }
 }

@@ -18,6 +18,9 @@ export const routes: Routes = [
             {
                 path: 'profile', loadComponent:()=>import('./pages/profile/profile').then(m=>m.Profile)
             },
+            {
+                path: 'profile/:id', loadComponent:()=>import('./pages/profile/profile').then(m=>m.Profile)
+            },
            /*  {
                 path: 'finance', loadComponent:()=>import('./pages/finance/finance').then(m=>m.Finance)
             }, */
