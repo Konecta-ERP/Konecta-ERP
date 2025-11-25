@@ -25,7 +25,7 @@ public class JournalTransactionDTO {
 
     private List<JournalEntryDTO> entries;
 
-    private Long postedByUserId;
+    private String postedByUserId;
 
     private LocalDateTime createdAt;
 }

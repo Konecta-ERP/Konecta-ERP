@@ -125,4 +125,43 @@ public class JournalTransactionService {
         return dto;
     }
 
+    public List<JournalTransactionDTO> getAllJournalTransactions() {
+        List<JournalTransaction> transactions = journalTransactionRepository.findAll();
+        
+    
+        return transactions.stream()
+                .map(this::convertToDTOWithEntries)
+                .collect(Collectors.toList());
+    }
+
+    // Helper to map Entity -> DTO
+    private JournalTransactionDTO convertToDTOWithEntries(JournalTransaction transaction) {
+        JournalTransactionDTO dto = new JournalTransactionDTO();
+        dto.setTransactionId(transaction.getTransactionId());
+        dto.setPeriodId(transaction.getPeriod().getPeriodId());
+        dto.setTransactionDate(transaction.getTransactionDate());
+        dto.setDescription(transaction.getDescription());
+        dto.setPostedByUserId(transaction.getPostedByUserId());
+        dto.setCreatedAt(transaction.getCreatedAt());
+
+    
+        List<JournalEntryDTO> entryDTOs = new ArrayList<>();
+        
+        List<JournalEntry> entries = journalEntryRepository.findAllByTransaction_TransactionId(transaction.getTransactionId());
+
+        for (JournalEntry e : entries) {
+            JournalEntryDTO entryDto = new JournalEntryDTO();
+            entryDto.setEntryID(e.getEntryId());
+            entryDto.setAccountPK(e.getAccount().getAccountPK());
+            entryDto.setAccountId(e.getAccount().getAccountId());
+            entryDto.setAccountName(e.getAccount().getAccountName());
+            entryDto.setDebitAmount(e.getDebitAmount());
+            entryDto.setCreditAmount(e.getCreditAmount());
+            entryDTOs.add(entryDto);
+        }
+        
+        dto.setEntries(entryDTOs);
+        return dto;
+    }
+
 }

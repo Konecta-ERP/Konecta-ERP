@@ -1,0 +1,743 @@
+<p-toast></p-toast>
+<p-confirmDialog [style]="{ width: '450px' }"></p-confirmDialog>
+
+<!-- Header: KPI Dashboard & Title -->
+<div class="grid mb-4">
+    <!-- Title Card -->
+    <div class="col-12 md:col-6">
+        <p-card
+            styleClass="shadow-4 border-round-2xl h-full"
+            [style]="{ background: 'linear-gradient(to right, #2563EB, #4F46E5)', color: 'white' }"
+        >
+            <div class="flex align-items-center gap-4 h-full p-4">
+                <i class="pi pi-calendar-clock text-6xl"></i>
+                <div>
+                    <h2 class="text-3xl font-bold m-0 text-white">Financial Periods</h2>
+                    <p class="text-white-alpha-90 text-lg m-0 mt-2">
+                        Manage monthly closings, lock periods, and track efficiency KPIs.
+                    </p>
+                </div>
+            </div>
+        </p-card>
+    </div>
+
+    <!-- KPI Chart Card -->
+    <div class="col-12 md:col-6">
+        <p-card styleClass="shadow-2 border-round-2xl h-full">
+            <ng-template pTemplate="header">
+                <div class="px-4 pt-3 flex align-items-center justify-content-between">
+                    <span class="font-bold text-xl text-900">Time to Close Trend</span>
+                    <span class="text-500 text-sm">Last 6 Periods</span>
+                </div>
+            </ng-template>
+            <div class="h-10rem">
+                <p-chart
+                    type="line"
+                    [data]="chartData"
+                    [options]="chartOptions"
+                    height="100%"
+                ></p-chart>
+            </div>
+        </p-card>
+    </div>
+</div>
+
+<!-- Main List Card -->
+<p-card styleClass="shadow-4 border-round-2xl">
+    <div class="p-3">
+        <!-- Toolbar -->
+        <p-toolbar styleClass="mb-4 gap-2 border-none bg-transparent px-0">
+            <ng-template pTemplate="left">
+                <button
+                    *ngIf="isCFO"
+                    pButton
+                    pRipple
+                    label="New Period"
+                    icon="pi pi-plus"
+                    class="p-button-success mr-2"
+                    (click)="openNew()"
+                ></button>
+            </ng-template>
+            <ng-template pTemplate="right">
+                <button
+                    pButton
+                    pRipple
+                    icon="pi pi-refresh"
+                    class="p-button-text"
+                    (click)="loadData()"
+                ></button>
+            </ng-template>
+        </p-toolbar>
+
+        <!-- Data Table -->
+        <p-table
+            #dt
+            [value]="periods"
+            [rows]="10"
+            [paginator]="true"
+            [globalFilterFields]="['label', 'status']"
+            styleClass="p-datatable-lg"
+            [tableStyle]="{ 'min-width': '70rem' }"
+        >
+            <ng-template pTemplate="header">
+                <tr>
+                    <th pSortableColumn="label">Period <p-sortIcon field="label"></p-sortIcon></th>
+                    <th pSortableColumn="startDate">
+                        Start Date <p-sortIcon field="startDate"></p-sortIcon>
+                    </th>
+                    <th pSortableColumn="endDate">
+                        End Date <p-sortIcon field="endDate"></p-sortIcon>
+                    </th>
+                    <th pSortableColumn="status">
+                        Status <p-sortIcon field="status"></p-sortIcon>
+                    </th>
+
+                    <!-- Budgets Column -->
+                    <th class="text-center" style="width: 100px">Budgets</th>
+
+                    <!-- Reports Column (NEW) -->
+                    <th class="text-center" style="width: 150px">Reports</th>
+
+                    <th *ngIf="isCFO || isAccountant" class="text-center" style="width: 160px">
+                        Actions
+                    </th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-period>
+                <tr>
+                    <td class="py-3">
+                        <span class="font-bold text-lg">{{ period.label }}</span>
+                    </td>
+                    <td class="py-3">{{ period.startDate | date }}</td>
+                    <td class="py-3">{{ period.endDate | date }}</td>
+                    <td class="py-3">
+                        <p-tag
+                            [value]="period.status"
+                            [severity]="getSeverity(period.status)"
+                        ></p-tag>
+                    </td>
+
+                    <!-- Budget Button -->
+                    <td class="text-center py-3">
+                        <button
+                            pButton
+                            pRipple
+                            icon="pi pi-wallet"
+                            class="p-button-text p-button-secondary p-button-rounded"
+                            (click)="viewBudgets(period)"
+                            pTooltip="View Budgets"
+                        ></button>
+                    </td>
+
+                    <!-- Reports Column (NEW) -->
+                    <td class="text-center py-3">
+                        <button
+                            pButton
+                            pRipple
+                            icon="pi pi-table"
+                            class="p-button-rounded p-button-text p-button-info p-button-sm mr-1"
+                            (click)="viewTrialBalance(period)"
+                            pTooltip="Trial Balance"
+                        ></button>
+                        <button
+                            pButton
+                            pRipple
+                            icon="pi pi-chart-bar"
+                            class="p-button-rounded p-button-text p-button-success p-button-sm mr-1"
+                            (click)="viewIncomeStatement(period)"
+                            pTooltip="Income Statement"
+                        ></button>
+                        <button
+                            pButton
+                            pRipple
+                            icon="pi pi-dollar"
+                            class="p-button-rounded p-button-text p-button-warning p-button-sm"
+                            (click)="viewCashFlow(period)"
+                            pTooltip="Cash Flow"
+                        ></button>
+                    </td>
+
+                    <td *ngIf="isCFO || isAccountant" class="text-center py-3">
+                        <button
+                            *ngIf="period.status === 'OPEN'"
+                            pButton
+                            pRipple
+                            label="Start Close"
+                            icon="pi pi-hourglass"
+                            class="p-button-warning p-button-sm"
+                            (click)="initiateClosing(period)"
+                        ></button>
+
+                        <button
+                            *ngIf="period.status === 'CLOSING' && isCFO"
+                            pButton
+                            pRipple
+                            label="Lock Period"
+                            icon="pi pi-lock"
+                            class="p-button-danger p-button-sm"
+                            (click)="lockPeriod(period)"
+                        ></button>
+
+                        <button
+                            *ngIf="period.status === 'CLOSED'"
+                            pButton
+                            pRipple
+                            icon="pi pi-check-circle"
+                            class="p-button-text p-button-success p-button-rounded"
+                            disabled
+                        ></button>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</p-card>
+
+<!-- Trial Balance Dialog (Fixed Formatting) -->
+<p-dialog
+    [(visible)]="tbDialog"
+    [style]="{ width: '1000px' }"
+    header="Trial Balance Report"
+    [modal]="true"
+    styleClass="p-fluid"
+    [maximizable]="true"
+>
+    <ng-template pTemplate="content">
+        <div
+            class="flex justify-content-between align-items-center bg-blue-50 p-4 border-round mb-4"
+            *ngIf="tbReport"
+        >
+            <div>
+                <div class="text-xl font-bold text-900">{{ tbReport.periodLabel }}</div>
+                <div class="text-600 mt-1">Status: {{ tbReport.periodStatus }}</div>
+            </div>
+            <div class="text-center">
+                <div class="text-sm text-600 uppercase font-semibold mb-1">TB Status</div>
+                <div
+                    class="text-2xl font-bold"
+                    [ngClass]="{
+                        'text-green-600': tbReport.tbStatus === 'Balanced',
+                        'text-red-600': tbReport.tbStatus !== 'Balanced'
+                    }"
+                >
+                    {{ tbReport.tbStatus }}
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button
+                    pButton
+                    label="PDF"
+                    icon="pi pi-file-pdf"
+                    class="p-button-danger p-button-outlined"
+                    (click)="exportPDF('tb')"
+                ></button>
+                <button
+                    pButton
+                    label="Excel"
+                    icon="pi pi-file-excel"
+                    class="p-button-success p-button-outlined"
+                    (click)="exportExcel('tb')"
+                ></button>
+            </div>
+        </div>
+
+        <p-table
+            [value]="tbReport.rows"
+            styleClass="p-datatable-sm gridlines"
+            [loading]="reportLoading"
+        >
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Account Name</th>
+                    <th>Type</th>
+                    <th class="text-right">Total Debits</th>
+                    <th class="text-right">Total Credits</th>
+                    <!-- Removed bg-gray-50 -->
+                    <th class="text-right font-bold">Final Debit</th>
+                    <th class="text-right font-bold">Final Credit</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-row>
+                <tr [ngClass]="{ 'bg-red-50': row.abnormal }">
+                    <td>
+                        <span class="font-medium">{{ row.accountName }}</span>
+                        <i
+                            *ngIf="row.abnormal"
+                            class="pi pi-exclamation-triangle text-red-500 ml-2"
+                            pTooltip="Abnormal Balance"
+                        ></i>
+                    </td>
+                    <td>{{ row.accountType }}</td>
+                    <td class="text-right">{{ row.totalDebits | currency : 'USD' }}</td>
+                    <td class="text-right">{{ row.totalCredits | currency : 'USD' }}</td>
+                    <!-- Removed bg-gray-50 -->
+                    <td class="text-right font-medium">
+                        <span *ngIf="row.debitBalance > 0">{{
+                            row.debitBalance | currency : 'USD'
+                        }}</span>
+                    </td>
+                    <td class="text-right font-medium">
+                        <span *ngIf="row.creditBalance > 0">{{
+                            row.creditBalance | currency : 'USD'
+                        }}</span>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="footer">
+                <tr class="font-bold bg-blue-50 text-lg">
+                    <td colspan="2">Totals</td>
+                    <td class="text-right">{{ tbReport.totalDebits | currency : 'USD' }}</td>
+                    <td class="text-right">{{ tbReport.totalCredits | currency : 'USD' }}</td>
+                    <td colspan="2"></td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </ng-template>
+    <ng-template pTemplate="footer">
+        <button
+            pButton
+            label="Close"
+            icon="pi pi-times"
+            class="p-button-text"
+            (click)="tbDialog = false"
+        ></button>
+    </ng-template>
+</p-dialog>
+
+<!-- Income Statement Dialog -->
+<p-dialog
+    [(visible)]="incomeDialog"
+    [style]="{ width: '900px' }"
+    header="Income Statement"
+    [modal]="true"
+    styleClass="p-fluid"
+>
+    <ng-template pTemplate="content">
+        <div class="flex justify-content-between align-items-center mb-4">
+            <div class="text-xl font-bold">For Period: {{ incomeReport.periodLabel }}</div>
+            <div class="flex gap-2">
+                <button
+                    pButton
+                    label="PDF"
+                    icon="pi pi-file-pdf"
+                    class="p-button-danger p-button-outlined p-button-sm"
+                    (click)="exportPDF('is')"
+                ></button>
+                <button
+                    pButton
+                    label="Excel"
+                    icon="pi pi-file-excel"
+                    class="p-button-success p-button-outlined p-button-sm"
+                    (click)="exportExcel('is')"
+                ></button>
+            </div>
+        </div>
+
+        <div class="surface-card p-4 shadow-2 border-round">
+            <!-- Revenue Section -->
+            <div class="flex justify-content-between py-2 border-bottom-1 surface-border">
+                <span class="font-semibold">Revenue</span>
+                <span class="text-green-600 font-bold">{{
+                    incomeReport.revenueActual | currency : 'USD'
+                }}</span>
+            </div>
+            <div class="flex justify-content-between py-2 border-bottom-1 surface-border">
+                <span class="font-semibold">COGS</span>
+                <span class="text-orange-600"
+                    >({{ incomeReport.cogsActual | currency : 'USD' }})</span
+                >
+            </div>
+
+            <!-- Gross Profit -->
+            <div class="flex justify-content-between py-3 bg-blue-50 px-2 border-round my-2">
+                <span class="font-bold text-lg text-900">Gross Profit</span>
+                <span class="font-bold text-lg text-900">{{
+                    incomeReport.grossProfitActual | currency : 'USD'
+                }}</span>
+            </div>
+
+            <!-- Opex -->
+            <div class="flex justify-content-between py-2 border-bottom-1 surface-border">
+                <span class="font-semibold">Operating Expenses</span>
+                <span class="text-orange-600"
+                    >({{ incomeReport.opexActual | currency : 'USD' }})</span
+                >
+            </div>
+
+            <!-- EBIT -->
+            <div class="flex justify-content-between py-3 bg-blue-50 px-2 border-round my-2">
+                <span class="font-bold text-lg text-900">EBIT</span>
+                <span class="font-bold text-lg text-900">{{
+                    incomeReport.ebitActual | currency : 'USD'
+                }}</span>
+            </div>
+
+            <div class="flex justify-content-between py-2">
+                <span>Other Income</span>
+                <span class="text-green-600">{{
+                    incomeReport.otherIncomeActual | currency : 'USD'
+                }}</span>
+            </div>
+            <div class="flex justify-content-between py-2 border-bottom-1 surface-border">
+                <span>Other Expenses</span>
+                <span class="text-orange-600"
+                    >({{ incomeReport.otherExpenseActual | currency : 'USD' }})</span
+                >
+            </div>
+
+            <!-- Net Income -->
+            <div
+                class="flex justify-content-between py-4 mt-3 bg-indigo-50 px-3 border-round border-left-3 border-indigo-500"
+            >
+                <span class="font-bold text-xl text-indigo-900">Net Income</span>
+                <span class="font-bold text-xl text-indigo-900">{{
+                    incomeReport.netIncomeActual | currency : 'USD'
+                }}</span>
+            </div>
+        </div>
+    </ng-template>
+    <ng-template pTemplate="footer">
+        <button
+            pButton
+            label="Close"
+            icon="pi pi-times"
+            class="p-button-text"
+            (click)="incomeDialog = false"
+        ></button>
+    </ng-template>
+</p-dialog>
+
+<!-- Cash Flow Dialog -->
+<p-dialog
+    [(visible)]="cashFlowDialog"
+    [style]="{ width: '800px' }"
+    header="Cash Flow Statement"
+    [modal]="true"
+    styleClass="p-fluid"
+>
+    <ng-template pTemplate="content">
+        <div class="flex justify-content-between align-items-center mb-4">
+            <div class="text-xl font-bold">For Period: {{ cashFlowReport.periodLabel }}</div>
+            <div class="flex gap-2">
+                <button
+                    pButton
+                    label="PDF"
+                    icon="pi pi-file-pdf"
+                    class="p-button-danger p-button-outlined p-button-sm"
+                    (click)="exportPDF('cf')"
+                ></button>
+                <button
+                    pButton
+                    label="Excel"
+                    icon="pi pi-file-excel"
+                    class="p-button-success p-button-outlined p-button-sm"
+                    (click)="exportExcel('cf')"
+                ></button>
+            </div>
+        </div>
+
+        <div class="surface-card p-4 shadow-2 border-round">
+            <div
+                class="flex justify-content-between py-3 border-bottom-1 surface-border bg-gray-50 px-2"
+            >
+                <span class="font-semibold">Opening Cash Balance</span>
+                <span class="font-bold">{{ cashFlowReport.openingCash | currency : 'USD' }}</span>
+            </div>
+
+            <div class="my-3">
+                <div class="flex justify-content-between py-2">
+                    <span>Net Cash from Operations</span>
+                    <span
+                        [ngClass]="{
+                            'text-green-600': cashFlowReport.cfo >= 0,
+                            'text-orange-600': cashFlowReport.cfo < 0
+                        }"
+                    >
+                        {{ cashFlowReport.cfo | currency : 'USD' }}
+                    </span>
+                </div>
+                <div class="flex justify-content-between py-2">
+                    <span>Net Cash from Investing</span>
+                    <span
+                        [ngClass]="{
+                            'text-green-600': cashFlowReport.cfi >= 0,
+                            'text-orange-600': cashFlowReport.cfi < 0
+                        }"
+                    >
+                        {{ cashFlowReport.cfi | currency : 'USD' }}
+                    </span>
+                </div>
+                <div class="flex justify-content-between py-2 border-bottom-1 surface-border">
+                    <span>Net Cash from Financing</span>
+                    <span
+                        [ngClass]="{
+                            'text-green-600': cashFlowReport.cff >= 0,
+                            'text-orange-600': cashFlowReport.cff < 0
+                        }"
+                    >
+                        {{ cashFlowReport.cff | currency : 'USD' }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="flex justify-content-between py-3 bg-blue-50 px-2 border-round my-2">
+                <span class="font-bold">Net Change in Cash</span>
+                <span class="font-bold">{{ cashFlowReport.netChange | currency : 'USD' }}</span>
+            </div>
+
+            <div
+                class="flex justify-content-between py-3 bg-indigo-50 px-2 border-round border-left-3 border-indigo-500"
+            >
+                <span class="font-bold text-lg text-indigo-900">Ending Cash Balance</span>
+                <span class="font-bold text-lg text-indigo-900">{{
+                    cashFlowReport.endingCash | currency : 'USD'
+                }}</span>
+            </div>
+
+            <div class="mt-3 text-right text-sm" *ngIf="cashFlowReport.reconciled">
+                <i class="pi pi-check-circle text-green-500 mr-1"></i> Reconciled with Balance Sheet
+            </div>
+            <div class="mt-3 text-right text-sm text-red-500" *ngIf="!cashFlowReport.reconciled">
+                <i class="pi pi-times-circle mr-1"></i> Not Reconciled
+            </div>
+        </div>
+    </ng-template>
+    <ng-template pTemplate="footer">
+        <button
+            pButton
+            label="Close"
+            icon="pi pi-times"
+            class="p-button-text"
+            (click)="cashFlowDialog = false"
+        ></button>
+    </ng-template>
+</p-dialog>
+
+<!-- Create Dialog & View Budget Dialog & Checklist Dialog (Same as before) -->
+<!-- Create Dialog -->
+<p-dialog
+    [(visible)]="periodDialog"
+    [style]="{ width: '700px' }"
+    header="New Financial Period"
+    [modal]="true"
+    styleClass="p-fluid"
+>
+    <ng-template pTemplate="content">
+        <div class="flex flex-column gap-4 mb-5">
+            <div class="field">
+                <label for="label" class="font-bold block mb-2">Period Label (e.g. Jan-2024)</label>
+                <input
+                    type="text"
+                    pInputText
+                    id="label"
+                    [(ngModel)]="period.label"
+                    required
+                    autofocus
+                    class="w-full"
+                />
+            </div>
+
+            <div class="flex gap-3">
+                <div class="flex-1">
+                    <label for="start" class="font-bold block mb-2">Start Date</label>
+                    <p-datepicker
+                        [(ngModel)]="period.startDate"
+                        inputId="start"
+                        dateFormat="yy-mm-dd"
+                        appendTo="body"
+                        [showIcon]="true"
+                        styleClass="w-full"
+                        [inputStyle]="{ width: '100%' }"
+                    ></p-datepicker>
+                </div>
+                <div class="flex-1">
+                    <label for="end" class="font-bold block mb-2">End Date</label>
+                    <p-datepicker
+                        [(ngModel)]="period.endDate"
+                        inputId="end"
+                        dateFormat="yy-mm-dd"
+                        appendTo="body"
+                        [showIcon]="true"
+                        styleClass="w-full"
+                        [inputStyle]="{ width: '100%' }"
+                    ></p-datepicker>
+                </div>
+            </div>
+        </div>
+
+        <div class="formgrid grid">
+            <div class="field col-12 md:col-4">
+                <label for="revenue" class="font-semibold block mb-2">Revenue Budget</label>
+                <p-inputNumber
+                    [(ngModel)]="period.revenueBudget"
+                    inputId="revenue"
+                    mode="currency"
+                    currency="USD"
+                    locale="en-US"
+                    styleClass="w-full"
+                ></p-inputNumber>
+            </div>
+            <div class="field col-12 md:col-4">
+                <label for="cogs" class="font-semibold block mb-2">COGS Budget</label>
+                <p-inputNumber
+                    [(ngModel)]="period.cogsBudget"
+                    inputId="cogs"
+                    mode="currency"
+                    currency="USD"
+                    locale="en-US"
+                    styleClass="w-full"
+                ></p-inputNumber>
+            </div>
+            <div class="field col-12 md:col-4">
+                <label for="opex" class="font-semibold block mb-2">OpEx Budget</label>
+                <p-inputNumber
+                    [(ngModel)]="period.opexBudget"
+                    inputId="opex"
+                    mode="currency"
+                    currency="USD"
+                    locale="en-US"
+                    styleClass="w-full"
+                ></p-inputNumber>
+            </div>
+            <div class="field col-12 md:col-6">
+                <label for="otherInc" class="font-semibold block mb-2">Other Income Budget</label>
+                <p-inputNumber
+                    [(ngModel)]="period.otherIncomeBudget"
+                    inputId="otherInc"
+                    mode="currency"
+                    currency="USD"
+                    locale="en-US"
+                    styleClass="w-full"
+                ></p-inputNumber>
+            </div>
+            <div class="field col-12 md:col-6">
+                <label for="otherExp" class="font-semibold block mb-2">Other Expense Budget</label>
+                <p-inputNumber
+                    [(ngModel)]="period.otherExpenseBudget"
+                    inputId="otherExp"
+                    mode="currency"
+                    currency="USD"
+                    locale="en-US"
+                    styleClass="w-full"
+                ></p-inputNumber>
+            </div>
+        </div>
+    </ng-template>
+    <ng-template pTemplate="footer">
+        <button
+            pButton
+            pRipple
+            label="Cancel"
+            icon="pi pi-times"
+            class="p-button-text"
+            (click)="periodDialog = false"
+        ></button>
+        <button
+            pButton
+            pRipple
+            label="Save"
+            icon="pi pi-check"
+            class="p-button-text"
+            (click)="savePeriod()"
+        ></button>
+    </ng-template>
+</p-dialog>
+
+<!-- View Budgets Dialog -->
+<p-dialog
+    [(visible)]="viewBudgetDialog"
+    [style]="{ width: '450px' }"
+    [header]="'Budgets for ' + selectedPeriodForBudgets.label"
+    [modal]="true"
+    styleClass="p-fluid"
+>
+    <ng-template pTemplate="content">
+        <div class="flex flex-column gap-3">
+            <div
+                class="flex justify-content-between align-items-center border-bottom-1 surface-border pb-2"
+            >
+                <span class="text-700 font-medium">Revenue Budget</span>
+                <span class="text-900 font-bold text-xl text-green-600">{{
+                    selectedPeriodForBudgets.revenueBudget | currency : 'USD'
+                }}</span>
+            </div>
+            <div
+                class="flex justify-content-between align-items-center border-bottom-1 surface-border pb-2"
+            >
+                <span class="text-700 font-medium">COGS Budget</span>
+                <span class="text-900 font-bold text-xl text-orange-600">{{
+                    selectedPeriodForBudgets.cogsBudget | currency : 'USD'
+                }}</span>
+            </div>
+            <div
+                class="flex justify-content-between align-items-center border-bottom-1 surface-border pb-2"
+            >
+                <span class="text-700 font-medium">OpEx Budget</span>
+                <span class="text-900 font-bold text-xl text-orange-600">{{
+                    selectedPeriodForBudgets.opexBudget | currency : 'USD'
+                }}</span>
+            </div>
+            <div
+                class="flex justify-content-between align-items-center border-bottom-1 surface-border pb-2"
+            >
+                <span class="text-700 font-medium">Other Income Budget</span>
+                <span class="text-900 font-bold text-xl text-green-600">{{
+                    selectedPeriodForBudgets.otherIncomeBudget | currency : 'USD'
+                }}</span>
+            </div>
+            <div class="flex justify-content-between align-items-center pb-2">
+                <span class="text-700 font-medium">Other Expense Budget</span>
+                <span class="text-900 font-bold text-xl text-orange-600">{{
+                    selectedPeriodForBudgets.otherExpenseBudget | currency : 'USD'
+                }}</span>
+            </div>
+        </div>
+    </ng-template>
+    <ng-template pTemplate="footer">
+        <button
+            pButton
+            pRipple
+            label="Close"
+            icon="pi pi-times"
+            class="p-button-text"
+            (click)="viewBudgetDialog = false"
+        ></button>
+    </ng-template>
+</p-dialog>
+
+<!-- Pre-Closing Checklist Dialog -->
+<p-dialog
+    [(visible)]="checklistVisible"
+    [style]="{ width: '400px' }"
+    header="Pre-Closing Checks"
+    [modal]="true"
+>
+    <ng-template pTemplate="content">
+        <div class="flex flex-column gap-3">
+            <div *ngFor="let step of checklistSteps" class="flex align-items-center gap-2">
+                <i class="pi pi-check-circle text-green-500 text-xl"></i>
+                <span class="text-lg">{{ step.label }}</span>
+            </div>
+            <div class="mt-3 p-3 bg-blue-50 border-round text-blue-700">
+                <i class="pi pi-info-circle mr-2"></i> All automated checks passed.
+            </div>
+        </div>
+    </ng-template>
+    <ng-template pTemplate="footer">
+        <button
+            pButton
+            pRipple
+            label="Cancel"
+            class="p-button-text"
+            (click)="checklistVisible = false"
+        ></button>
+        <button
+            pButton
+            pRipple
+            label="Confirm & Start Closing"
+            class="p-button-warning"
+            (click)="confirmStartClosing()"
+        ></button>
+    </ng-template>
+</p-dialog>

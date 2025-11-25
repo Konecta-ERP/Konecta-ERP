@@ -1,0 +1,276 @@
+<p-toast></p-toast>
+<p-confirmDialog [style]="{ width: '450px' }"></p-confirmDialog>
+
+<!-- Main Card Container with Gradient Header -->
+<p-card styleClass="shadow-4 border-round-2xl mb-5">
+    <ng-template pTemplate="header">
+        <div
+            class="p-5 border-round-top-2xl"
+            style="background: linear-gradient(to right, #2563eb, #4f46e5); color: white"
+        >
+            <div class="flex align-items-center gap-3">
+                <i class="pi pi-wallet text-5xl"></i>
+                <div>
+                    <h2 class="text-3xl font-bold m-0 text-white">Chart of Accounts</h2>
+                    <p class="text-white-alpha-90 text-sm m-0 mt-1">
+                        Manage your General Ledger structure, assets, liabilities, and equity
+                    </p>
+                </div>
+            </div>
+        </div>
+    </ng-template>
+
+    <!-- Content: Toolbar and Table moved inside the p-card -->
+    <div class="p-3">
+        <!-- Removed gray background/border from toolbar -->
+        <p-toolbar styleClass="mb-4 gap-2 border-none bg-transparent px-0">
+            <ng-template pTemplate="left">
+                <!-- Only show New Account button if User is CFO -->
+                <button
+                    *ngIf="isCFO"
+                    pButton
+                    pRipple
+                    label="New Account"
+                    icon="pi pi-plus"
+                    class="p-button-success mr-2"
+                    (click)="openNew()"
+                ></button>
+            </ng-template>
+        </p-toolbar>
+
+        <!-- Removed p-datatable-sm to increase spacing -->
+        <p-table
+            #dt
+            [value]="accounts"
+            [rows]="10"
+            [paginator]="true"
+            [globalFilterFields]="['accountId', 'accountName', 'accountType']"
+            [tableStyle]="{ 'min-width': '60rem' }"
+            [rowHover]="true"
+            dataKey="accountPK"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} accounts"
+            [showCurrentPageReport]="true"
+        >
+            <ng-template pTemplate="header">
+                <tr>
+                    <th pSortableColumn="accountId" style="width: 15%">
+                        Account ID <p-sortIcon field="accountId"></p-sortIcon>
+                    </th>
+                    <th pSortableColumn="accountName" style="width: 20%">
+                        Name <p-sortIcon field="accountName"></p-sortIcon>
+                    </th>
+                    <th pSortableColumn="accountType" style="width: 15%">
+                        Type <p-sortIcon field="accountType"></p-sortIcon>
+                    </th>
+                    <th pSortableColumn="isCurrent" style="width: 15%">Class</th>
+                    <th pSortableColumn="status" style="width: 15%">
+                        Status <p-sortIcon field="status"></p-sortIcon>
+                    </th>
+                    <!-- Hide Actions column header if not CFO (Optional: or keep empty) -->
+                    <th *ngIf="isCFO" style="width: 20%" class="text-center">Actions</th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-account>
+                <tr>
+                    <td class="py-3">
+                        <!-- Added explicit padding for spacing -->
+                        <span class="font-bold">{{ account.accountId }}</span>
+                    </td>
+                    <td class="py-3">{{ account.accountName }}</td>
+                    <td class="py-3">{{ account.accountType }}</td>
+                    <td class="py-3">{{ account.isCurrent ? 'Current' : 'Non-Current' }}</td>
+                    <td class="py-3">
+                        <p-tag
+                            [value]="account.status"
+                            [severity]="getSeverity(account.status)"
+                        ></p-tag>
+                    </td>
+                    <!-- Only show Action buttons if User is CFO -->
+                    <td *ngIf="isCFO" class="text-center py-3">
+                        <button
+                            pButton
+                            pRipple
+                            icon="pi pi-pencil"
+                            class="p-button-rounded p-button-text p-button-info mr-2"
+                            (click)="editAccount(account)"
+                            pTooltip="Edit Account"
+                        ></button>
+
+                        <button
+                            pButton
+                            pRipple
+                            [icon]="
+                                account.status === 'ACTIVE' ? 'pi pi-ban' : 'pi pi-check-circle'
+                            "
+                            class="p-button-rounded p-button-text"
+                            [ngClass]="
+                                account.status === 'ACTIVE' ? 'p-button-danger' : 'p-button-success'
+                            "
+                            (click)="toggleStatus(account)"
+                            [pTooltip]="account.status === 'ACTIVE' ? 'Deactivate' : 'Activate'"
+                        ></button>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</p-card>
+
+<!-- Dialog remains unchanged in logic, just ensuring it is included -->
+<p-dialog
+    [(visible)]="accountDialog"
+    [style]="{ width: '500px' }"
+    header="Account Details"
+    [modal]="true"
+    styleClass="p-fluid"
+>
+    <ng-template pTemplate="content">
+        <!-- Warning Message -->
+        <div *ngIf="account.hasTransactions" class="mb-3">
+            <p-message
+                severity="warn"
+                text="Critical fields are locked (transactions exist)."
+                styleClass="w-full"
+            ></p-message>
+        </div>
+
+        <div class="grid">
+            <!-- Account ID (Full Row) -->
+            <div class="col-12 field">
+                <label for="accountId" class="font-bold block mb-2">Account ID</label>
+                <input
+                    type="text"
+                    pInputText
+                    id="accountId"
+                    [(ngModel)]="account.accountId"
+                    required
+                    autofocus
+                    class="w-full"
+                    [disabled]="account.hasTransactions && !!account.accountPK"
+                />
+                <small class="p-error" *ngIf="submitted && !account.accountId"
+                    >ID is required.</small
+                >
+            </div>
+
+            <!-- Account Name (Full Row) -->
+            <div class="col-12 field">
+                <label for="accountName" class="font-bold block mb-2">Account Name</label>
+                <input
+                    type="text"
+                    pInputText
+                    id="accountName"
+                    [(ngModel)]="account.accountName"
+                    required
+                    class="w-full"
+                />
+                <small class="p-error" *ngIf="submitted && !account.accountName"
+                    >Name is required.</small
+                >
+            </div>
+
+            <!-- Type & Status (Split Row) -->
+            <div class="col-12 md:col-6 field">
+                <label for="accountType" class="font-bold block mb-2">Account Type</label>
+                <p-select
+                    [options]="accountTypes"
+                    [(ngModel)]="account.accountType"
+                    optionLabel="label"
+                    optionValue="value"
+                    appendTo="body"
+                    styleClass="w-full"
+                    [disabled]="account.hasTransactions && !!account.accountPK"
+                ></p-select>
+            </div>
+            <div class="col-12 md:col-6 field">
+                <label class="font-bold block mb-2">Status</label>
+                <p-select
+                    [options]="statuses"
+                    [(ngModel)]="account.status"
+                    optionLabel="label"
+                    optionValue="value"
+                    appendTo="body"
+                    styleClass="w-full"
+                ></p-select>
+            </div>
+
+            <!-- Mapping & Cash (Split Row) -->
+            <div class="col-12 md:col-6 field">
+                <label class="font-bold block mb-2">P&L Mapping</label>
+                <p-select
+                    [options]="plMappings"
+                    [(ngModel)]="account.plMapping"
+                    optionLabel="label"
+                    optionValue="value"
+                    appendTo="body"
+                    styleClass="w-full"
+                ></p-select>
+            </div>
+            <div class="col-12 md:col-6 field">
+                <label class="font-bold block mb-2">Cash Source</label>
+                <p-select
+                    [options]="cashSources"
+                    [(ngModel)]="account.cashSource"
+                    optionLabel="label"
+                    optionValue="value"
+                    appendTo="body"
+                    styleClass="w-full"
+                ></p-select>
+            </div>
+
+            <!-- Checkboxes (Stacked) -->
+            <div class="col-12 field">
+                <div class="flex align-items-center mb-2">
+                    <p-checkbox
+                        [(ngModel)]="account.isCurrent"
+                        [binary]="true"
+                        inputId="isCurrent"
+                        class="mr-2"
+                    ></p-checkbox>
+                    <label for="isCurrent">Is Current Asset/Liability?</label>
+                </div>
+                <div class="flex align-items-center">
+                    <p-checkbox
+                        [(ngModel)]="account.isCashAccount"
+                        [binary]="true"
+                        inputId="isCash"
+                        class="mr-2"
+                    ></p-checkbox>
+                    <label for="isCash">Is Cash/Bank Account?</label>
+                </div>
+            </div>
+
+            <!-- Description (Visible and Large with Border Fix) -->
+            <div class="col-12 field">
+                <label for="description" class="font-bold block mb-2">Description</label>
+                <textarea
+                    id="description"
+                    pInputTextarea
+                    [(ngModel)]="account.description"
+                    rows="5"
+                    class="w-full p-inputtext border-1 surface-border"
+                ></textarea>
+            </div>
+        </div>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button
+            pButton
+            pRipple
+            label="Cancel"
+            icon="pi pi-times"
+            class="p-button-text"
+            (click)="accountDialog = false"
+        ></button>
+        <button
+            pButton
+            pRipple
+            label="Save"
+            icon="pi pi-check"
+            class="p-button-text"
+            (click)="saveAccount()"
+        ></button>
+    </ng-template>
+</p-dialog>
