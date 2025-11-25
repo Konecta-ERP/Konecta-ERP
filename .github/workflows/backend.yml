@@ -91,5 +91,6 @@ jobs:
         run: |
           NAMESPACE=$([ "${{ github.ref_name }}" = "main" ] && echo "production" || echo "staging")
           gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER }} --region=${{ secrets.GCP_REGION }} --project=${{ secrets.GCP_PROJECT_ID }}
+          kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
           kubectl config set-context --current --namespace="$NAMESPACE"
           kubectl apply -f infra/k8s/

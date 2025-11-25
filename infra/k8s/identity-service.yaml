@@ -19,14 +19,18 @@ spec:
           ports:
             - containerPort: 8080
           env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
             - name: DB_URL
-              value: jdbc:postgresql://identity-db.microservices.svc.cluster.local:5432/identity_db
+              value: jdbc:postgresql://identity-db.$(NAMESPACE).svc.cluster.local:5432/identity_db
             - name: DB_USERNAME
               value: postgres
             - name: DB_PASSWORD
               value: postgres
             - name: EUREKA_SERVER
-              value: http://discovery-server.microservices.svc.cluster.local:8761/eureka/
+              value: http://discovery-server.$(NAMESPACE).svc.cluster.local:8761/eureka/
 
 
 ---
