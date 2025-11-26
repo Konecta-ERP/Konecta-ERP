@@ -6,6 +6,8 @@
             </figure>
         </div>
 
+        <!-- Login Form -->
+        @if (currentStep === 'login') {
         <form [formGroup]="loginForm" (ngSubmit)="submit()" class="p-fluid space-y-5">
             <!-- Email Field -->
             <div class="field">
@@ -55,7 +57,14 @@
             <div class="space-y-4">
                 <p-button type="submit" label="Sign In" styleClass="w-full font-medium"></p-button>
 
-                <div class="my-5 text-center text-sm text-gray-600 dark:text-gray-300">
+                <p-button
+                    type="button"
+                    label="Forgot Password?"
+                    styleClass="w-full mt-1 font-medium p-button-text"
+                    (onClick)="openForgotPasswordForm()"
+                ></p-button>
+
+                <div class="my-2 text-center text-sm text-gray-600 dark:text-gray-300">
                     Not part of our team?
                 </div>
 
@@ -67,6 +76,206 @@
                 ></p-button>
             </div>
         </form>
+        }
+
+        <!-- Forgot Password Email Form -->
+        @if (currentStep === 'forgot-password-email') {
+        <form
+            [formGroup]="forgotPasswordForm"
+            (ngSubmit)="submitForgotPasswordEmail()"
+            class="p-fluid space-y-5"
+        >
+            <div class="text-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800 dark:text-white">Forgot Password</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-300">
+                    Enter your email to receive an OTP
+                </p>
+            </div>
+
+            <div class="field">
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-envelope"></i>
+                    </p-inputgroup-addon>
+                    <input formControlName="email" pInputText placeholder="Email" />
+                </p-inputgroup>
+
+                @if (forgotPasswordEmailControl.errors?.['required'] &&
+                (forgotPasswordEmailControl.dirty || forgotPasswordEmailControl.touched)) {
+                <p-message severity="error" [closable]="false">Email is required</p-message>
+                } @else if (forgotPasswordEmailControl.errors?.['email'] &&
+                (forgotPasswordEmailControl.dirty || forgotPasswordEmailControl.touched)) {
+                <p-message severity="error" [closable]="false">Invalid email format</p-message>
+                }
+            </div>
+
+            <div class="space-y-4">
+                <p-button type="submit" label="Send OTP" styleClass="w-full font-medium"></p-button>
+
+                <p-button
+                    type="button"
+                    label="Back to Login"
+                    styleClass="w-full mt-1 font-medium p-button-text"
+                    (onClick)="backFromForgotPasswordEmail()"
+                ></p-button>
+            </div>
+        </form>
+        } @if (currentStep === 'otp') {
+        <form [formGroup]="otpForm" (ngSubmit)="verifyOTP()" class="p-fluid space-y-5">
+            <div class="text-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800 dark:text-white">Verify OTP</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-300">
+                    Enter the OTP sent to {{ forgotPasswordEmail }}
+                </p>
+            </div>
+
+            <div class="field">
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-key"></i>
+                    </p-inputgroup-addon>
+                    <input formControlName="otp" pInputText placeholder="Enter OTP" />
+                </p-inputgroup>
+
+                @if (otpCode.errors?.['required'] && (otpCode.dirty || otpCode.touched)) {
+                <p-message severity="error" [closable]="false">OTP is required</p-message>
+                } @else if (otpCode.errors?.['minlength'] && (otpCode.dirty || otpCode.touched)) {
+                <p-message severity="error" [closable]="false"
+                    >OTP must be at least 6 characters</p-message
+                >
+                }
+            </div>
+
+            <div class="space-y-4">
+                <p-button
+                    type="submit"
+                    label="Verify OTP"
+                    styleClass="w-full font-medium"
+                ></p-button>
+
+                <p-button
+                    type="button"
+                    label="Resend OTP{{ resendTimer > 0 ? ' (' + resendTimer + 's)' : '' }}"
+                    styleClass="w-full mt-1 font-medium p-button-outlined"
+                    (onClick)="resendOTP()"
+                    [disabled]="resendDisabled"
+                ></p-button>
+
+                <p-button
+                    type="button"
+                    label="Back to Login"
+                    styleClass="w-full mt-1 font-medium p-button-text"
+                    (onClick)="backToLogin()"
+                ></p-button>
+            </div>
+        </form>
+        }
+
+        <!-- Reset Password Form -->
+        @if (currentStep === 'reset') {
+        <form
+            [formGroup]="resetPasswordForm"
+            (ngSubmit)="resetPassword()"
+            class="p-fluid space-y-5"
+        >
+            <div class="text-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800 dark:text-white">Reset Password</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-300">Enter your new password</p>
+            </div>
+
+            <!-- New Password Field -->
+            <div class="field">
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-lock"></i>
+                    </p-inputgroup-addon>
+
+                    <input
+                        [type]="showNewPassword ? 'text' : 'password'"
+                        formControlName="newPassword"
+                        pInputText
+                        placeholder="New Password"
+                    />
+
+                    <p-inputgroup-addon class="cursor-pointer" (click)="toggleNewPassword()">
+                        <i [class]="showNewPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+                    </p-inputgroup-addon>
+                </p-inputgroup>
+
+                @if (newPassword.errors?.['required'] && (newPassword.dirty || newPassword.touched))
+                {
+                <p-message severity="error" [closable]="false">Password is required</p-message>
+                } @else if (newPassword.errors?.['minlength'] && (newPassword.dirty ||
+                newPassword.touched)) {
+                <p-message severity="error" [closable]="false"
+                    >Password must be at least 8 characters</p-message
+                >
+                } @else if (newPassword.errors?.['passwordStrength'] && (newPassword.dirty ||
+                newPassword.touched)) {
+                <p-message severity="error" [closable]="false"
+                    >Password must contain:
+                    <ul class="text-xs text-red-600 dark:text-red-400 list-disc list-inside">
+                        <li [class.line-through]="hasCapitalLetter()">
+                            At least one capital letter (A-Z)
+                        </li>
+                        <li [class.line-through]="hasNumber()">At least one number (0-9)</li>
+                        <li [class.line-through]="hasSymbol()">At least one symbol (!@#$%^&*)</li>
+                    </ul>
+                </p-message>
+                }
+            </div>
+
+            <!-- Confirm Password Field -->
+            <div class="field">
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-lock"></i>
+                    </p-inputgroup-addon>
+
+                    <input
+                        [type]="showConfirmPassword ? 'text' : 'password'"
+                        formControlName="confirmPassword"
+                        pInputText
+                        placeholder="Confirm Password"
+                    />
+
+                    <p-inputgroup-addon class="cursor-pointer" (click)="toggleConfirmPassword()">
+                        <i [class]="showConfirmPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+                    </p-inputgroup-addon>
+                </p-inputgroup>
+
+                @if (confirmPassword.errors?.['required'] && (confirmPassword.dirty ||
+                confirmPassword.touched)) {
+                <p-message severity="error" [closable]="false"
+                    >Confirm password is required</p-message
+                >
+                } @else if (confirmPassword.errors?.['minlength'] && (confirmPassword.dirty ||
+                confirmPassword.touched)) {
+                <p-message severity="error" [closable]="false"
+                    >Password must be at least 6 characters</p-message
+                >
+                } @else if (resetPasswordForm.errors?.['passwordMismatch'] && (confirmPassword.dirty
+                || confirmPassword.touched)) {
+                <p-message severity="error" [closable]="false">Passwords do not match</p-message>
+                }
+            </div>
+
+            <div class="space-y-4">
+                <p-button
+                    type="submit"
+                    label="Reset Password"
+                    styleClass="w-full font-medium"
+                ></p-button>
+
+                <p-button
+                    type="button"
+                    label="Back to Login"
+                    styleClass="w-full mt-1 font-medium p-button-text"
+                    (onClick)="backToLogin()"
+                ></p-button>
+            </div>
+        </form>
+        }
 
         <div class="card flex justify-center">
             <p-toast position="top-center" />
@@ -75,6 +284,6 @@
 
     <!-- Spinner -->
     <ngx-spinner bdColor="blue" size="large" color="#ffd700" type="timer" [fullScreen]="true">
-        <p style="color: #ffd700">Konekting</p>
+        <p style="color: #ffd700">Konecting</p>
     </ngx-spinner>
 </section>

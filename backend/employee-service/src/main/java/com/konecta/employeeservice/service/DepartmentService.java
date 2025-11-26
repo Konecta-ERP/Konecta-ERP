@@ -1,5 +1,6 @@
 package com.konecta.employeeservice.service;
 
+import com.konecta.employeeservice.client.IdentityClient;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import com.konecta.employeeservice.dto.LeaveRequestDto;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,14 +28,16 @@ public class DepartmentService {
   private final EmployeeRepository employeeRepository;
   private final LeaveService leaveService;
   private final EmployeeService employeeService;
+  private final IdentityClient identityClient;
 
   @Autowired
   public DepartmentService(DepartmentRepository departmentRepository, EmployeeRepository employeeRepository,
-      LeaveService leaveService, EmployeeService employeeService) {
+                           LeaveService leaveService, EmployeeService employeeService, IdentityClient identityClient) {
     this.departmentRepository = departmentRepository;
     this.employeeRepository = employeeRepository;
     this.leaveService = leaveService;
     this.employeeService = employeeService;
+      this.identityClient = identityClient;
   }
 
   public List<DepartmentDto> getAllDepartments() {
@@ -65,24 +69,40 @@ public class DepartmentService {
   }
 
   @Transactional
-  public DepartmentDto updateDepartment(Integer id, CreateOrUpdateDepartmentDto dto) {
+  public DepartmentDto updateDepartment(Integer id, CreateOrUpdateDepartmentDto dto, String token) {
     Department department = departmentRepository.findById(id)
         .orElseThrow(() -> new EntityNotFoundException("Department not found with id: " + id));
 
     department.setName(dto.getName());
 
     if (dto.getManagerId() != null) {
-      Employee manager = employeeRepository.findById(dto.getManagerId())
-          .orElseThrow(() -> new EntityNotFoundException(
-              "Manager (Employee) not found with id: " + dto.getManagerId()));
-      department.setManager(manager);
+          Employee manager = employeeRepository.findById(dto.getManagerId())
+              .orElseThrow(() -> new EntityNotFoundException(
+                  "Manager (Employee) not found with id: " + dto.getManagerId()));
+          department.setManager(manager);
+
+        String roleToAssign = determineRoleBasedOnDepartment(department.getName());
+        UUID userId = manager.getUserId();
+        identityClient.assignUserRole(userId, roleToAssign, token);
     } else {
-      department.setManager(null); // Allow setting manager to null
+      department.setManager(null);
     }
 
     Department updatedDepartment = departmentRepository.save(department);
     return convertToDto(updatedDepartment);
   }
+
+    private String determineRoleBasedOnDepartment(String departmentName) {
+        if (departmentName == null) return "MANAGER";
+        String normalizeName = departmentName.trim().toUpperCase();
+        if (normalizeName.contains("HR") || normalizeName.contains("HUMAN RESOURCES")) {
+            return "HR_MANAGER";
+        } else if (normalizeName.contains("FINANCE") || normalizeName.contains("ACCOUNTING")) {
+            return "CFO";
+        } else {
+            return "MANAGER";
+        }
+    }
 
   @Transactional
   public void deleteDepartment(Integer id) {

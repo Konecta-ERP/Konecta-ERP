@@ -65,7 +65,7 @@ public class PerformanceController {
   }
 
   @GetMapping("/api/employees/{id}/goals")
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("hasAuthority('EMP')")
   public ResponseEntity<ApiResponse<List<GoalDto>>> getEmployeeGoals(@PathVariable(name = "id") Integer id,
       Authentication authentication) {
 
@@ -99,7 +99,7 @@ public class PerformanceController {
   }
 
   @GetMapping("/api/employees/{id}/feedback")
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("hasAuthority('EMP')")
   public ResponseEntity<ApiResponse<List<FeedbackDto>>> getEmployeeFeedback(@PathVariable(name = "id") Integer id,
       Authentication authentication) {
 

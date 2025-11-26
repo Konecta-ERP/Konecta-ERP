@@ -16,20 +16,21 @@ import java.util.stream.Stream;
 @Getter
 public enum Role {
     // Base Role (Not directly assignable, but can be used in authorization)
-    EMP(false),
+    EMP(true),
+    MANAGER(true, EMP),
 
     // Department Roles (Not directly assignable, but can be used in authorization)
     HR_EMP(false, EMP),
     FINANCE_EMP(false, EMP),
 
     // High-Level Assignable Roles (HR)
-    ASSOCIATE(true, HR_EMP),
-    MANAGER(true, HR_EMP),
-    ADMIN(true, HR_EMP),
+    HR_ASSOCIATE(true, HR_EMP),
+    HR_MANAGER(true, HR_EMP, MANAGER),
+    HR_ADMIN(true, HR_EMP),
 
     // High-Level Assignable Roles (Finance)
     ACCOUNTANT(true, FINANCE_EMP),
-    CFO(true, FINANCE_EMP);
+    CFO(true, FINANCE_EMP, MANAGER);
 
     private final boolean assignable;
     private final Set<Role> impliedRoles;

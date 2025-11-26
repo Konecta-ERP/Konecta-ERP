@@ -37,7 +37,7 @@ public class LeaveController {
   }
 
   @PostMapping("/api/employees/{employeeId}/leave-requests")
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("hasAuthority('EMP')")
   public ResponseEntity<ApiResponse<LeaveRequestDto>> submitLeaveRequest(
       @PathVariable(name = "employeeId") Integer employeeId,
       @RequestBody CreateLeaveRequestDto dto,
@@ -88,7 +88,7 @@ public class LeaveController {
   }
 
   @GetMapping("/api/employees/{employeeId}/leave-balance")
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("hasAuthority('EMP')")
   public ResponseEntity<ApiResponse<LeaveBalanceDto>> getEmployeeLeaveBalance(
       @PathVariable(name = "employeeId") Integer employeeId,
       Authentication authentication) {
@@ -127,7 +127,7 @@ public class LeaveController {
   }
 
   @GetMapping("/api/employees/{employeeId}/leave-requests")
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("hasAuthority('EMP')")
   public ResponseEntity<ApiResponse<List<LeaveRequestDto>>> getLeaveRequestsForEmployee(
       @PathVariable(name = "employeeId") Integer employeeId,
       Authentication authentication) {
@@ -166,7 +166,7 @@ public class LeaveController {
   }
 
   @GetMapping("/api/leave-requests/{requestId}")
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("hasAuthority('EMP')")
   public ResponseEntity<ApiResponse<LeaveRequestDto>> getLeaveRequestById(
       @PathVariable(name = "requestId") Integer requestId,
       Authentication authentication) {
@@ -205,7 +205,7 @@ public class LeaveController {
   }
 
   @DeleteMapping("/api/leave-requests/{requestId}")
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("hasAuthority('EMP')")
   public ResponseEntity<ApiResponse<Object>> deleteLeaveRequest(@PathVariable(name = "requestId") Integer requestId,
       Authentication authentication) {
     // Only the employee themselves may delete their request

@@ -1,9 +1,6 @@
 package com.konecta.identity_service.controller;
 
-import com.konecta.identity_service.dto.request.AssignRoleRequest;
-import com.konecta.identity_service.dto.request.ChangePasswordRequest;
-import com.konecta.identity_service.dto.request.CreateUserRequest;
-import com.konecta.identity_service.dto.request.UpdateUserRequest;
+import com.konecta.identity_service.dto.request.*;
 import com.konecta.identity_service.dto.response.ApiResponse;
 import com.konecta.identity_service.dto.response.UserResponse;
 import com.konecta.identity_service.service.UserService;
@@ -11,9 +8,12 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -27,7 +27,7 @@ public class UserController {
     }
 
     @PostMapping("/users")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('HR_ADMIN')")
     public ResponseEntity<ApiResponse<UserResponse>> createUser(
             @Valid @RequestBody CreateUserRequest request) {
 
@@ -38,7 +38,7 @@ public class UserController {
     }
 
     @GetMapping("/users")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyAuthority('HR_ADMIN', 'HR_MANAGER')")
     public ResponseEntity<ApiResponse<List<UserResponse>>> getAllUsers() {
 
         List<UserResponse> users = userService.getAllUsers();
@@ -48,7 +48,7 @@ public class UserController {
     }
 
     @GetMapping("/users/{id}")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER') or #id.toString() == authentication.token.claims['userId']")
+    @PreAuthorize("hasAnyAuthority('HR_ADMIN', 'HR_MANAGER') or #id.toString() == authentication.token.claims['userId']")
     public ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable("id") UUID id) {
 
         UserResponse user = userService.getUserById(id);
@@ -58,7 +58,7 @@ public class UserController {
     }
 
     @PutMapping("/users/{id}")
-    @PreAuthorize("hasAuthority('ADMIN') or #id.toString() == authentication.token.claims['userId']")
+    @PreAuthorize("hasAuthority('HR_ADMIN') or #id.toString() == authentication.token.claims['userId']")
     public ResponseEntity<ApiResponse<UserResponse>> updateUser(
             @PathVariable("id") UUID id,
             @Valid @RequestBody UpdateUserRequest request) {
@@ -70,7 +70,7 @@ public class UserController {
     }
 
     @DeleteMapping("/users/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('HR_ADMIN')")
     public ResponseEntity<ApiResponse<?>> deleteUser(@PathVariable UUID id) {
 
         userService.deleteUser(id);
@@ -80,7 +80,7 @@ public class UserController {
     }
 
     @GetMapping("/roles")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAuthority('EMP')")
     public ResponseEntity<ApiResponse<List<String>>> getAllRoles() {
 
         List<String> roles = userService.getAllRoles();
@@ -90,7 +90,7 @@ public class UserController {
     }
 
     @PatchMapping("/users/{id}/roles")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('HR_ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<UserResponse>> assignRoleToUser(
             @PathVariable UUID id,
             @Valid @RequestBody AssignRoleRequest request) {
@@ -101,8 +101,8 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PatchMapping("/users/{id}/roles/{role}")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PatchMapping("/users/{id}/roles/role")
+    @PreAuthorize("hasAnyAuthority('HR_ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<UserResponse>> revokeRoleFromUser(@PathVariable UUID id) {
 
         UserResponse user = userService.revokeRoleFromUser(id);
@@ -112,7 +112,7 @@ public class UserController {
     }
 
     @PostMapping("/users/{id}/activate")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('HR_ADMIN')")
     public ResponseEntity<ApiResponse<UserResponse>> activateUser(@PathVariable UUID id) {
         UserResponse user = userService.activateUserById(id);
         ApiResponse<UserResponse> response = ApiResponse.success(
@@ -121,7 +121,7 @@ public class UserController {
     }
 
     @PostMapping("/users/{id}/deactivate")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('HR_ADMIN')")
     public ResponseEntity<ApiResponse<UserResponse>> deactivateUser(@PathVariable UUID id) {
         UserResponse user = userService.deactivateUserById(id);
         ApiResponse<UserResponse> response = ApiResponse.success(
@@ -139,5 +139,33 @@ public class UserController {
         ApiResponse<?> response = ApiResponse.success(
                 200, "Password updated successfully.", "Password changed.");
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<String>> forgotPassword(@RequestBody @Valid ForgetPasswordRequest request) {
+        userService.generateOtp(request);
+        return ResponseEntity.ok(ApiResponse.success(null, 200,
+                "OTP sent via email",
+                "OTP sent to " + request.getEmail()));
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<ApiResponse<Map<String, String>>> verifyOtp(@RequestBody @Valid VerifyOtpRequest request) {
+        String resetToken = userService.getPasswordResetToken(request);
+        return ResponseEntity.ok(ApiResponse.success(Map.of("resetToken",resetToken), 200,
+                "OTP Verified",
+                "Token for reset provided"));
+    }
+
+    @PostMapping("/reset-password")
+    @PreAuthorize("hasAuthority('SCOPE_PWD_RESET')")
+    public ResponseEntity<ApiResponse<String>> resetPassword(
+            @RequestBody @Valid ResetPasswordRequest request,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        String email = jwt.getSubject();
+        userService.resetPassword(email, request.getNewPassword());
+
+        return ResponseEntity.ok(ApiResponse.success(null, 200, "Password successfully reset", null));
     }
 }

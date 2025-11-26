@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import com.konecta.employeeservice.dto.CreateOrUpdateDepartmentDto;
@@ -41,7 +42,7 @@ public class DepartmentController {
   }
 
   @GetMapping("/{id}/leave-requests/next-month")
-  @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('ADMIN')")
+  @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('HR_ADMIN')")
   public ResponseEntity<ApiResponse<List<EmployeeLeavesDto>>> getDepartmentLeavesNextMonth(
       @PathVariable(name = "id") Integer id) {
     List<EmployeeLeavesDto> result = departmentService.getEmployeesLeavesForNextMonth(id);
@@ -54,7 +55,7 @@ public class DepartmentController {
   }
 
   @GetMapping("/{id}/employees")
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("hasAuthority('EMP')")
   public ResponseEntity<ApiResponse<List<EmployeeDetailsDto>>> getEmployeesInDepartment(
       @PathVariable(name = "id") Integer id,
       Authentication authentication) {
@@ -87,7 +88,7 @@ public class DepartmentController {
   }
 
   @PostMapping
-  @PreAuthorize("hasAuthority('ADMIN')")
+  @PreAuthorize("hasAuthority('HR_ADMIN')")
   public ResponseEntity<ApiResponse<DepartmentDto>> createDepartment(@RequestBody CreateOrUpdateDepartmentDto dto) {
     DepartmentDto newDepartment = departmentService.createDepartment(dto);
     ApiResponse<DepartmentDto> response = ApiResponse.success(
@@ -99,7 +100,7 @@ public class DepartmentController {
   }
 
   @GetMapping
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("hasAuthority('EMP')")
   public ResponseEntity<ApiResponse<List<DepartmentDto>>> getAllDepartments() {
     List<DepartmentDto> departments = departmentService.getAllDepartments();
     ApiResponse<List<DepartmentDto>> response = ApiResponse.success(
@@ -111,7 +112,7 @@ public class DepartmentController {
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("hasAuthority('EMP')")
   public ResponseEntity<ApiResponse<DepartmentDto>> getDepartmentById(@PathVariable(name = "id") Integer id) {
     DepartmentDto department = departmentService.getDepartmentById(id);
     ApiResponse<DepartmentDto> response = ApiResponse.success(
@@ -123,10 +124,10 @@ public class DepartmentController {
   }
 
   @PutMapping("/{id}")
-  @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER')")
+  @PreAuthorize("hasAuthority('HR_ADMIN') or hasAuthority('MANAGER')")
   public ResponseEntity<ApiResponse<DepartmentDto>> updateDepartment(@PathVariable(name = "id") Integer id,
-      @RequestBody CreateOrUpdateDepartmentDto dto) {
-    DepartmentDto updatedDepartment = departmentService.updateDepartment(id, dto);
+      @RequestBody CreateOrUpdateDepartmentDto dto, @AuthenticationPrincipal Jwt jwt) {
+    DepartmentDto updatedDepartment = departmentService.updateDepartment(id, dto, jwt.getTokenValue());
     ApiResponse<DepartmentDto> response = ApiResponse.success(
         updatedDepartment,
         HttpStatus.OK.value(),
@@ -136,7 +137,7 @@ public class DepartmentController {
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAuthority('ADMIN')")
+  @PreAuthorize("hasAuthority('HR_ADMIN')")
   public ResponseEntity<ApiResponse<Object>> deleteDepartment(@PathVariable(name = "id") Integer id) {
     departmentService.deleteDepartment(id);
     ApiResponse<Object> response = ApiResponse.success(
