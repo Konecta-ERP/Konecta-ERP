@@ -89,7 +89,7 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PatchMapping("/users/{id}/roles")
+    @PatchMapping("/users/{id}/roles/assign")
     @PreAuthorize("hasAnyAuthority('HR_ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<UserResponse>> assignRoleToUser(
             @PathVariable UUID id,
@@ -101,7 +101,7 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PatchMapping("/users/{id}/roles/role")
+    @PatchMapping("/users/{id}/roles/revoke")
     @PreAuthorize("hasAnyAuthority('HR_ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<UserResponse>> revokeRoleFromUser(@PathVariable UUID id) {
 

@@ -42,7 +42,7 @@ public class DepartmentController {
   }
 
   @GetMapping("/{id}/leave-requests/next-month")
-  @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('HR_ADMIN')")
+  @PreAuthorize("hasAnyAuthority('HR_ADMIN','MANAGER')")
   public ResponseEntity<ApiResponse<List<EmployeeLeavesDto>>> getDepartmentLeavesNextMonth(
       @PathVariable(name = "id") Integer id) {
     List<EmployeeLeavesDto> result = departmentService.getEmployeesLeavesForNextMonth(id);
@@ -124,7 +124,7 @@ public class DepartmentController {
   }
 
   @PutMapping("/{id}")
-  @PreAuthorize("hasAuthority('HR_ADMIN') or hasAuthority('MANAGER')")
+  @PreAuthorize("hasAnyAuthority('HR_ADMIN','MANAGER')")
   public ResponseEntity<ApiResponse<DepartmentDto>> updateDepartment(@PathVariable(name = "id") Integer id,
       @RequestBody CreateOrUpdateDepartmentDto dto, @AuthenticationPrincipal Jwt jwt) {
     DepartmentDto updatedDepartment = departmentService.updateDepartment(id, dto, jwt.getTokenValue());

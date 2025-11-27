@@ -43,7 +43,7 @@ public class EmployeeController {
       Authentication authentication) {
     // Allow managers and admins to access any employee
     boolean isManagerOrAdmin = authentication.getAuthorities().stream()
-        .anyMatch(a -> "MANAGER".equals(a.getAuthority()) || "ADMIN".equals(a.getAuthority()));
+        .anyMatch(a -> "HR_MANAGER".equals(a.getAuthority()) || "ADMIN".equals(a.getAuthority()));
 
     EmployeeDetailsDto employeeDetails = employeeService.getEmployeeDetailsById(id);
 
@@ -101,7 +101,7 @@ public class EmployeeController {
   }
 
   @PostMapping
-  @PreAuthorize("hasAuthority('HR_MANAGER') or hasAuthority('HR_ADMIN')")
+  @PreAuthorize("hasAnyAuthority('HR_MANAGER', 'HR_ADMIN')")
   public ResponseEntity<ApiResponse<EmployeeDetailsDto>> createEmployee(
       @RequestBody CreateEmployeeRequestDto createDto) {
     EmployeeDetailsDto newEmployee = employeeService.createEmployee(createDto);
@@ -115,7 +115,7 @@ public class EmployeeController {
 
   // GET /employees/search?name=John&department=Engineering&position=Manager
   @GetMapping("/search")
-  @PreAuthorize("hasAuthority('HR_MANAGER') or hasAuthority('HR_ADMIN')")
+  @PreAuthorize("hasAnyAuthority('HR_MANAGER', 'HR_ADMIN')")
   public ResponseEntity<ApiResponse<List<EmployeeDetailsDto>>> searchEmployees(
       @RequestParam(name = "name", required = false) String name,
       @RequestParam(name = "department", required = false) String department,
@@ -130,7 +130,7 @@ public class EmployeeController {
   }
 
   @PatchMapping("/{id}")
-  @PreAuthorize("hasAuthority('HR_MANAGER') or hasAuthority('HR_ADMIN')")
+  @PreAuthorize("hasAnyAuthority('HR_MANAGER', 'HR_ADMIN')")
   public ResponseEntity<ApiResponse<EmployeeDetailsDto>> updateEmployee(
       @PathVariable(name = "id") Integer id,
       @RequestBody UpdateEmployeeRequestDto updateDto) {
@@ -152,7 +152,7 @@ public class EmployeeController {
 
     // Allow managers and admins to access any employee payroll
     boolean isManagerOrAdmin = authentication.getAuthorities().stream()
-        .anyMatch(a -> "MANAGER".equals(a.getAuthority()) || "ADMIN".equals(a.getAuthority()));
+        .anyMatch(a -> "HR_MANAGER".equals(a.getAuthority()) || "ADMIN".equals(a.getAuthority()));
 
     // Fetch employee details to obtain the linked userId for self-check
     EmployeeDetailsDto employeeDetails = employeeService.getEmployeeDetailsById(id);
