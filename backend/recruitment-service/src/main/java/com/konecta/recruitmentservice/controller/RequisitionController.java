@@ -50,7 +50,7 @@ public class RequisitionController {
   }
 
   @GetMapping("/search")
-  @PreAuthorize("hasAuthority('HR_ASSOCIATE') or hasAuthority('HR_MANAGER') or hasAuthority('HR_ADMIN')")
+  @PreAuthorize("hasAuthority('HR_ASSOCIATE') or hasAuthority('HR_MANAGER') or hasAuthority('ADMIN')")
   public ResponseEntity<ApiResponse<List<JobRequisitionDto>>> searchRequisitions(
       @RequestParam(name = "departmentId", required = false) Integer departmentId,
       @RequestParam(name = "status", required = false) RequisitionStatus status) {
@@ -65,7 +65,7 @@ public class RequisitionController {
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAuthority('HR_ASSOCIATE') or hasAuthority('HR_MANAGER') or hasAuthority('HR_ADMIN')")
+  @PreAuthorize("hasAuthority('HR_ASSOCIATE') or hasAuthority('HR_MANAGER') or hasAuthority('ADMIN')")
   public ResponseEntity<ApiResponse<JobRequisitionDto>> getRequisition(
       @PathVariable Integer id) {
     JobRequisitionDto req = requisitionService.getRequisition(id);

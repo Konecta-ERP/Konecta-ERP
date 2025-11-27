@@ -130,7 +130,7 @@ public class DepartmentService {
     return dto;
   }
 
-  public List<EmployeeLeavesDto> getEmployeesLeavesForNextMonth(Integer departmentId) {
+  public List<EmployeeLeavesDto> getEmployeesLeavesForNextMonth(Integer departmentId, UUID uid) {
     if (!departmentRepository.existsById(departmentId)) {
       throw new EntityNotFoundException("Department not found with id: " + departmentId);
     }
@@ -143,6 +143,9 @@ public class DepartmentService {
 
     List<EmployeeLeavesDto> result = new ArrayList<>();
     for (Employee e : employees) {
+        if((e.getUserId()).equals(uid)) {
+            continue;
+        }
       EmployeeDetailsDto empDto = employeeService.getEmployeeDetailsById(e.getId());
       List<LeaveRequestDto> leaves = leaveService.getRequestsForEmployeeInRange(e.getId(), start, end);
       EmployeeLeavesDto el = new EmployeeLeavesDto();

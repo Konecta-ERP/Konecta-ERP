@@ -18,4 +18,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer>, Jp
   List<Employee> findByPositionTitle(String positionTitle);
 
   Optional<Employee> findByUserId(UUID userId);
+
+    boolean existsByUserId(UUID userId);
 }

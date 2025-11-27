@@ -3,8 +3,10 @@ package com.konecta.identity_service.service;
 import com.konecta.identity_service.dto.request.*;
 import com.konecta.identity_service.dto.response.UserResponse;
 import com.konecta.identity_service.entity.Role;
+import jakarta.validation.Valid;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface UserService {
@@ -22,4 +24,5 @@ public interface UserService {
     void generateOtp(ForgetPasswordRequest request );
     String getPasswordResetToken(VerifyOtpRequest request);
     void resetPassword(String email, String newPassword);
+    String createSeedUser(Map<String, String> request);
 }
