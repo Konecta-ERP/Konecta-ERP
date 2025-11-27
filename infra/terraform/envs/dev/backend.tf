@@ -1,6 +1,6 @@
 terraform {
   backend "gcs" {
-    bucket = "erp-konecta-terraform-state"
-    prefix = "dev/terraform.tfstate"
+    bucket = "erp-konecta-477213-terraform-state"
+    prefix = "dev/"
   }
 }

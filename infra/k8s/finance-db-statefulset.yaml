@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: finance-db
+spec:
+  serviceName: finance-db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: finance-db
+  template:
+    metadata:
+      labels:
+        app: finance-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:17
+          env:
+            - name: POSTGRES_DB
+              value: finance_db
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: postgres
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: finance-data
+      volumes:
+        - name: finance-data
+          persistentVolumeClaim:
+            claimName: finance-data-pvc
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: finance-db
+spec:
+  clusterIP: None
+  selector:
+    app: finance-db
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432

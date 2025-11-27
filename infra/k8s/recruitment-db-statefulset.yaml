@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: recruitment-db
+spec:
+  serviceName: recruitment-db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: recruitment-db
+  template:
+    metadata:
+      labels:
+        app: recruitment-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:17
+          env:
+            - name: POSTGRES_DB
+              value: recruitment_db
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: postgres
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: recruitment-data
+      volumes:
+        - name: recruitment-data
+          persistentVolumeClaim:
+            claimName: recruitment-data-pvc
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: recruitment-db
+spec:
+  clusterIP: None
+  selector:
+    app: recruitment-db
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432

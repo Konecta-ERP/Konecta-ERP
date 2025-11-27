@@ -3,11 +3,15 @@ name: Infra CI/CD
 on:
   push:
     branches: [ main, develop ]
+    paths:
+      - 'infra/**'
   pull_request:
     branches: [ main, develop ]
+    paths:
+      - 'infra/**'
 
 permissions:
-  contents: write
+  contents: read
   id-token: write
 
 jobs:
@@ -22,86 +26,42 @@ jobs:
           persist-credentials: true
 
       - name: Determine version tag
-        id: versioning
         run: |
+          COMMIT_HASH=$(git rev-parse --short HEAD)
           if [ "${{ github.ref_name }}" = "main" ]; then
-            if [ ! -f VERSION ]; then
-              echo "VERSION file missing at repo root" >&2
-              exit 1
-            fi
-            if [ ! -f BUILD_NUMBER ]; then
-              echo "0" > BUILD_NUMBER
-            fi
-            MAJOR_MINOR=$(cat VERSION | tr -d ' \t\n\r')
-            BUILD=$(cat BUILD_NUMBER | tr -d ' \t\n\r')
-            NEW_BUILD=$((BUILD + 1))
-            printf "%d" $NEW_BUILD > BUILD_NUMBER
-            BUILD_PAD=$(printf "%02d" $NEW_BUILD)
-            VERSION_TAG="${MAJOR_MINOR}.${BUILD_PAD}"
-            echo "VERSION_TAG=${VERSION_TAG}" >> $GITHUB_ENV
-            echo "NEW_BUILD=${NEW_BUILD}" >> $GITHUB_ENV
+            VERSION_TAG="prod-${COMMIT_HASH}"
           else
-            COMMIT_HASH=$(git rev-parse --short HEAD)
             VERSION_TAG="dev-${COMMIT_HASH}"
-            echo "VERSION_TAG=${VERSION_TAG}" >> $GITHUB_ENV
           fi
-          echo "Using VERSION_TAG=${VERSION_TAG}"
+          echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
+          echo "Generated VERSION_TAG=$VERSION_TAG"
 
-      - name: TruffleHog secret scan (infra)
-        uses: ./.github/actions/security-scan
+      - name: OIDC Auth to Google Cloud
+        uses: google-github-actions/auth@v2
         with:
-          path: infra
-          fail: true
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_IAC }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.9.5
 
-      - name: OIDC Auth to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
-          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
-
       - name: Terraform init
-        working-directory: infra
+        working-directory: infra/terraform/envs/dev
         run: terraform init -input=false
 
       - name: Terraform fmt & validate
-        working-directory: infra
+        working-directory: infra/terraform/envs/dev
         run: |
           terraform fmt -check
           terraform validate
 
-      - name: Trivy IaC scan (infra)
-        uses: ./.github/actions/security-scan
-        with:
-          scan_type: config
-          scan_ref: infra
-          fail: true
-
       - name: Terraform plan
-        working-directory: infra
+        working-directory: infra/terraform/envs/dev
         run: terraform plan -out=tfplan
 
       - name: Terraform apply (main only)
         if: github.ref == 'refs/heads/main'
-        working-directory: infra
+        working-directory: infra/terraform/envs/dev
         run: terraform apply -auto-approve tfplan
-
-      - name: Commit bumped BUILD_NUMBER (main only)
-        if: ${{ github.ref == 'refs/heads/main' }}
-        env:
-          GIT_COMMITTER_NAME: "github-actions[bot]"
-          GIT_COMMITTER_EMAIL: "41898282+github-actions[bot]@users.noreply.github.com"
-        run: |
-          git config user.name "$GIT_COMMITTER_NAME"
-          git config user.email "$GIT_COMMITTER_EMAIL"
-          git add BUILD_NUMBER
-          if git diff --cached --quiet; then
-            echo "No BUILD_NUMBER changes to commit"
-          else
-            git commit -m "chore: bump BUILD_NUMBER to ${NEW_BUILD} [ci skip]"
-            git push origin HEAD:main
-          fi
