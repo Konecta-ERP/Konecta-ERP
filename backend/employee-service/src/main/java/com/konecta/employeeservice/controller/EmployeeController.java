@@ -10,6 +10,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -41,30 +43,7 @@ public class EmployeeController {
   @PreAuthorize("hasAuthority('EMP')")
   public ResponseEntity<ApiResponse<EmployeeDetailsDto>> getEmployeeById(@PathVariable(name = "id") Integer id,
       Authentication authentication) {
-    // Allow managers and admins to access any employee
-    boolean isManagerOrAdmin = authentication.getAuthorities().stream()
-        .anyMatch(a -> "HR_MANAGER".equals(a.getAuthority()) || "ADMIN".equals(a.getAuthority()));
-
     EmployeeDetailsDto employeeDetails = employeeService.getEmployeeDetailsById(id);
-
-    if (!isManagerOrAdmin) {
-      // For non-manager/admin users, ensure the JWT contains a userId claim that
-      // matches the employee's userId
-      String jwtUserId = null;
-      if (authentication instanceof JwtAuthenticationToken) {
-        Jwt jwt = ((JwtAuthenticationToken) authentication).getToken();
-        jwtUserId = jwt.getClaimAsString("userId");
-      } else if (authentication.getPrincipal() instanceof Jwt) {
-        Jwt jwt = (Jwt) authentication.getPrincipal();
-        jwtUserId = jwt.getClaimAsString("userId");
-      }
-
-      String employeeUserId = employeeDetails.getUserId() == null ? null : employeeDetails.getUserId().toString();
-
-      if (Objects.isNull(jwtUserId) || !Objects.equals(jwtUserId, employeeUserId)) {
-        throw new AccessDeniedException("Access denied: you are not allowed to view this employee");
-      }
-    }
 
     ApiResponse<EmployeeDetailsDto> response = ApiResponse.success(
         employeeDetails,
@@ -79,17 +58,6 @@ public class EmployeeController {
   public ResponseEntity<ApiResponse<EmployeeDetailsDto>> getEmployeeByUserId(
       @PathVariable("userId") UUID userId,
       Authentication authentication) {
-    // Only the user themself may call this endpoint
-    String jwtUserId = null;
-    if (authentication instanceof JwtAuthenticationToken) {
-      jwtUserId = ((JwtAuthenticationToken) authentication).getToken().getClaimAsString("userId");
-    } else if (authentication.getPrincipal() instanceof Jwt) {
-      jwtUserId = ((Jwt) authentication.getPrincipal()).getClaimAsString("userId");
-    }
-
-    if (jwtUserId == null || !jwtUserId.equals(userId.toString())) {
-      throw new AccessDeniedException("Access denied: can only fetch your own employee record");
-    }
 
     EmployeeDetailsDto employeeDetails = employeeService.getEmployeeDetailsByUserId(userId);
     ApiResponse<EmployeeDetailsDto> response = ApiResponse.success(
@@ -101,7 +69,7 @@ public class EmployeeController {
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyAuthority('HR_MANAGER', 'HR_ADMIN')")
+  @PreAuthorize("hasAnyAuthority('HR_MANAGER', 'ADMIN')")
   public ResponseEntity<ApiResponse<EmployeeDetailsDto>> createEmployee(
       @RequestBody CreateEmployeeRequestDto createDto) {
     EmployeeDetailsDto newEmployee = employeeService.createEmployee(createDto);
@@ -115,12 +83,22 @@ public class EmployeeController {
 
   // GET /employees/search?name=John&department=Engineering&position=Manager
   @GetMapping("/search")
-  @PreAuthorize("hasAnyAuthority('HR_MANAGER', 'HR_ADMIN')")
+  @PreAuthorize("hasAnyAuthority('HR_MANAGER', 'ADMIN')")
   public ResponseEntity<ApiResponse<List<EmployeeDetailsDto>>> searchEmployees(
       @RequestParam(name = "name", required = false) String name,
       @RequestParam(name = "department", required = false) String department,
-      @RequestParam(name = "position", required = false) String position) {
-    List<EmployeeDetailsDto> employees = employeeService.searchEmployees(name, department, position);
+      @RequestParam(name = "position", required = false) String position,
+      Authentication authentication) {
+
+      String jwtUserId = null;
+      if (authentication instanceof JwtAuthenticationToken) {
+          jwtUserId = ((JwtAuthenticationToken) authentication).getToken().getClaimAsString("userId");
+      } else if (authentication.getPrincipal() instanceof Jwt) {
+          jwtUserId = ((Jwt) authentication.getPrincipal()).getClaimAsString("userId");
+      }
+      UUID uid = UUID.fromString(jwtUserId);
+
+    List<EmployeeDetailsDto> employees = employeeService.searchEmployees(name, department, position, uid);
     ApiResponse<List<EmployeeDetailsDto>> response = ApiResponse.success(
         employees,
         HttpStatus.OK.value(),
@@ -130,7 +108,7 @@ public class EmployeeController {
   }
 
   @PatchMapping("/{id}")
-  @PreAuthorize("hasAnyAuthority('HR_MANAGER', 'HR_ADMIN')")
+  @PreAuthorize("hasAnyAuthority('HR_MANAGER', 'ADMIN')")
   public ResponseEntity<ApiResponse<EmployeeDetailsDto>> updateEmployee(
       @PathVariable(name = "id") Integer id,
       @RequestBody UpdateEmployeeRequestDto updateDto) {

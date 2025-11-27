@@ -42,10 +42,28 @@ public class DepartmentController {
   }
 
   @GetMapping("/{id}/leave-requests/next-month")
-  @PreAuthorize("hasAnyAuthority('HR_ADMIN','MANAGER')")
+  @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER')")
   public ResponseEntity<ApiResponse<List<EmployeeLeavesDto>>> getDepartmentLeavesNextMonth(
-      @PathVariable(name = "id") Integer id) {
-    List<EmployeeLeavesDto> result = departmentService.getEmployeesLeavesForNextMonth(id);
+      @PathVariable(name = "id") Integer id, Authentication authentication) {
+      String jwtUserId = null;
+      if (authentication instanceof JwtAuthenticationToken) {
+          jwtUserId = ((JwtAuthenticationToken) authentication).getToken().getClaimAsString("userId");
+      } else if (authentication.getPrincipal() instanceof Jwt) {
+          jwtUserId = ((Jwt) authentication.getPrincipal()).getClaimAsString("userId");
+      }
+
+      UUID uid = UUID.fromString(jwtUserId);
+      try {
+          Integer requesterDepartmentId = employeeService.getDepartmentIdForUser(uid);
+          if (Objects.isNull(requesterDepartmentId) || !Objects.equals(requesterDepartmentId, id)) {
+              throw new AccessDeniedException("Access denied: must be an employee in the requested department");
+          }
+      } catch (EntityNotFoundException | NoSuchElementException | EmptyResultDataAccessException
+               | IllegalArgumentException ex) {
+          throw new AccessDeniedException("Access denied: must be an employee in the requested department");
+      }
+
+      List<EmployeeLeavesDto> result = departmentService.getEmployeesLeavesForNextMonth(id, uid);
     ApiResponse<List<EmployeeLeavesDto>> response = ApiResponse.success(
         result,
         HttpStatus.OK.value(),
@@ -88,7 +106,7 @@ public class DepartmentController {
   }
 
   @PostMapping
-  @PreAuthorize("hasAuthority('HR_ADMIN')")
+  @PreAuthorize("hasAuthority('ADMIN')")
   public ResponseEntity<ApiResponse<DepartmentDto>> createDepartment(@RequestBody CreateOrUpdateDepartmentDto dto) {
     DepartmentDto newDepartment = departmentService.createDepartment(dto);
     ApiResponse<DepartmentDto> response = ApiResponse.success(
@@ -124,7 +142,7 @@ public class DepartmentController {
   }
 
   @PutMapping("/{id}")
-  @PreAuthorize("hasAnyAuthority('HR_ADMIN','MANAGER')")
+  @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER')")
   public ResponseEntity<ApiResponse<DepartmentDto>> updateDepartment(@PathVariable(name = "id") Integer id,
       @RequestBody CreateOrUpdateDepartmentDto dto, @AuthenticationPrincipal Jwt jwt) {
     DepartmentDto updatedDepartment = departmentService.updateDepartment(id, dto, jwt.getTokenValue());
@@ -137,7 +155,7 @@ public class DepartmentController {
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAuthority('HR_ADMIN')")
+  @PreAuthorize("hasAuthority('ADMIN')")
   public ResponseEntity<ApiResponse<Object>> deleteDepartment(@PathVariable(name = "id") Integer id) {
     departmentService.deleteDepartment(id);
     ApiResponse<Object> response = ApiResponse.success(

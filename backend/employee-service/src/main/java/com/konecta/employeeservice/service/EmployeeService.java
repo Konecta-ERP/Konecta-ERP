@@ -75,7 +75,7 @@ public class EmployeeService {
   @Transactional
   public EmployeeDetailsDto createEmployee(CreateEmployeeRequestDto dto) {
     // Delegate user creation to Identity service
-    String roleToUse = dto.getRole() != null && !dto.getRole().isBlank() ? dto.getRole() : "HR_ASSOCIATE";
+    String roleToUse = dto.getRole() != null && !dto.getRole().isBlank() ? dto.getRole() : "EMP";
 
     var createUserPayload = new HashMap<String, Object>();
     createUserPayload.put("firstName", dto.getFirstName());
@@ -203,7 +203,7 @@ public class EmployeeService {
     return convertToDto(updatedEmployee);
   }
 
-  public List<EmployeeDetailsDto> searchEmployees(String name, String departmentName, String position) {
+  public List<EmployeeDetailsDto> searchEmployees(String name, String departmentName, String position, UUID uid) {
     // Instead, fetch candidates by department/position, convert to DTOs (which
     // enrich via Identity service) and filter by name in-memory.
     Specification<Employee> spec = EmployeeSpecification.findByCriteria(null, departmentName, position);
@@ -212,6 +212,7 @@ public class EmployeeService {
 
     return candidates.stream()
         .map(this::convertToDto)
+        .filter(dto -> !dto.getUserId().equals(uid))
         .filter(dto -> {
           if (name == null || name.isBlank())
             return true;
