@@ -75,16 +75,18 @@ export class EmployeeService {
     }
 
 
+    // get employee by user ID
     getEmployeeByUserId(userId:string):Observable<any>{
         console.log("Fetching employee details for userId:", userId);
         return this._httpClient.get(`${baseURL}/employees/by-user/${userId}`);
     }
 
-
+    // performance reviews apis
     getPerformanceReviews():Observable<any>{
         return this._httpClient.get(`${baseURL}/performance-reviews/employee/reviews`);
     }
 
+    // employee goals APIs
     getEmployeeGoals():Observable<any>{
         const user = this._userService.getUser();
         if (!user || !user.id) {
@@ -94,6 +96,7 @@ export class EmployeeService {
         return this._httpClient.get(`${baseURL}/employees/${employeeId}/goals`);
     }
 
+    //search employees api
     searchEmployees(filters: IEmployeeSearchFilter): Observable<any> {
         const params = new URLSearchParams();
 
@@ -106,5 +109,9 @@ export class EmployeeService {
         return this._httpClient.get(url);
     }
 
+
+    getEmployeeById(id:string):Observable<User>{
+        return this._httpClient.get<User>(`${baseURL}/employees/${id}`);
+    }
 
 }
