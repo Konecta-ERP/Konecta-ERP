@@ -250,7 +250,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String createSeedUser(Map<String, String> request) {
-        User user = new User();
+        User user = userRepository.findByEmail(request.get("email")).orElse(new User());
+
         user.setEmail(request.get("email"));
         user.setPhone(request.get("phone"));
         user.setFirstName(request.get("firstName"));
