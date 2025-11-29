@@ -29,8 +29,11 @@ export class JobPortal implements OnInit {
         lastName: '',
         email: '',
         coverLetter: '',
-        cvUrl: '',
+        cvFile: null as File | null,
+        cvFileName: '',
     };
+
+    isDragOver = false;
 
     constructor(
         private jobPostService: JobPostService,
@@ -94,8 +97,84 @@ export class JobPortal implements OnInit {
             lastName: '',
             email: '',
             coverLetter: '',
-            cvUrl: '',
+            cvFile: null,
+            cvFileName: '',
         };
+    }
+
+    /**
+     * Handle file selection from input
+     */
+    onFileSelected(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        if (input.files && input.files.length > 0) {
+            this.handleFileUpload(input.files[0]);
+        }
+    }
+
+    /**
+     * Handle drag over event
+     */
+    onDragOver(event: DragEvent): void {
+        event.preventDefault();
+        event.stopPropagation();
+        this.isDragOver = true;
+    }
+
+    /**
+     * Handle drag leave event
+     */
+    onDragLeave(event: DragEvent): void {
+        event.preventDefault();
+        event.stopPropagation();
+        this.isDragOver = false;
+    }
+
+    /**
+     * Handle drop event
+     */
+    onDrop(event: DragEvent): void {
+        event.preventDefault();
+        event.stopPropagation();
+        this.isDragOver = false;
+
+        if (event.dataTransfer && event.dataTransfer.files.length > 0) {
+            this.handleFileUpload(event.dataTransfer.files[0]);
+        }
+    }
+
+    /**
+     * Process the uploaded file
+     */
+    private handleFileUpload(file: File): void {
+        // Validate file type
+        if (!file.name.endsWith('.pdf') && !file.name.endsWith('.docx')) {
+            this.showMessage(
+                'warn',
+                'Invalid File',
+                'Only PDF and DOCX files are allowed. Please upload a valid CV.'
+            );
+            return;
+        }
+
+        // Validate file size (max 10MB)
+        const maxSize = 10 * 1024 * 1024;
+        if (file.size > maxSize) {
+            this.showMessage('warn', 'File Too Large', 'CV file must be smaller than 10MB.');
+            return;
+        }
+
+        this.applicationForm.cvFile = file;
+        this.applicationForm.cvFileName = file.name;
+        this.showMessage('success', 'File Uploaded', `${file.name} uploaded successfully!`);
+    }
+
+    /**
+     * Remove uploaded CV file
+     */
+    removeCvFile(): void {
+        this.applicationForm.cvFile = null;
+        this.applicationForm.cvFileName = '';
     }
 
     /**
@@ -118,8 +197,8 @@ export class JobPortal implements OnInit {
             this.showMessage('warn', 'Validation Error', 'Please enter a valid email address');
             return false;
         }
-        if (!this.applicationForm.cvUrl || this.applicationForm.cvUrl.trim().length < 5) {
-            this.showMessage('warn', 'Validation Error', 'CV URL must be provided');
+        if (!this.applicationForm.cvFile) {
+            this.showMessage('warn', 'Validation Error', 'Please upload your CV');
             return false;
         }
         if (
@@ -148,7 +227,12 @@ export class JobPortal implements OnInit {
      * Submit application
      */
     submitApplication(): void {
-        if (!this.validateForm() || !this.selectedJob || !this.selectedJob.id) {
+        if (
+            !this.validateForm() ||
+            !this.selectedJob ||
+            !this.selectedJob.id ||
+            !this.applicationForm.cvFile
+        ) {
             return;
         }
 
@@ -156,37 +240,39 @@ export class JobPortal implements OnInit {
             firstName: this.applicationForm.firstName.trim(),
             lastName: this.applicationForm.lastName.trim(),
             email: this.applicationForm.email.trim(),
-            cvUrl: this.applicationForm.cvUrl.trim(),
             coverLetter: this.applicationForm.coverLetter.trim(),
             postId: this.selectedJob.id,
         };
 
         this.spinner.show();
-        this.jobPostService.submitApplication(this.selectedJob.id, dto).subscribe({
-            next: (res) => {
-                this.spinner.hide();
-                if (res.status === 201 || res.status === 200) {
-                    this.showMessage(
-                        'success',
-                        'Success',
-                        'Your application has been submitted successfully!'
-                    );
-                    this.closeApplicationModal();
-                    this.loadJobPosts();
-                } else {
-                    this.showMessage(
-                        'error',
-                        'Error',
-                        res.cMessage || 'Failed to submit application'
-                    );
-                }
-            },
-            error: (err) => {
-                this.spinner.hide();
-                const errorMsg = err?.error?.cMessage || err?.error?.message || 'An error occurred';
-                this.showMessage('error', 'Error', errorMsg);
-            },
-        });
+        this.applicantService
+            .submitApplication(this.selectedJob.id, dto, this.applicationForm.cvFile)
+            .subscribe({
+                next: (res) => {
+                    this.spinner.hide();
+                    if (res.status === 201 || res.status === 200) {
+                        this.showMessage(
+                            'success',
+                            'Success',
+                            'Your application has been submitted successfully!'
+                        );
+                        this.closeApplicationModal();
+                        this.loadJobPosts();
+                    } else {
+                        this.showMessage(
+                            'error',
+                            'Error',
+                            res.cMessage || 'Failed to submit application'
+                        );
+                    }
+                },
+                error: (err) => {
+                    this.spinner.hide();
+                    const errorMsg =
+                        err?.error?.cMessage || err?.error?.message || 'An error occurred';
+                    this.showMessage('error', 'Error', errorMsg);
+                },
+            });
     }
 
     /**

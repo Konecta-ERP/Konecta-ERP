@@ -156,22 +156,65 @@
                 />
             </div>
 
-            <!-- CV URL -->
+            <!-- CV File Upload with Drag and Drop -->
             <div class="col-12">
-                <label for="cvUrl" class="block text-900 font-semibold mb-2">
-                    <i class="pi pi-file mr-2 text-primary"></i>CV/Resume URL
+                <label class="block text-900 font-semibold mb-2">
+                    <i class="pi pi-file mr-2 text-primary"></i>Upload CV/Resume
                     <span class="text-red-500">*</span>
                 </label>
-                <input
-                    id="cvUrl"
-                    type="url"
-                    pInputText
-                    [(ngModel)]="applicationForm.cvUrl"
-                    placeholder="Enter the URL to your CV or resume"
-                    class="w-full"
-                />
-                <small class="text-600 block mt-1">
-                    Provide a link to your CV (Google Drive, Dropbox, etc.)
+                
+                <!-- Drag and Drop Area -->
+                <div
+                    class="border-2 border-dashed border-400 rounded-lg p-6 text-center cursor-pointer transition-all duration-200"
+                    [class.border-primary]="isDragOver"
+                    [class.bg-blue-50]="isDragOver"
+                    (dragover)="onDragOver($event)"
+                    (dragleave)="onDragLeave($event)"
+                    (drop)="onDrop($event)"
+                >
+                    @if(!applicationForm.cvFileName) {
+                    <div class="flex flex-column align-items-center gap-3">
+                        <i class="pi pi-cloud-upload text-4xl text-400"></i>
+                        <div>
+                            <p class="text-900 font-semibold m-0">Drag and drop your CV here</p>
+                            <small class="text-600">or click to select a file</small>
+                        </div>
+                        <input
+                            #fileInput
+                            type="file"
+                            accept=".pdf,.docx"
+                            (change)="onFileSelected($event)"
+                            class="hidden"
+                        />
+                        <p-button
+                            label="Browse Files"
+                            icon="pi pi-folder-open"
+                            (onClick)="fileInput.click()"
+                            severity="info"
+                            [text]="true"
+                        ></p-button>
+                    </div>
+                    } @else {
+                    <div class="flex align-items-center justify-content-between gap-3 bg-green-50 p-4 rounded-lg border-1 border-green-200">
+                        <div class="flex align-items-center gap-3">
+                            <i class="pi pi-check-circle text-2xl text-green-600"></i>
+                            <div class="text-left">
+                                <p class="text-900 font-semibold m-0">{{ applicationForm.cvFileName }}</p>
+                                <small class="text-600">File uploaded successfully</small>
+                            </div>
+                        </div>
+                        <p-button
+                            icon="pi pi-trash"
+                            [rounded]="true"
+                            [text]="true"
+                            severity="danger"
+                            (onClick)="removeCvFile()"
+                        ></p-button>
+                    </div>
+                    }
+                </div>
+                <small class="text-600 block mt-2">
+                    Accepted formats: PDF, DOCX (Max 10MB)
                 </small>
             </div>
 

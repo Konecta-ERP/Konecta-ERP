@@ -8,7 +8,9 @@ export interface ApplicantDto {
     firstName: string;
     lastName: string;
     email: string;
-    cvUrl: string;
+    cvFileName: string;
+    cvFileType: string;
+    cvFilePath: string;
     coverLetter: string;
     status: string;
     appliedAt: string;
@@ -20,7 +22,6 @@ export interface ApplicantApplicationDto {
     lastName: string;
     email: string;
     coverLetter: string;
-    cvUrl: string;
     postId: number;
 }
 
@@ -45,12 +46,21 @@ export class ApplicantService {
     constructor(private http: HttpClient) {}
 
     /**
-     * Submit job application
+     * Submit job application with CV file
      */
-    submitApplication(dto: ApplicantApplicationDto): Observable<ApiResponse<ApplicantDto>> {
+    submitApplication(
+        postId: number,
+        dto: ApplicantApplicationDto,
+        file: File
+    ): Observable<ApiResponse<ApplicantDto>> {
+        const formData = new FormData();
+        const blob = new Blob([JSON.stringify(dto)], { type: 'application/json' });
+        formData.append('data', blob);
+        formData.append('file', file);
+
         return this.http.post<ApiResponse<ApplicantDto>>(
-            `${this.jobPostsApiUrl}/${dto.postId}/apply`,
-            dto
+            `${this.jobPostsApiUrl}/${postId}/apply`,
+            formData
         );
     }
 
@@ -85,5 +95,18 @@ export class ApplicantService {
         dto: UpdateApplicantStatusDto
     ): Observable<ApiResponse<ApplicantDto>> {
         return this.http.patch<ApiResponse<ApplicantDto>>(`${this.apiBaseUrl}/${id}/status`, dto);
+    }
+
+    deleteApplicant(applicantId: number): Observable<any> {
+        return this.http.delete(`${this.apiBaseUrl}/${applicantId}`);
+    }
+
+    /**
+     * Download CV for an applicant
+     */
+    downloadCv(applicantId: number): Observable<Blob> {
+        return this.http.get(`${this.apiBaseUrl}/${applicantId}/download-cv`, {
+            responseType: 'blob',
+        });
     }
 }

@@ -1,14 +1,12 @@
 package com.konecta.recruitmentservice.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.konecta.recruitmentservice.dto.ApplicantDto;
 import com.konecta.recruitmentservice.dto.UpdateApplicantStatusDto;
@@ -41,6 +39,18 @@ public class ApplicantController {
     return ResponseEntity.ok(response);
   }
 
+    @GetMapping("/api/applicants/{applicantId}/download-cv")
+    @PreAuthorize("hasAuthority('HR_EMP')")
+    public ResponseEntity<byte[]> downloadApplicantCv(@PathVariable int applicantId) {
+        byte[] submissionFile = applicantService.downloadCv(applicantId);
+        String fileName = applicantService.getCvFileName(applicantId);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                .body(submissionFile);
+    }
+
   @PatchMapping("/api/applicants/{applicantId}/status")
   @PreAuthorize("hasAuthority('HR_EMP')")
   public ResponseEntity<ApiResponse<ApplicantDto>> updateApplicantStatus(
@@ -55,4 +65,17 @@ public class ApplicantController {
         "Applicant " + applicantId + " status set to " + dto.getStatus());
     return ResponseEntity.ok(response);
   }
+
+    @DeleteMapping("/api/applicants/{applicantId}")
+    @PreAuthorize("hasAuthority('HR_EMP')")
+    public ResponseEntity<ApiResponse<Void>> deleteApplicant( @PathVariable Integer applicantId) {
+        applicantService.deleteApplicant(applicantId);
+        ApiResponse<Void> response = ApiResponse.success(
+                null,
+                HttpStatus.NO_CONTENT.value(),
+                "Applicant deleted.",
+                "Successfully deleted applicant " + applicantId);
+
+        return ResponseEntity.status(204).body(response);
+    }
 }

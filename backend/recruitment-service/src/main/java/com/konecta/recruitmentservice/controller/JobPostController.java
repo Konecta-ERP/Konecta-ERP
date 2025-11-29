@@ -5,16 +5,10 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.konecta.recruitmentservice.dto.ApplicantDto;
 import com.konecta.recruitmentservice.dto.ApplyForJobDto;
@@ -25,6 +19,7 @@ import com.konecta.recruitmentservice.service.ApplicantService;
 import com.konecta.recruitmentservice.service.JobPostService;
 
 import jakarta.validation.Valid;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/job-posts")
@@ -100,19 +95,32 @@ public class JobPostController {
     return ResponseEntity.ok(response);
   }
 
-  @PostMapping("/{postId}/apply")
-  public ResponseEntity<ApiResponse<ApplicantDto>> applyForJob(
-      @PathVariable Integer postId,
-      @Valid @RequestBody ApplyForJobDto dto) {
+    @PostMapping(value = "/{postId}/apply", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<ApplicantDto>> applyForJob(
+            @PathVariable Integer postId,
+            @Valid @RequestPart("data") ApplyForJobDto dto,
+            @RequestPart("file") MultipartFile file) {
 
-    ApplicantDto newApplicant = applicantService.applyForJob(postId, dto);
-    ApiResponse<ApplicantDto> response = ApiResponse.success(
-        newApplicant,
-        HttpStatus.CREATED.value(),
-        "Application submitted successfully.",
-        "Applicant created with id " + newApplicant.getId());
-    return new ResponseEntity<>(response, HttpStatus.CREATED);
-  }
+        String fileName = file.getOriginalFilename();
+        if (fileName == null ||
+                !(fileName.endsWith(".pdf") || fileName.endsWith(".docx"))) {
+            ApiResponse<ApplicantDto> errorResponse = ApiResponse.error(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "Only PDF and DOCX files are allowed.",
+                    "Received: " + fileName
+            );
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+
+        ApplicantDto newApplicant = applicantService.applyForJob(postId, dto, file);
+        ApiResponse<ApplicantDto> response = ApiResponse.success(
+                newApplicant,
+                HttpStatus.CREATED.value(),
+                "Application submitted successfully.",
+                "Applicant created with id " + newApplicant.getId()
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
 
   @GetMapping("/{postId}/applicants")
   @PreAuthorize("hasAuthority('HR_EMP')")

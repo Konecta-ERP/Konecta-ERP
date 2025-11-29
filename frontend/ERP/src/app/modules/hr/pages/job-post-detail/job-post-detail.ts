@@ -31,7 +31,14 @@ export class JobPostDetail implements OnInit {
     applicants: ApplicantDto[] = [];
     isLoading = false;
     showCreateModal = false;
+    showCoverLetterModal = false;
     isViewMode = false;
+    dragOverStatus: string | null = null;
+    draggedApplicant: ApplicantDto | null = null;
+    selectedApplicant: ApplicantDto | null = null;
+
+    // Kanban board statuses
+    kanbanStatuses: string[] = ['APPLIED', 'SCREENING', 'INTERVIEW', 'ACCEPTED'];
 
     // Form fields for creating job post
     newJobPost: CreateJobPostDto = {
@@ -40,6 +47,14 @@ export class JobPostDetail implements OnInit {
         requirements: [{ text: '', mandatory: false }],
         requisitionId: 0,
     };
+
+    get applicantsByStatus(): { [key: string]: ApplicantDto[] } {
+        const grouped: { [key: string]: ApplicantDto[] } = {};
+        this.kanbanStatuses.forEach((status) => {
+            grouped[status] = this.applicants.filter((a) => a.status === status);
+        });
+        return grouped;
+    }
 
     constructor(
         private route: ActivatedRoute,
@@ -303,11 +318,150 @@ export class JobPostDetail implements OnInit {
     }
 
     /**
-     * Open CV URL in new window
+     * Download CV for an applicant
      */
-    openCV(cvUrl: string): void {
-        if (cvUrl) {
-            window.open(cvUrl, '_blank');
+    downloadCv(applicantId: number, fileName: string): void {
+        this.spinner.show();
+        this.applicantService.downloadCv(applicantId).subscribe({
+            next: (blob) => {
+                this.spinner.hide();
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = fileName || `cv_${applicantId}.pdf`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            },
+            error: (err) => {
+                this.spinner.hide();
+                this.showMessage('error', 'Error', 'Failed to download CV');
+            },
+        });
+    }
+
+    /**
+     * Handle drag start
+     */
+    onDragStart(event: DragEvent, applicant: ApplicantDto): void {
+        this.draggedApplicant = applicant;
+        if (event.dataTransfer) {
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/plain', applicant.id.toString());
         }
+    }
+
+    /**
+     * Handle drag end
+     */
+    onDragEnd(): void {
+        this.draggedApplicant = null;
+        this.dragOverStatus = null;
+    }
+
+    /**
+     * Handle drag over
+     */
+    onDragOver(event: DragEvent, status: string): void {
+        event.preventDefault();
+        if (event.dataTransfer) {
+            event.dataTransfer.dropEffect = 'move';
+        }
+        this.dragOverStatus = status;
+    }
+
+    /**
+     * Handle drag leave
+     */
+    onDragLeave(): void {
+        this.dragOverStatus = null;
+    }
+
+    /**
+     * Handle drop - update applicant status
+     */
+    onDrop(event: DragEvent, newStatus: string): void {
+        event.preventDefault();
+        this.dragOverStatus = null;
+
+        if (!this.draggedApplicant || this.draggedApplicant.status === newStatus) {
+            return;
+        }
+
+        if (newStatus === 'TRASH') {
+            this.confirmAndDelete(this.draggedApplicant);
+            return; // Stop here, do not proceed to update status
+        }
+        // Update applicant status optimistically
+        const oldStatus = this.draggedApplicant.status;
+        this.draggedApplicant.status = newStatus;
+        const applicantId = this.draggedApplicant.id;
+
+        // Call backend to update status
+        this.applicantService.updateApplicantStatus(applicantId, { status: newStatus }).subscribe({
+            next: (res) => {
+                if (res.status === 200 || res.status === 201) {
+                    this.showMessage(
+                        'success',
+                        'Success',
+                        `Applicant status updated to ${newStatus}`
+                    );
+                    // Reload applicants to ensure data consistency
+                    if (this.jobPost) {
+                        this.loadApplicants(this.jobPost.id);
+                    }
+                } else {
+                    // Revert on error
+                    this.draggedApplicant!.status = oldStatus;
+                    this.showMessage('error', 'Error', 'Failed to update applicant status');
+                }
+            },
+            error: (err) => {
+                // Revert on error
+                this.draggedApplicant!.status = oldStatus;
+                this.showMessage('error', 'Error', 'Error updating applicant status');
+            },
+        });
+    }
+
+    confirmAndDelete(applicant: ApplicantDto): void {
+        // Ideally, use PrimeNG ConfirmationService here to prevent accidental deletes
+        // For now, we will proceed with the API call directly as requested
+
+        this.spinner.show();
+
+        this.applicantService.deleteApplicant(applicant.id).subscribe({
+            next: (res) => {
+                this.spinner.hide();
+                this.showMessage('success', 'Deleted', 'Applicant deleted successfully');
+
+                // Remove the applicant from the local array to update UI immediately
+                this.applicants = this.applicants.filter((a) => a.id !== applicant.id);
+
+                this.draggedApplicant = null;
+            },
+            error: (err) => {
+                this.spinner.hide();
+                this.draggedApplicant = null;
+                this.showMessage('error', 'Error', 'Failed to delete applicant');
+            },
+        });
+    }
+
+    /**
+     * Show cover letter modal
+     */
+    showCoverLetter(applicant: ApplicantDto): void {
+        this.selectedApplicant = applicant;
+        this.showCoverLetterModal = true;
+    }
+
+    /**
+     * Close cover letter modal
+     */
+    closeCoverLetterModal(): void {
+        this.showCoverLetterModal = false;
+        this.selectedApplicant = null;
     }
 }
