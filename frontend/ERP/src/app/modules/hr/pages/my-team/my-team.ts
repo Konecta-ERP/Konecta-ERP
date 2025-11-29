@@ -71,7 +71,7 @@ export class MyTeam implements OnInit {
 
         dayCellContent: (arg: any) => {
             const date = arg.date.toISOString().split('T')[0];
-            const counts = this.leaveCounts[date] || { approved: 0, pending: 0, available: 0 };
+            const counts = this.leaveCounts[date] || { approved: 0, pending: 0, available: this.employeesLeaves.length };
             return {
             html: `
                 <div class="flex flex-col items-center">
@@ -103,6 +103,7 @@ export class MyTeam implements OnInit {
                 if (res.status === 200) {
 
                     this.employeesLeaves = res.data;
+                    console.log(res);
                     this.calculateLeaveCounts();
                     this.refreshCalendar();
                     this.show('success', 'Success', 'Leave requests loaded successfully');
@@ -150,7 +151,7 @@ export class MyTeam implements OnInit {
                     const end = new Date(leave.endDate).toISOString().split('T')[0];
                     // Check if the date is within the leave range
                     if (date >= start && date <= end) {
-                        if (leave.status.toLowerCase() === 'accepted') {
+                        if (leave.status.toLowerCase() === 'approved') {
                             hasApprovedLeave = true;
                         } else if (leave.status.toLowerCase() === 'pending') {
                             hasPendingLeave = true;
@@ -184,7 +185,7 @@ export class MyTeam implements OnInit {
         ...this.calendarOptions,
         dayCellContent: (arg: any) => {
             const date = arg.date.toISOString().split('T')[0];
-            const counts = this.leaveCounts[date] || { approved: 0, pending: 0, available: 0 };
+            const counts = this.leaveCounts[date] || { approved: 0, pending: 0, available: this.employeesLeaves.length };
             return {
                 html: `
                 <div class="flex flex-col items-center">

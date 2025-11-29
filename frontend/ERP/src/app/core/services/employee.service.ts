@@ -110,8 +110,12 @@ export class EmployeeService {
     }
 
 
-    getEmployeeById(id:string):Observable<User>{
+    getEmployeeById(id:string):Observable<any>{
         return this._httpClient.get<User>(`${baseURL}/employees/${id}`);
+    }
+
+    getDepartmentEmployees(departmentId: number): Observable<any> {
+        return this._httpClient.get(`${baseURL}/departments/${departmentId}/employees`);
     }
 
 }
