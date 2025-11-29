@@ -92,12 +92,12 @@ export class MyTeam implements OnInit {
 
         const user = this._userService.getUser();
         console.log("Current User:", user);
-        /* if (!user||!user.departmentId) {
+        if (!user||!user.departmentId) {
         console.error("User has no department_id");
         return;
-        } */
+        }
         this._NgxSpinnerService.show();
-        this._employeeService.getLeaveRequestPerDepartment(1).subscribe({
+        this._employeeService.getLeaveRequestPerDepartment(user.departmentId).subscribe({
             next: (res) => {
                 this._NgxSpinnerService.hide();
                 if (res.status === 200) {

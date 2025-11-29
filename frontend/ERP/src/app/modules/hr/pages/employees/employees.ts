@@ -53,6 +53,11 @@ export class Employees implements OnInit {
         // ✅ Load departments for dropdown
         if (this._departmentService.hasCachedDepartments()) {
             this.departments = this._departmentService.getCachedDepartments();
+            this.dropDownDepartments = this.departments.map(dept => ({
+                label: dept.name,
+                value: dept.name
+            }));
+            console.log('Loaded departments from cache:', this.departments);
         } else {
             // Load from API if no cache
             this.loadDepartments();
