@@ -1,0 +1,57 @@
+/* Job Post Detail Styling */
+
+.job-post-requirement {
+    background-color: #f3f4f6;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.job-post-requirement:hover {
+    background-color: #e5e7eb;
+    transition: all 0.2s ease;
+}
+
+.requirement-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.requirement-list li {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.requirement-list li:last-child {
+    border-bottom: none;
+}
+
+.requirement-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+/* Modal Styles */
+:deep .p-dialog-header {
+    background: linear-gradient(to right, #667eea 0%, #764ba2 100%);
+}
+
+:deep .p-dialog-title {
+    color: white;
+    font-weight: 600;
+}
+
+/* Cards */
+:deep .p-card {
+    border: none;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Tags */
+:deep .p-tag {
+    font-weight: 500;
+    padding: 0.4rem 0.8rem;
+}

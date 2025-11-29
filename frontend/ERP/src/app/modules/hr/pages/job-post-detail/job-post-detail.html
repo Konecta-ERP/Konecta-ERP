@@ -1,0 +1,284 @@
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 md:p-6">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header with Back Button -->
+        <div class="flex align-items-center gap-3 mb-6">
+            <p-button
+                icon="pi pi-arrow-left"
+                [text]="true"
+                [rounded]="true"
+                (onClick)="goBack()"
+            ></p-button>
+            <h1 class="text-3xl font-bold text-900 m-0">Job Post Management</h1>
+        </div>
+
+        <!-- Requisition Information Card -->
+        @if(requisition) {
+        <p-card class="mb-6 shadow-4 border-round-2xl">
+            <ng-template pTemplate="header">
+                <div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-5 border-round-top-2xl">
+                    <h2 class="text-white text-2xl font-bold m-0">
+                        Requisition #{{ requisition.id }}
+                    </h2>
+                </div>
+            </ng-template>
+            <div class="grid gap-4">
+                <div class="col-12 md:col-6">
+                    <p class="text-600 text-sm m-0 mb-1">Reason</p>
+                    <p class="text-900 font-semibold m-0">{{ requisition.reason }}</p>
+                </div>
+                <div class="col-12 md:col-3">
+                    <p class="text-600 text-sm m-0 mb-1">Priority</p>
+                    <p-tag
+                        [value]="requisition.priority"
+                        [severity]="
+                            requisition.priority === 'HIGH'
+                                ? 'danger'
+                                : requisition.priority === 'MEDIUM'
+                                ? 'warn'
+                                : 'info'
+                        "
+                    ></p-tag>
+                </div>
+                <div class="col-12 md:col-3">
+                    <p class="text-600 text-sm m-0 mb-1">Openings</p>
+                    <p class="text-900 font-semibold m-0">{{ requisition.openings }}</p>
+                </div>
+            </div>
+        </p-card>
+        }
+
+        <!-- Job Post Content -->
+        @if(isViewMode && jobPost) {
+        <!-- View Job Post Card -->
+        <p-card class="shadow-4 border-round-2xl">
+            <ng-template pTemplate="header">
+                <div
+                    class="bg-gradient-to-r from-green-600 to-emerald-600 p-5 border-round-top-2xl"
+                >
+                    <div class="flex align-items-center justify-content-between">
+                        <h2 class="text-white text-2xl font-bold m-0">{{ jobPost.title }}</h2>
+                        <div class="flex gap-2 align-items-center">
+                            <p-tag
+                                [value]="jobPost.active ? 'Active' : 'Inactive'"
+                                [severity]="jobPost.active ? 'success' : 'secondary'"
+                            ></p-tag>
+                        </div>
+                    </div>
+                </div>
+            </ng-template>
+
+            <div class="grid gap-6">
+                <!-- Description -->
+                <div class="col-12">
+                    <p class="text-600 text-sm m-0 mb-2">
+                        <i class="pi pi-book mr-2"></i>Description
+                    </p>
+                    <p class="text-900 line-height-1_6 m-0">{{ jobPost.description }}</p>
+                </div>
+
+                <!-- Requirements -->
+                <div class="col-12">
+                    <p class="text-600 text-sm m-0 mb-3">
+                        <i class="pi pi-list mr-2"></i>Requirements
+                    </p>
+                    <ul class="m-0 pl-4">
+                        @for(requirement of jobPost.requirements; track $index) {
+                        <li class="mb-2">
+                            <span class="text-900">{{ requirement.text }}</span>
+                            @if(requirement.mandatory) {
+                            <p-tag value="Mandatory" severity="danger" class="ml-2"></p-tag>
+                            }
+                        </li>
+                        }
+                    </ul>
+                </div>
+
+                <!-- Posted Date -->
+                <div class="col-12">
+                    <p class="text-600 text-sm m-0 mb-1">Posted Date</p>
+                    <p class="text-900 m-0">{{ formatDate(jobPost.postedAt) }}</p>
+                </div>
+            </div>
+
+            <ng-template pTemplate="footer">
+                <div class="flex gap-2 justify-content-end">
+                    <p-button
+                        [label]="jobPost.active ? 'Deactivate' : 'Activate'"
+                        [severity]="jobPost.active ? 'danger' : 'success'"
+                        icon="pi pi-power-off"
+                        (onClick)="toggleJobPostActive()"
+                    ></p-button>
+                </div>
+            </ng-template>
+        </p-card>
+        } @else if(!isLoading && !jobPost) {
+        <!-- Create Job Post Card -->
+        <p-card class="shadow-4 border-round-2xl">
+            <ng-template pTemplate="header">
+                <div class="bg-gradient-to-r from-purple-600 to-pink-600 p-5 border-round-top-2xl">
+                    <h2 class="text-white text-2xl font-bold m-0">Create Job Post</h2>
+                </div>
+            </ng-template>
+
+            <div
+                class="flex flex-column align-items-center justify-content-center py-8 px-4 text-center"
+            >
+                <div
+                    class="bg-purple-50 border-circle w-8rem h-8rem flex align-items-center justify-content-center mb-4"
+                >
+                    <i class="pi pi-briefcase text-6xl text-purple-400"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-900 mb-2">No Job Post Yet</h3>
+                <p class="text-600 text-lg mb-4 max-w-30rem">
+                    Create a job post to publish this requisition and start recruiting candidates.
+                </p>
+                <p-button
+                    label="Create Job Post"
+                    icon="pi pi-plus"
+                    severity="success"
+                    (onClick)="openCreateModal()"
+                ></p-button>
+            </div>
+        </p-card>
+        }
+
+        <!-- Loading State -->
+        @if(isLoading) {
+        <div class="flex align-items-center justify-content-center py-8">
+            <i class="pi pi-spin pi-spinner text-primary text-4xl"></i>
+        </div>
+        }
+    </div>
+
+    <!-- Create Job Post Modal -->
+    <p-dialog
+        [(visible)]="showCreateModal"
+        [header]="'Create Job Post'"
+        [modal]="true"
+        [style]="{ width: '90vw', maxWidth: '700px' }"
+        [draggable]="false"
+        [resizable]="false"
+        (onHide)="closeCreateModal()"
+    >
+        <div class="grid gap-4">
+            <!-- Title -->
+            <div class="col-12">
+                <label for="title" class="block text-900 font-semibold mb-2">
+                    <i class="pi pi-heading mr-2 text-primary"></i>Title
+                    <span class="text-red-500">*</span>
+                </label>
+                <input
+                    id="title"
+                    type="text"
+                    pInputText
+                    [(ngModel)]="newJobPost.title"
+                    placeholder="Enter job post title (5-200 characters)"
+                    class="w-full"
+                />
+                <small class="text-600 block mt-1">
+                    {{ newJobPost.title.length }}/200 characters
+                </small>
+            </div>
+
+            <!-- Description -->
+            <div class="col-12">
+                <label for="description" class="block text-900 font-semibold mb-2">
+                    <i class="pi pi-book mr-2 text-primary"></i>Description
+                    <span class="text-red-500">*</span>
+                </label>
+                <textarea
+                    id="description"
+                    pInputTextarea
+                    [(ngModel)]="newJobPost.description"
+                    placeholder="Provide detailed job description (20-5000 characters)"
+                    rows="6"
+                    class="w-full"
+                ></textarea>
+                <small class="text-600 block mt-1">
+                    {{ newJobPost.description.length }}/5000 characters
+                </small>
+            </div>
+
+            <!-- Requirements -->
+            <div class="col-12">
+                <div class="flex align-items-center justify-content-between mb-3">
+                    <label class="block text-900 font-semibold">
+                        <i class="pi pi-list mr-2 text-primary"></i>Requirements
+                        <span class="text-red-500">*</span>
+                    </label>
+                    <p-button
+                        icon="pi pi-plus"
+                        [rounded]="true"
+                        [text]="true"
+                        severity="success"
+                        (onClick)="addRequirement()"
+                        pTooltip="Add requirement"
+                    ></p-button>
+                </div>
+
+                <div class="grid gap-3">
+                    @for(requirement of newJobPost.requirements; track $index) {
+                    <div class="col-12">
+                        <div class="flex gap-2 align-items-end">
+                            <div class="flex-grow-1">
+                                <input
+                                    type="text"
+                                    pInputText
+                                    [(ngModel)]="requirement.text"
+                                    placeholder="Enter requirement"
+                                    class="w-full"
+                                />
+                            </div>
+                            <p-checkbox
+                                [(ngModel)]="requirement.mandatory"
+                                [binary]="true"
+                                pTooltip="Mark as mandatory"
+                                tooltipPosition="top"
+                            ></p-checkbox>
+                            @if(newJobPost.requirements.length > 1) {
+                            <p-button
+                                icon="pi pi-trash"
+                                severity="danger"
+                                [text]="true"
+                                [rounded]="true"
+                                (onClick)="removeRequirement($index)"
+                                pTooltip="Remove requirement"
+                            ></p-button>
+                            }
+                        </div>
+                    </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <ng-template pTemplate="footer">
+            <div class="flex gap-2 justify-content-end">
+                <p-button
+                    label="Cancel"
+                    icon="pi pi-times"
+                    severity="secondary"
+                    (onClick)="closeCreateModal()"
+                ></p-button>
+                <p-button
+                    label="Create Job Post"
+                    icon="pi pi-check"
+                    severity="success"
+                    (onClick)="submitJobPost()"
+                ></p-button>
+            </div>
+        </ng-template>
+    </p-dialog>
+</div>
+
+<ngx-spinner
+    bdColor="rgba(0, 0, 0, 0.8)"
+    size="large"
+    color="#ffd700"
+    type="timer"
+    [fullScreen]="true"
+>
+    <p style="color: #ffd700">Loading...</p>
+</ngx-spinner>
+
+<p-toast position="top-center" />

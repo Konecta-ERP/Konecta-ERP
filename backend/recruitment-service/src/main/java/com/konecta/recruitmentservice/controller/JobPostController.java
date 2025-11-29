@@ -40,7 +40,7 @@ public class JobPostController {
   }
 
   @PostMapping
-  @PreAuthorize("hasAuthority('HR_ASSOCIATE') or hasAuthority('HR_MANAGER') or hasAuthority('HR_ADMIN')")
+  @PreAuthorize("hasAuthority('HR_EMP')")
   public ResponseEntity<ApiResponse<JobPostDto>> createJobPost(
       @Valid @RequestBody CreateJobPostDto dto) {
     JobPostDto newPost = jobPostService.createJobPost(dto);
@@ -66,7 +66,7 @@ public class JobPostController {
   }
 
   @PatchMapping("/{id}/active")
-  @PreAuthorize("hasAuthority('HR_ASSOCIATE') or hasAuthority('HR_MANAGER') or hasAuthority('HR_ADMIN')")
+  @PreAuthorize("hasAuthority('HR_EMP')")
   public ResponseEntity<ApiResponse<JobPostDto>> setJobPostActive(
       @PathVariable Integer id,
       @RequestBody Map<String, Boolean> activeUpdate) {
@@ -115,7 +115,7 @@ public class JobPostController {
   }
 
   @GetMapping("/{postId}/applicants")
-  @PreAuthorize("hasAuthority('HR_ASSOCIATE') or hasAuthority('HR_MANAGER') or hasAuthority('HR_ADMIN')")
+  @PreAuthorize("hasAuthority('HR_EMP')")
   public ResponseEntity<ApiResponse<List<ApplicantDto>>> getApplicantsForPost(
       @PathVariable Integer postId) {
 

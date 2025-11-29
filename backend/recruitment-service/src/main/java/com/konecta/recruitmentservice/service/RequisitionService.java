@@ -104,4 +104,11 @@ public class RequisitionService {
     }
     return dto;
   }
+
+    public void deleteRequisition(Integer id) {
+      if (!requisitionRepository.existsById(id)) {
+          throw new EntityNotFoundException("JobRequisition not found with id: " + id);
+      }
+      requisitionRepository.deleteById(id);
+    }
 }
