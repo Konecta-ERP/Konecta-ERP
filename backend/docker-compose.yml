@@ -202,7 +202,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 90s
+      start_period: 120s
 
   # === RECRUITMENT SERVICE & DB ===
   recruitment-db:
@@ -248,7 +248,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 90s
+      start_period: 120s
 
   # === FINANCE SERVICE & DB ===
   finance-db:
@@ -294,7 +294,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 90s
+      start_period: 120s
 
 networks:
   microservices-net:

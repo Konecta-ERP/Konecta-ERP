@@ -34,39 +34,54 @@ public class DataSeeder implements CommandLineRunner {
 
         Department hrDept = createDepartmentIfNotExist("Human Resources");
         Department financeDept = createDepartmentIfNotExist("Finance");
+        Department engineeringDept = createDepartmentIfNotExist("Engineering");
 
         System.out.println("\n--- Creating ADMIN User ---");
+        // ADMIN (Retains descriptive names for system roles)
         Employee adminUser = createFullEmployeeFlow(
                 "admin@email.com", "System", "Admin", "+00000000000", "ADMIN", "password",
                 "System Administrator", new BigDecimal("120000.00"), new BigDecimal("80000.00"), hrDept
         );
 
-        System.out.println("\n--- Creating Operational Users ---");
+        System.out.println("\n--- Creating Operational Users (Randomized Names) ---");
 
         // --- HR Manager ---
         Employee hrManager = createFullEmployeeFlow(
-                "hr_manager@email.com", "HR", "Manager", "+01234567892", "HR_MANAGER", "password",
+                "hr_manager@email.com", "Jane", "Smith", "+01234567892", "HR_MANAGER", "password",
                 "HR Manager", new BigDecimal("80000.00"), new BigDecimal("55000.00"), hrDept
         );
         assignManagerToDepartment(hrDept, hrManager);
 
         // --- HR Associate ---
         createFullEmployeeFlow(
-                "hr_associate@email.com", "HR", "Associate", "+01234567891", "HR_ASSOCIATE", "password",
+                "hr_associate@email.com", "Robert", "Jones", "+01234567891", "HR_ASSOCIATE", "password",
                 "HR Associate", new BigDecimal("50000.00"), new BigDecimal("35000.00"), hrDept
         );
 
         // --- CFO ---
         Employee cfo = createFullEmployeeFlow(
-                "cfo@email.com", "Chief", "Officer", "+01234567894", "CFO", "password",
+                "cfo@email.com", "Martha", "King", "+01234567894", "CFO", "password",
                 "Chief Financial Officer", new BigDecimal("150000.00"), new BigDecimal("100000.00"), financeDept
         );
         assignManagerToDepartment(financeDept, cfo);
 
         // --- Accountant ---
         createFullEmployeeFlow(
-                "accountant@email.com", "Accountant", "User", "+01234567893", "ACCOUNTANT", "password",
+                "accountant@email.com", "David", "Miller", "+01234567893", "ACCOUNTANT", "password",
                 "Junior Accountant", new BigDecimal("60000.00"), new BigDecimal("40000.00"), financeDept
+        );
+
+        // --- Engineering Manager (MANAGER) ---
+        Employee engManager = createFullEmployeeFlow(
+                "eng_manager@email.com", "John", "Doe", "+01234567895", "MANAGER", "password",
+                "Lead Software Engineer", new BigDecimal("130000.00"), new BigDecimal("90000.00"), engineeringDept
+        );
+        assignManagerToDepartment(engineeringDept, engManager);
+
+        // --- Software Engineer (EMP) ---
+        createFullEmployeeFlow(
+                "sw_eng@email.com", "Sarah", "Connor", "+01234567896", "EMP", "password",
+                "Software Engineer", new BigDecimal("90000.00"), new BigDecimal("65000.00"), engineeringDept
         );
 
         System.out.println("--- Data Seeder Complete ---");
