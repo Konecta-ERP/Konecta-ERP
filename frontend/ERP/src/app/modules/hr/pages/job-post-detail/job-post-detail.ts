@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -13,6 +13,8 @@ import {
     RecruitmentService,
     JobRequisitionDto,
 } from '../../../../core/services/recruitment.service';
+import { ApplicantService } from '../../../../core/services/applicant.service';
+import { ApplicantDto } from '../../../../core/services/applicant.service';
 import { MessageService } from 'primeng/api';
 import { NgxSpinnerService } from 'ngx-spinner';
 
@@ -26,6 +28,7 @@ export class JobPostDetail implements OnInit {
     requisitionId: number | null = null;
     requisition: JobRequisitionDto | null = null;
     jobPost: JobPostDto | null = null;
+    applicants: ApplicantDto[] = [];
     isLoading = false;
     showCreateModal = false;
     isViewMode = false;
@@ -43,6 +46,7 @@ export class JobPostDetail implements OnInit {
         private router: Router,
         private jobPostService: JobPostService,
         private recruitmentService: RecruitmentService,
+        @Inject(ApplicantService) private applicantService: ApplicantService,
         private messageService: MessageService,
         private spinner: NgxSpinnerService
     ) {}
@@ -93,11 +97,30 @@ export class JobPostDetail implements OnInit {
                     if (post) {
                         this.jobPost = post;
                         this.isViewMode = true;
+                        this.loadApplicants(post.id);
                     }
                 }
             },
             error: (err) => {
                 this.spinner.hide();
+            },
+        });
+    }
+
+    /**
+     * Load applicants for a job post
+     */
+    loadApplicants(postId: number): void {
+        this.applicantService.getApplicantsForPost(postId).subscribe({
+            next: (res) => {
+                if (res.status === 200) {
+                    this.applicants = res.data || [];
+                } else {
+                    this.showMessage('error', 'Error', 'Failed to load applicants');
+                }
+            },
+            error: (err) => {
+                this.showMessage('error', 'Error', 'Error loading applicants');
             },
         });
     }
@@ -206,6 +229,9 @@ export class JobPostDetail implements OnInit {
                     this.showMessage('success', 'Success', 'Job post created successfully!');
                     this.closeCreateModal();
                     this.loadJobPostForRequisition();
+                    if (res.data && res.data.id) {
+                        this.loadApplicants(res.data.id);
+                    }
                 } else {
                     this.showMessage('error', 'Error', res.cMessage || 'Failed to create job post');
                 }
@@ -273,6 +299,15 @@ export class JobPostDetail implements OnInit {
             });
         } catch {
             return dateString;
+        }
+    }
+
+    /**
+     * Open CV URL in new window
+     */
+    openCV(cvUrl: string): void {
+        if (cvUrl) {
+            window.open(cvUrl, '_blank');
         }
     }
 }

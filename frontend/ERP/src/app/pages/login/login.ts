@@ -332,7 +332,7 @@ export class Login {
     }
 
     viewOpenPositions(): void {
-        this._router.navigate(['/open-positions']);
+        this._router.navigate(['/job-portal']);
     }
 
     loadDepartments(): void {

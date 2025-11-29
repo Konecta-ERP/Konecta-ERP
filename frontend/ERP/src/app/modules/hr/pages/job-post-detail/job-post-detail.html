@@ -111,7 +111,113 @@
                 </div>
             </ng-template>
         </p-card>
-        } @else if(!isLoading && !jobPost) {
+
+        <!-- Applicants Section -->
+        @if(isViewMode && jobPost && applicants.length > 0) {
+        <p-card class="mt-6 shadow-4 border-round-2xl">
+            <ng-template pTemplate="header">
+                <div
+                    class="bg-gradient-to-r from-green-600 to-emerald-600 p-5 border-round-top-2xl"
+                >
+                    <h2 class="text-white text-2xl font-bold m-0">
+                        <i class="pi pi-users mr-2"></i>Applicants ({{ applicants.length }})
+                    </h2>
+                </div>
+            </ng-template>
+
+            <p-table [value]="applicants" [rows]="10" [paginator]="true" responsiveLayout="scroll">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th pSortableColumn="id" style="width: 10%">
+                            ID <p-sortIcon field="id"></p-sortIcon>
+                        </th>
+                        <th pSortableColumn="firstName" style="width: 15%">
+                            Name <p-sortIcon field="firstName"></p-sortIcon>
+                        </th>
+                        <th pSortableColumn="email" style="width: 20%">
+                            Email <p-sortIcon field="email"></p-sortIcon>
+                        </th>
+                        <th pSortableColumn="status" style="width: 12%">
+                            Status <p-sortIcon field="status"></p-sortIcon>
+                        </th>
+                        <th pSortableColumn="appliedAt" style="width: 18%">
+                            Applied Date <p-sortIcon field="appliedAt"></p-sortIcon>
+                        </th>
+                        <th style="width: 15%; text-align: center">CV</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-applicant>
+                    <tr>
+                        <td class="font-bold text-primary">{{ applicant.id }}</td>
+                        <td>
+                            <div class="flex align-items-center gap-2">
+                                <i class="pi pi-user text-600"></i>
+                                <span class="font-semibold">
+                                    {{ applicant.firstName }} {{ applicant.lastName }}
+                                </span>
+                            </div>
+                        </td>
+                        <td>
+                            <a [href]="'mailto:' + applicant.email" class="text-primary">
+                                {{ applicant.email }}
+                            </a>
+                        </td>
+                        <td>
+                            <p-tag
+                                [value]="applicant.status"
+                                [severity]="
+                                    applicant.status === 'APPLIED'
+                                        ? 'info'
+                                        : applicant.status === 'INTERVIEW'
+                                        ? 'warn'
+                                        : applicant.status === 'SELECTED'
+                                        ? 'success'
+                                        : 'danger'
+                                "
+                            ></p-tag>
+                        </td>
+                        <td>
+                            <small class="text-600">{{ formatDate(applicant.appliedAt) }}</small>
+                        </td>
+                        <td style="text-align: center">
+                            <p-button
+                                icon="pi pi-download"
+                                [text]="true"
+                                [rounded]="true"
+                                severity="info"
+                                (onClick)="openCV(applicant.cvUrl)"
+                                pTooltip="View CV"
+                                tooltipPosition="top"
+                            ></p-button>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <p class="text-600">No applicants yet</p>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </p-card>
+        } @else if(isViewMode && jobPost && applicants.length === 0) {
+        <p-card class="mt-6 shadow-4 border-round-2xl">
+            <ng-template pTemplate="header">
+                <div class="bg-gradient-to-r from-gray-600 to-slate-600 p-5 border-round-top-2xl">
+                    <h2 class="text-white text-2xl font-bold m-0">
+                        <i class="pi pi-users mr-2"></i>Applicants
+                    </h2>
+                </div>
+            </ng-template>
+            <div
+                class="flex flex-column align-items-center justify-content-center py-8 px-4 text-center"
+            >
+                <i class="pi pi-inbox text-6xl text-400 mb-4"></i>
+                <p class="text-600 text-lg">No applicants yet for this job post</p>
+            </div>
+        </p-card>
+        } } @else if(!isLoading && !jobPost) {
         <!-- Create Job Post Card -->
         <p-card class="shadow-4 border-round-2xl">
             <ng-template pTemplate="header">

@@ -24,6 +24,26 @@ export interface JobPostDto {
     postedAt: string;
     requisitionId: number;
 }
+export interface ApplicantApplicationDto {
+    firstName: string;
+    lastName: string;
+    email: string;
+    coverLetter: string;
+    cvUrl: string;
+    postId: number;
+}
+
+export interface ApplicantDto {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    cvUrl: string;
+    coverLetter: string;
+    status: string;
+    appliedAt: string;
+    postId: number;
+}
 
 export interface ApiResponse<T> {
     status: number;
@@ -89,6 +109,16 @@ export class JobPostService {
         return this.http.patch<ApiResponse<JobPostDto>>(`${this.apiBaseUrl}/${id}/active`, {
             active,
         });
+    }
+
+    /**
+     * Submit job application
+     */
+    submitApplication(
+        id: number,
+        dto: ApplicantApplicationDto
+    ): Observable<ApiResponse<ApplicantDto>> {
+        return this.http.post<ApiResponse<ApplicantDto>>(`${this.apiBaseUrl}/${id}/apply`, dto);
     }
 
     /**
