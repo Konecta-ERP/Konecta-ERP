@@ -26,15 +26,19 @@ export class Profile {
     // Permissions
     isHR = false;
     canViewSalary = false;
+    canGiveFeedback = true;
 
     // Dialog states
     showUserEditDialog = false;
     showHREditDialog = false;
+    showGoalsDialog = false;
+    showFeedbackDialog = false;
 
     // Forms
     userEditForm!: FormGroup;
     hrEditForm!: FormGroup;
-    commentForm!: FormGroup;
+    feedBackForm!: FormGroup;
+    goalsForm!: FormGroup;
 
     // feedbacks
     feedbacksReceived: IFeedbackResponse[] = [];
@@ -57,12 +61,12 @@ export class Profile {
 
         if (viewedUserId) {
             this.loadUser(viewedUserId);
+            this.loadGoals(viewedUserId);
         } else {
             this.user = this.loggedInUser;
             this.setupProfile();
         }
 
-        this.loadComments();
     }
 
     private loadUser(viewedUserId:string): void{
@@ -102,9 +106,17 @@ export class Profile {
             salaryGross: [0],
         });
 
-        // Comment form
-        this.commentForm = this.fb.group({
+        // feedback form
+        this.feedBackForm = this.fb.group({
             content: ['', Validators.required]
+        });
+
+        // goals form
+        this.goalsForm = this.fb.group({
+            title: ['', Validators.required],
+            description: ['', Validators.required],
+            target: ['', Validators.required],
+            cycle: ['', Validators.required],
         });
     }
 
@@ -126,6 +138,8 @@ export class Profile {
         // Can view salary if: own profile OR HR
         this.canViewSalary = (this.isHR ||
                              this.loggedInUser.employeeId === this.user?.employeeId);
+
+        this.canGiveFeedback = this.loggedInUser.employeeId !== this.user?.employeeId;
     }
 
     private populateForms() {
@@ -213,25 +227,74 @@ export class Profile {
         }
     }
 
-    // Comment handlers
-    private loadComments() {
-        // TODO: Load comments from service
-        // Mock data for now
 
+    // feedback handlers
+
+    openFeedbackDialog(): void{
+        this.initializeForms();
+        this.showFeedbackDialog = true;
     }
 
-    submitComment() {
-        if (this.commentForm.valid) {
+    closeFeedbackDialog(): void{
+        this.showFeedbackDialog = false;
+    }
 
+    submitFeedback(): void{
+        if(this.feedBackForm.valid && this.user?.employeeId){
+            const feedbackContent = this.feedBackForm.value.content;
+            this._NgxSpinnerService.show();
+            this._employeeService.submitFeedback(this.user.employeeId,this.loggedInUser?.employeeId!, feedbackContent).subscribe({
+                next: (res) => {
+                    this._NgxSpinnerService.hide();
+                    if (res.status === 201) {
+                        this.show('success','Success','Feedback submitted successfully.');
+                        this.feedBackForm.reset();
+                    } else {
+                        this.show('error','Error','Failed to submit feedback.');
+                    }
+                },
+                error: (err) => {
+                    this._NgxSpinnerService.hide();
+                    this.show('error','Error','Failed to submit feedback.');
+                }
+            });
         }
     }
 
-    deleteComment(commentId: string) {
-               // TODO: Call service to delete comment
+    //goals handler
+
+    openGoalsDialog(): void{
+        this.showGoalsDialog = true;
     }
 
-    canDeleteComment(comment: Comment): boolean {
-        return false;
+    closeGoalsDialog(): void{
+        this.showGoalsDialog = false;
+    }
+
+    loadGoals(viewedUserId:string): void{
+    }
+
+    submitGoal(): void {
+        if (this.goalsForm.valid && this.user?.employeeId) {
+            this._NgxSpinnerService.show();
+            const goalData = this.goalsForm.value;
+            this._employeeService.submitGoal(this.user.employeeId, goalData).subscribe({
+                next: (res) => {
+                    this._NgxSpinnerService.hide();
+                    if (res.status === 201) {
+                        this.show('success', 'Success', 'Goal submitted successfully.');
+                        this.goalsForm.reset();
+                        this.closeGoalsDialog();
+                    } else {
+                        this.show('error', 'Error', 'Failed to submit goal.');
+                    }
+                },
+                error: (err) => {
+                    this._NgxSpinnerService.hide();
+                    this.show('error', 'Error', 'Failed to submit goal.');
+                }
+            });
+        }
     }
 
     changeProfilePicture() {

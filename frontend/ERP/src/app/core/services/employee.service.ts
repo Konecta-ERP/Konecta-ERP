@@ -86,7 +86,12 @@ export class EmployeeService {
 
     // performance reviews apis
     getPerformanceReviews():Observable<any>{
-        return this._httpClient.get(`${baseURL}/performance-reviews/employee/reviews`);
+        const user = this._userService.getUser();
+        if (!user || !user.id) {
+            throw new Error('User not logged in or missing ID');
+        }
+        const employeeId = user.employeeId;
+        return this._httpClient.get(`${baseURL}/employees/${employeeId}/feedback`);
     }
 
     // employee goals APIs
@@ -119,6 +124,16 @@ export class EmployeeService {
 
     getDepartmentEmployees(departmentId: number): Observable<any> {
         return this._httpClient.get(`${baseURL}/departments/${departmentId}/employees`);
+    }
+
+    submitFeedback(employeeId: Number,giverId: Number, feedback: string): Observable<any> {
+        console.log("Submitting feedback for giverId:", giverId, "with feedback:", feedback);
+        const body = { feedback,giverId };
+        return this._httpClient.post(`${baseURL}/employees/${employeeId}/feedback`, body);
+    }
+
+    submitGoal(employeeId: Number, goalData: any): Observable<any> {
+        return this._httpClient.post(`${baseURL}/employees/${employeeId}/goals`, goalData);
     }
 
 }

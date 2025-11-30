@@ -23,24 +23,7 @@ export class EmployeePerformanceReviews {
     ) {}
 
     ngOnInit(): void {
-        //this.loadPerformanceReviews();
-        this.reviews = [
-            {
-                id: '1',
-                imageUrl: "",
-                giverId: '1',
-                createdAt: new Date(),
-                feedback: 'John has consistently delivered high-quality work and has been a valuable team member.',
-            },
-            {
-                id: '2',
-                giverId: '2',
-                imageUrl: "",
-                createdAt: new Date(),
-                feedback: 'Jane has shown exceptional leadership skills and has successfully managed multiple projects.',
-            },
-        ]
-
+        this.loadPerformanceReviews();
     }
 
     loadPerformanceReviews(): void {
