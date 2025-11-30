@@ -75,7 +75,7 @@ export class Accounts implements OnInit {
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
-                    detail: 'Failed to load accounts from server',
+                    detail: error.error.cMessage,
                 });
                 console.error('Load Error:', error);
             },
@@ -153,7 +153,7 @@ export class Accounts implements OnInit {
                             this.messageService.add({
                                 severity: 'success',
                                 summary: 'Successful',
-                                detail: 'Account Updated',
+                                detail: response.cMessage,
                             });
                             this.loadAccounts();
                             this.accountDialog = false;
@@ -163,7 +163,7 @@ export class Accounts implements OnInit {
                             this.messageService.add({
                                 severity: 'error',
                                 summary: 'Error',
-                                detail: 'Failed to update account',
+                                detail: error.error.cMessage,
                             });
                         },
                     });
@@ -185,7 +185,7 @@ export class Accounts implements OnInit {
                         this.messageService.add({
                             severity: 'success',
                             summary: 'Successful',
-                            detail: 'Account Created',
+                            detail: response.cMessage,
                         });
                         this.loadAccounts();
                         this.accountDialog = false;
@@ -195,7 +195,7 @@ export class Accounts implements OnInit {
                         this.messageService.add({
                             severity: 'error',
                             summary: 'Error',
-                            detail: 'Failed to create account',
+                            detail: error.error.cMessage,
                         });
                     },
                 });
@@ -255,30 +255,23 @@ export class Accounts implements OnInit {
                         },
                     });
                 } else {
-                    // Activate logic (using update if backend supports it via update)
-                    const updateData: iUpdateAccount = {
-                        ...account,
-                    };
-
-                    this.accountService
-                        .updateAccount(account.accountPK || 0, updateData)
-                        .subscribe({
-                            next: (response: any) => {
-                                account.status = AccountStatus.ACTIVE;
-                                this.messageService.add({
-                                    severity: 'success',
-                                    summary: 'Successful',
-                                    detail: 'Account Activated',
-                                });
-                            },
-                            error: (err) => {
-                                this.messageService.add({
-                                    severity: 'warn',
-                                    summary: 'Warning',
-                                    detail: `Failed to ${action} account`,
-                                });
-                            },
-                        });
+                    this.accountService.deactivateAccount(account.accountPK || 0).subscribe({
+                        next: (response: any) => {
+                            account.status = AccountStatus.ACTIVE;
+                            this.messageService.add({
+                                severity: 'success',
+                                summary: 'Successful',
+                                detail: 'Account Activated',
+                            });
+                        },
+                        error: (err) => {
+                            this.messageService.add({
+                                severity: 'warn',
+                                summary: 'Warning',
+                                detail: `Failed to ${action} account`,
+                            });
+                        },
+                    });
                 }
             },
         });
