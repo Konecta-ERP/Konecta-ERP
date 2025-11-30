@@ -19,6 +19,7 @@
                             icon="pi pi-plus"
                             severity="primary"
                             (onClick)="openCreateModal()"
+                            [disabled]="!canViewAndCreateRequisitions()"
                         ></p-button>
                     </div>
                 </div>
@@ -179,7 +180,7 @@
                                 }}</small>
                             </td>
                             <td style="text-align: center">
-                                @if(isHRManager() && requisition.status === 'PENDING') {
+                                @if(canApproveRequisitions() && requisition.status === 'PENDING') {
                                 <div class="flex gap-2 justify-content-center">
                                     <p-button
                                         icon="pi pi-check"

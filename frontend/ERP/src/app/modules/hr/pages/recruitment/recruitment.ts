@@ -14,6 +14,11 @@ import { MessageService } from 'primeng/api';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { IDepartment } from '../../../../core/interfaces/iDepartment';
 import { User } from '../../../../core/interfaces/iUser';
+import {
+    canApproveRequisitions,
+    canPerformRecruitmentActions,
+    canViewAndCreateRequisitions,
+} from '../../../../core/constants/roles';
 
 interface StatusOption {
     label: string;
@@ -303,10 +308,24 @@ export class Recruitment implements OnInit {
     }
 
     /**
-     * Check if user is HR_MANAGER or ADMIN
+     * Check if user can approve/reject requisitions (HR_MANAGER or ADMIN only)
      */
-    isHRManager(): boolean {
-        return this.currentUser?.role === 'HR_MANAGER' || this.currentUser?.role === 'ADMIN';
+    canApproveRequisitions(): boolean {
+        return canApproveRequisitions(this.currentUser?.role);
+    }
+
+    /**
+     * Check if user can perform recruitment actions (all HR roles and ADMIN)
+     */
+    canPerformRecruitmentActions(): boolean {
+        return canPerformRecruitmentActions(this.currentUser?.role);
+    }
+
+    /**
+     * Check if user can view/create requisitions (HR roles, managers, CFO, or ADMIN)
+     */
+    canViewAndCreateRequisitions(): boolean {
+        return canViewAndCreateRequisitions(this.currentUser?.role);
     }
 
     /**
