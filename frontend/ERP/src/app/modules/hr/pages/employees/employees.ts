@@ -7,8 +7,8 @@ import { DepartmentService } from '../../../../core/services/department.service'
 import { IDepartment } from '../../../../core/interfaces/iDepartment';
 import { MessageService } from 'primeng/api';
 import { NgxSpinnerService } from 'ngx-spinner';
-import { iEmployeeSearchResponse } from '../../../../core/interfaces/iEmployeeSearchResponse';
 import { EmployeeCard } from '../../../../components/employee.card/employee.card';
+import { User } from '../../../../core/interfaces/iUser';
 
 @Component({
   selector: 'app-employees',
@@ -19,7 +19,7 @@ import { EmployeeCard } from '../../../../components/employee.card/employee.card
 export class Employees implements OnInit {
 
     filters: IEmployeeSearchFilter = {};
-    employeeList:iEmployeeSearchResponse[] = [];
+    employeeList:User[] = [];
     isLoading = false;
     pageSize = 9;
     totalRecords = 0;
@@ -53,6 +53,11 @@ export class Employees implements OnInit {
         // ✅ Load departments for dropdown
         if (this._departmentService.hasCachedDepartments()) {
             this.departments = this._departmentService.getCachedDepartments();
+            this.dropDownDepartments = this.departments.map(dept => ({
+                label: dept.name,
+                value: dept.name
+            }));
+            console.log('Loaded departments from cache:', this.departments);
         } else {
             // Load from API if no cache
             this.loadDepartments();

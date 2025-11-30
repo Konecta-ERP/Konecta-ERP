@@ -1,10 +1,16 @@
 import { Component } from '@angular/core';
 import { SharedModule } from '../../shared/module/shared/shared-module';
 import { UserService } from '../../core/services/user.service';
+import { EmployeeService } from '../../core/services/employee.service';
 import { User } from '../../core/interfaces/iUser';
 import format from '../../shared/functions/shared-functions';
-import { FormBuilder, FormGroup } from '@angular/forms';
-
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+import { IFeedbackRequest } from '../../core/interfaces/iFeedbackRequest';
+import { IFeedbackResponse } from '../../core/interfaces/i-feedback-response';
+import { MessageService } from 'primeng/api';
+import { NgxSpinnerService } from 'ngx-spinner';
+import { DepartmentService } from '../../core/services/department.service';
 @Component({
   selector: 'app-profile',
   imports: [SharedModule],
@@ -12,114 +18,294 @@ import { FormBuilder, FormGroup } from '@angular/forms';
   styleUrl: './profile.css',
 })
 export class Profile {
-  user: User | null = null;
-  formattedHireDate: string = 'N/A';
+    loggedInUser: User | null = null;
+    user: User | null = null;
 
-  activeTab = 'personal';
+    formattedHireDate = 'N/A';
 
-  // Permissions
-  isHR = false;
-  isFinance = false;
-  canEditProfile = false;
+    // Permissions
+    isHR = false;
+    canViewSalary = false;
+    canGiveFeedback = true;
 
-  // Edit states
-  isEditingPersonal = false;
-  isEditingEmployment = false;
-  isEditingFinancial = false;
+    // Dialog states
+    showUserEditDialog = false;
+    showHREditDialog = false;
+    showGoalsDialog = false;
+    showFeedbackDialog = false;
 
-  // Form groups
-  personalForm!: FormGroup;
-  financialForm!: FormGroup;
+    // Forms
+    userEditForm!: FormGroup;
+    hrEditForm!: FormGroup;
+    feedBackForm!: FormGroup;
+    goalsForm!: FormGroup;
 
-  // Employment info (could come from the user object or a related model)
-  employmentInfo = {
-    department: '',
-    position: '',
-  };
+    // feedbacks
+    feedbacksReceived: IFeedbackResponse[] = [];
 
-  tabs = [
-    { id: 'personal', name: 'Personal Info' },
-    { id: 'employment', name: 'Employment' },
-  ];
-
-  constructor(
-    private _userService: UserService,
-    private fb: FormBuilder
-  ) {
-    this.user = this._userService.getUser();
-
-    if (this.user) {
-      this.formattedHireDate = format(this.user.createdAt, 'date');
-      /* this.employmentInfo = {
-        department: this.user.department || '',
-        position: this.user.position || '',
-      }; */
+    constructor(
+        private _userService: UserService,
+        private _employeeService: EmployeeService,
+        private fb: FormBuilder,
+        private route: ActivatedRoute,
+        private _messageService: MessageService,
+        private _NgxSpinnerService: NgxSpinnerService,
+        private _departmentService: DepartmentService
+    ) {
+        this.initializeForms();
     }
-  }
 
-  ngOnInit() {
-    this.checkPermissions();
-    this.initializeForms();
-  }
+    ngOnInit() {
+        this.loggedInUser = this._userService.getUser();
+        const viewedUserId = this.route.snapshot.paramMap.get('id');
 
-  private checkPermissions() {
-    if (!this.user) return;
+        if (viewedUserId) {
+            this.loadUser(viewedUserId);
+            this.loadGoals(viewedUserId);
+        } else {
+            this.user = this.loggedInUser;
+            this.setupProfile();
+        }
 
-    this.isHR = this.user.role === 'HR Manager' || this.user.role === 'HR Admin';
-    this.isFinance = this.user.role === 'CFO' || this.user.role === 'Accountant';
-    this.canEditProfile = this.isHR || this.user.role === 'Employee';
-  }
-
-  private initializeForms() {
-    this.personalForm = this.fb.group({
-      email: [this.user?.email || ''],
-      phone: [this.user?.phone || ''],
-      firstName: [this.user?.firstName || ''],
-      lastName: [this.user?.lastName || ''],
-    });
-  }
-
-  getInputClasses(isEditable: boolean): string {
-    const base = 'w-full px-3 py-2 border rounded-lg transition-colors';
-    return isEditable
-      ? `${base} border-blue-300 bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500`
-      : `${base} border-gray-300 bg-gray-50 text-gray-500 cursor-not-allowed`;
-  }
-
-  getTabClasses(tab: any): string {
-    const base =
-      'px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors';
-    return this.activeTab === tab.id
-      ? `${base} border-blue-500 text-blue-600`
-      : `${base} border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300`;
-  }
-
-  toggleEdit(section: string) {
-    if (section === 'personal') {
-      this.isEditingPersonal = !this.isEditingPersonal;
-
-      if (!this.isEditingPersonal) {
-        // Save logic for personal info
-        const updated = this.personalForm.value;
-        console.log('Saved personal info:', updated);
-      }
-    } else if (section === 'employment' && this.isHR) {
-      this.isEditingEmployment = !this.isEditingEmployment;
-
-      if (!this.isEditingEmployment) {
-        console.log('Saved employment info:', this.employmentInfo);
-      }
-    } else if (section === 'financial') {
-      this.isEditingFinancial = !this.isEditingFinancial;
-
-      if (!this.isEditingFinancial) {
-        const updated = this.financialForm.value;
-        console.log('Financial info pending approval:', updated);
-      }
     }
-  }
 
-  changeProfilePicture() {
-    console.log('Change profile picture clicked');
-  }
+    private loadUser(viewedUserId:string): void{
+        this._NgxSpinnerService.show();
+        this._employeeService.getEmployeeById(viewedUserId).subscribe({
+            next: (res) => {
+                this._NgxSpinnerService.hide();
+                if (res.status==200) {
+                    this.user = {
+                        ...res.data,
+                        id: res.data.userId,
+                        position: res.data.positionTitle,
+                        role: 'employee',
+                        departmentId: this._departmentService.getDepartmentIdByName(res.data.departmentName || '')
+                    }
+                    this.show('success','Success','User profile loaded successfully.');
+                    this.setupProfile();
+                }
+            },
+            error: (err) => {
+                this._NgxSpinnerService.hide();
+                this.show('error','Error','Failed to load user profile.');
+            }
+        });
+    }
+
+    private initializeForms() {
+        // User can edit: email, phone
+        this.userEditForm = this.fb.group({
+            phone: ['', [Validators.required, Validators.minLength(11), Validators.maxLength(11)]],
+        });
+
+        // HR can edit: firstName, lastName, department, position, salary
+        this.hrEditForm = this.fb.group({
+            position: [''],
+            salaryNet: [0],
+            salaryGross: [0],
+        });
+
+        // feedback form
+        this.feedBackForm = this.fb.group({
+            content: ['', Validators.required]
+        });
+
+        // goals form
+        this.goalsForm = this.fb.group({
+            title: ['', Validators.required],
+            description: ['', Validators.required],
+            target: ['', Validators.required],
+            cycle: ['', Validators.required],
+        });
+    }
+
+    private setupProfile() {
+        if (!this.user) return;
+
+        this.formattedHireDate = format(this.user.createdAt, 'date');
+        this.checkPermissions();
+        this.populateForms();
+    }
+
+    private checkPermissions() {
+        if (!this.loggedInUser) return;
+
+        this.isHR = (this.loggedInUser.role === 'HR_MANAGER' ||
+                     this.loggedInUser.role === 'ADMIN'
+                    || this.loggedInUser.role === 'MANAGER') && this.loggedInUser.employeeId !== this.user?.employeeId;
+
+        // Can view salary if: own profile OR HR
+        this.canViewSalary = (this.isHR ||
+                             this.loggedInUser.employeeId === this.user?.employeeId);
+
+        this.canGiveFeedback = this.loggedInUser.employeeId !== this.user?.employeeId;
+    }
+
+    private populateForms() {
+        this.userEditForm.patchValue({
+            phoneNumber: this.user?.phone || '',
+        });
+
+        this.hrEditForm.patchValue({
+            position: this.user?.position || '',
+            salaryNet: this.user?.salaryNet || 0,
+            salaryGross: this.user?.salaryGross || 0,
+        });
+    }
+
+    // Dialog handlers
+    openUserEditDialog() {
+        this.populateForms();
+        this.showUserEditDialog = true;
+    }
+
+    closeUserEditDialog() {
+        this.showUserEditDialog = false;
+    }
+
+    saveUserEdit() {
+
+        if (this.user?.employeeId){
+        if (this.userEditForm.valid) {
+            console.log('User edit saved:', this.userEditForm.value);
+            this._NgxSpinnerService.show();
+            const updatedData = this.userEditForm.value;
+            this._employeeService.updateEmployeeDetails(this.user!?.employeeId, updatedData).subscribe({
+                next: (res) => {
+                    this._NgxSpinnerService.hide();
+                    if (res.status === 200) {
+                        this.show('success','Success','Profile updated successfully.');
+                    } else {
+                        this.show('error','Error','Failed to update profile.');
+                    }
+                },
+                error: (err) => {
+                    this._NgxSpinnerService.hide();
+                    this.show('error','Error','Failed to update profile.');
+                }
+            });
+            this.closeUserEditDialog();
+        }}
+
+    }
+
+    openHREditDialog() {
+        this.populateForms();
+        this.showHREditDialog = true;
+    }
+
+    closeHREditDialog() {
+        this.showHREditDialog = false;
+    }
+
+    saveHREdit() {
+        if (this.hrEditForm.valid) {
+
+            this._NgxSpinnerService.show();
+            const updatedData = {
+                positionTitle: this.hrEditForm.value.position,
+                salaryNet: this.hrEditForm.value.salaryNet,
+                salaryGross: this.hrEditForm.value.salaryGross,
+            }
+            this._employeeService.updateEmployeeDetails(this.user!?.employeeId!, updatedData).subscribe({
+                next: (res) => {
+                    this._NgxSpinnerService.hide();
+                    if (res.status === 200) {
+                        this.show('success','Success','Profile updated successfully.');
+                        this.ngOnInit();
+                    } else {
+                        this.show('error','Error','Failed to update profile.');
+                    }
+                },error: (err) => {
+                    this._NgxSpinnerService.hide();
+                    this.show('error','Error','Failed to update profile.');
+                }
+            });
+
+            this.closeHREditDialog();
+        }
+    }
+
+
+    // feedback handlers
+
+    openFeedbackDialog(): void{
+        this.initializeForms();
+        this.showFeedbackDialog = true;
+    }
+
+    closeFeedbackDialog(): void{
+        this.showFeedbackDialog = false;
+    }
+
+    submitFeedback(): void{
+        if(this.feedBackForm.valid && this.user?.employeeId){
+            const feedbackContent = this.feedBackForm.value.content;
+            this._NgxSpinnerService.show();
+            this._employeeService.submitFeedback(this.user.employeeId,this.loggedInUser?.employeeId!, feedbackContent).subscribe({
+                next: (res) => {
+                    this._NgxSpinnerService.hide();
+                    if (res.status === 201) {
+                        this.show('success','Success','Feedback submitted successfully.');
+                        this.feedBackForm.reset();
+                    } else {
+                        this.show('error','Error','Failed to submit feedback.');
+                    }
+                },
+                error: (err) => {
+                    this._NgxSpinnerService.hide();
+                    this.show('error','Error','Failed to submit feedback.');
+                }
+            });
+        }
+    }
+
+    //goals handler
+
+    openGoalsDialog(): void{
+        this.showGoalsDialog = true;
+    }
+
+    closeGoalsDialog(): void{
+        this.showGoalsDialog = false;
+    }
+
+    loadGoals(viewedUserId:string): void{
+    }
+
+    submitGoal(): void {
+        if (this.goalsForm.valid && this.user?.employeeId) {
+            this._NgxSpinnerService.show();
+            const goalData = this.goalsForm.value;
+            this._employeeService.submitGoal(this.user.employeeId, goalData).subscribe({
+                next: (res) => {
+                    this._NgxSpinnerService.hide();
+                    if (res.status === 201) {
+                        this.show('success', 'Success', 'Goal submitted successfully.');
+                        this.goalsForm.reset();
+                        this.closeGoalsDialog();
+                    } else {
+                        this.show('error', 'Error', 'Failed to submit goal.');
+                    }
+                },
+                error: (err) => {
+                    this._NgxSpinnerService.hide();
+                    this.show('error', 'Error', 'Failed to submit goal.');
+                }
+            });
+        }
+    }
+
+    changeProfilePicture() {
+        // TODO
+    }
+
+    formatCommentDate(date: Date): string {
+        return format(date, 'date');
+    }
+
+    show(severity: string='info', summary: string='Info', detail: string='Message Content'): void {
+        this._messageService.add({ severity, summary, detail, life: 3000 });
+    }
 }

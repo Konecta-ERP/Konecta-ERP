@@ -1,7 +1,6 @@
 export interface IFeedbackResponse {
     id: string;
-    employeeName: string;
-    position: string;
+    createdAt: Date;
     imageUrl?: string;
     feedback: string;
 }
