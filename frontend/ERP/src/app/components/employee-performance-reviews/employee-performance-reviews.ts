@@ -27,16 +27,16 @@ export class EmployeePerformanceReviews {
         this.reviews = [
             {
                 id: '1',
-                employeeName: 'John Doe',
                 imageUrl: "",
-                position: 'Software Engineer',
+                giverId: '1',
+                createdAt: new Date(),
                 feedback: 'John has consistently delivered high-quality work and has been a valuable team member.',
             },
             {
                 id: '2',
-                employeeName: 'Jane Smith',
+                giverId: '2',
                 imageUrl: "",
-                position: 'Product Manager',
+                createdAt: new Date(),
                 feedback: 'Jane has shown exceptional leadership skills and has successfully managed multiple projects.',
             },
         ]

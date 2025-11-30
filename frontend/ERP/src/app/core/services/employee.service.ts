@@ -74,6 +74,9 @@ export class EmployeeService {
         return this._httpClient.patch(`${baseURL}/leave-requests/${leaveId}/status`, body);
     }
 
+    updateEmployeeDetails(employeeId:Number, data:any):Observable<any>{
+        return this._httpClient.patch(`${baseURL}/employees/${employeeId}`, data);
+    }
 
     // get employee by user ID
     getEmployeeByUserId(userId:string):Observable<any>{
