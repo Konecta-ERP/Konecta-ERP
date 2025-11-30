@@ -37,9 +37,9 @@ public class SecurityConfig {
         .csrf(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(auth -> auth
             // Public read endpoints
-            .requestMatchers(HttpMethod.GET, "/job-posts/*", "/job-posts/search").permitAll()
+            .requestMatchers(HttpMethod.GET, "api/job-posts/*", "api/job-posts/search").permitAll()
             // Public apply endpoint (POST)
-            .requestMatchers(HttpMethod.POST, "/job-posts/*/apply").permitAll()
+            .requestMatchers(HttpMethod.POST, "api/job-posts/*/apply").permitAll()
             // All other requests require authentication
             .anyRequest().authenticated())
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -18,7 +18,9 @@ public class ApplicantDto {
   private String firstName;
   private String lastName;
   private String email;
-  private String cvUrl;
+  private String cvFileName;
+  private String cvFileType;
+  private String cvFilePath;
   private String coverLetter;
   private ApplicantStatus status;
   private LocalDateTime appliedAt;

@@ -12,6 +12,7 @@ import {
     iTrialBalanceReport,
 } from '../../../../core/interfaces/iPeriod';
 import { Observable } from 'rxjs';
+import { isAdmin } from '../../../../core/constants/roles';
 
 @Component({
     selector: 'app-periods',
@@ -73,8 +74,8 @@ export class Periods implements OnInit {
 
     checkPermissions() {
         const user = this.userService.getUser();
-        this.isCFO = user?.role === 'CFO';
-        this.isAccountant = user?.role === 'ACCOUNTANT';
+        this.isCFO = user?.role === 'CFO' || isAdmin(user?.role);
+        this.isAccountant = user?.role === 'ACCOUNTANT' || isAdmin(user?.role);
     }
 
     loadData() {

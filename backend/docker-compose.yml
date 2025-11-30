@@ -202,7 +202,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 90s
+      start_period: 120s
 
   # === RECRUITMENT SERVICE & DB ===
   recruitment-db:
@@ -228,6 +228,8 @@ services:
       context: .
       dockerfile: ./recruitment-service/Dockerfile
     container_name: recruitment-service
+    volumes:
+      - cv-storage-volume:/app/uploads/cv
     environment:
       - DB_URL=jdbc:postgresql://recruitment-db:5432/recruitment_db
       - DB_USERNAME=postgres
@@ -248,7 +250,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 90s
+      start_period: 120s
 
   # === FINANCE SERVICE & DB ===
   finance-db:
@@ -294,7 +296,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 90s
+      start_period: 120s
 
 networks:
   microservices-net:
@@ -310,4 +312,6 @@ volumes:
   finance-data:
     driver: local
   redis-data:
+    driver: local
+  cv-storage-volume:
     driver: local

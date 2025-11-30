@@ -14,6 +14,10 @@ export const routes: Routes = [
         ],
     },
     {
+        path: 'job-portal',
+        loadComponent: () => import('./pages/job-portal/job-portal').then((m) => m.JobPortal),
+    },
+    {
         path: 'home',
         loadComponent: () => import('./layouts/home-layout/home-layout').then((m) => m.homeLayout),
         canActivate: [authGuard],

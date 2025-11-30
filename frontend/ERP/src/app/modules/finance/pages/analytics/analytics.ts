@@ -4,6 +4,7 @@ import { MessageService } from 'primeng/api';
 import { AnalyticsService } from '../../../../core/services/analytics.service';
 import { iBalanceSheetReport, iGLResponse } from '../../../../core/interfaces/iAnalytics';
 import { UserService } from '../../../../core/services/user.service';
+import { isAdmin, isFinanceRole } from '../../../../core/constants/roles';
 
 @Component({
     selector: 'app-analytics',
@@ -44,7 +45,7 @@ export class Analytics implements OnInit {
 
     checkPermissions() {
         const user = this.userService.getUser();
-        this.canView = user?.role === 'ACCOUNTANT' || user?.role === 'CFO';
+        this.canView = isFinanceRole(user?.role) || isAdmin(user?.role);
     }
 
     // --- Balance Sheet Logic ---

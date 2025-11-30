@@ -1,0 +1,104 @@
+/* Recruitment Page Styles */
+
+:host ::ng-deep {
+    /* Custom tag styles */
+    .p-tag {
+        font-weight: 500;
+        border-radius: 0.5rem;
+    }
+
+    /* Table customization */
+    .p-datatable .p-datatable-thead > tr > th {
+        background-color: #f3f4f6;
+        color: #111827;
+        font-weight: 600;
+        border-color: #e5e7eb;
+    }
+
+    .p-datatable .p-datatable-tbody > tr {
+        border-color: #e5e7eb;
+    }
+
+    .p-datatable .p-datatable-tbody > tr > td {
+        padding: 1rem 1.25rem;
+        border-color: #e5e7eb;
+    }
+
+    .p-datatable .p-datatable-tbody > tr:hover {
+        background-color: #f9fafb;
+    }
+
+    /* Dialog customization */
+    .p-dialog-mask {
+        backdrop-filter: blur(2px);
+    }
+
+    .p-dialog .p-dialog-header {
+        background: linear-gradient(to right, #2563eb, #4f46e5);
+        color: white;
+    }
+
+    .p-dialog .p-dialog-header .p-dialog-title {
+        font-weight: 600;
+    }
+
+    /* Button customization */
+    .p-button {
+        border-radius: 0.5rem;
+        font-weight: 500;
+    }
+
+    /* Input customization */
+    .p-inputtext,
+    .p-inputtextarea,
+    .p-select {
+        border-radius: 0.375rem;
+        border-color: #d1d5db;
+    }
+
+    .p-inputtext:focus,
+    .p-inputtextarea:focus,
+    .p-select:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.1);
+    }
+
+    /* Stat card hover effect */
+    .stat-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Empty state icon animation */
+    @keyframes float {
+        0%,
+        100% {
+            transform: translateY(0px);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+
+    .empty-state-icon {
+        animation: float 3s ease-in-out infinite;
+    }
+
+    /* Loading spinner animation */
+    .pi-spin {
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+}

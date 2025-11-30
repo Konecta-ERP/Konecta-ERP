@@ -27,7 +27,7 @@ public class InterviewController {
   }
 
   @PostMapping("/api/applicants/{applicantId}/interviews")
-  @PreAuthorize("hasAuthority('HR_ASSOCIATE')")
+  @PreAuthorize("hasAuthority('HR_EMP')")
   public ResponseEntity<ApiResponse<InterviewDto>> scheduleInterview(
       @PathVariable Integer applicantId,
       @Valid @RequestBody ScheduleInterviewDto dto) {
