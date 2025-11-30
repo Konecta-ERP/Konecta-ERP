@@ -201,7 +201,8 @@
                                         tooltipPosition="top"
                                     ></p-button>
                                 </div>
-                                } @else if(requisition.status === 'APPROVED') {
+                                } @else if(requisition.status === 'APPROVED') { @if(isHREmployee())
+                                {
                                 <div class="flex gap-2 justify-content-center">
                                     <p-button
                                         icon="pi pi-plus"
@@ -213,7 +214,7 @@
                                         tooltipPosition="top"
                                     ></p-button>
                                 </div>
-                                }
+                                } }
                             </td>
                         </tr>
                     </ng-template>

@@ -30,7 +30,7 @@ public class RequisitionController {
   }
 
   @PostMapping
-  @PreAuthorize("hasAuthority('HR_EMP')")
+  @PreAuthorize("hasAnyAuthority('HR_EMP','MANAGER')")
   public ResponseEntity<ApiResponse<JobRequisitionDto>> createRequisition(
       @Valid @RequestBody CreateRequisitionDto dto) {
     JobRequisitionDto newReq = requisitionService.createRequisition(dto);
@@ -43,7 +43,7 @@ public class RequisitionController {
   }
 
   @GetMapping("/search")
-  @PreAuthorize("hasAuthority('HR_EMP')")
+  @PreAuthorize("hasAnyAuthority('HR_EMP','MANAGER')")
   public ResponseEntity<ApiResponse<List<JobRequisitionDto>>> searchRequisitions(
       @RequestParam(name = "departmentId", required = false) Integer departmentId,
       @RequestParam(name = "status", required = false) RequisitionStatus status) {

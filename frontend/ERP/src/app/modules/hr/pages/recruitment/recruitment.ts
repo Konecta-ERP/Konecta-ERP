@@ -18,6 +18,7 @@ import {
     canApproveRequisitions,
     canPerformRecruitmentActions,
     canViewAndCreateRequisitions,
+    isHRRole,
 } from '../../../../core/constants/roles';
 
 interface StatusOption {
@@ -117,11 +118,21 @@ export class Recruitment implements OnInit {
 
     /**
      * Load all job requisitions
+     * For non-HR managers, only load requisitions from their department
      */
     loadRequisitions(): void {
         this.spinner.show();
         this.isLoading = true;
-        this.recruitmentService.searchRequisitions().subscribe({
+
+        // Determine if we should filter by department
+        let departmentId: number | undefined;
+
+        // If user is not HR and not ADMIN, filter by their department
+        if (!this.isHREmployee() && this.currentUser?.departmentId) {
+            departmentId = this.currentUser.departmentId;
+        }
+
+        this.recruitmentService.searchRequisitions(departmentId).subscribe({
             next: (res) => {
                 this.spinner.hide();
                 this.isLoading = false;
@@ -326,6 +337,14 @@ export class Recruitment implements OnInit {
      */
     canViewAndCreateRequisitions(): boolean {
         return canViewAndCreateRequisitions(this.currentUser?.role);
+    }
+
+    /**
+     * Check if user is an HR role (HR_MANAGER, HR_ASSOCIATE, or ADMIN)
+     * Used to restrict job post actions to HR employees only
+     */
+    isHREmployee(): boolean {
+        return isHRRole(this.currentUser?.role);
     }
 
     /**
