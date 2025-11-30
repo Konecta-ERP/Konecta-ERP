@@ -228,6 +228,8 @@ services:
       context: .
       dockerfile: ./recruitment-service/Dockerfile
     container_name: recruitment-service
+    volumes:
+      - cv-storage-volume:/app/uploads/cv
     environment:
       - DB_URL=jdbc:postgresql://recruitment-db:5432/recruitment_db
       - DB_USERNAME=postgres
@@ -310,4 +312,6 @@ volumes:
   finance-data:
     driver: local
   redis-data:
+    driver: local
+  cv-storage-volume:
     driver: local
