@@ -63,6 +63,7 @@ jobs:
             backend-finance-service
             backend-api-gateway
             backend-discovery-server
+            backend-mail-service
           )
 
           for SERVICE in "${IMAGES[@]}"; do

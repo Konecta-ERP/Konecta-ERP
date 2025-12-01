@@ -1,0 +1,100 @@
+name: Frontend CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'frontend/**'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'frontend/**'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout (full)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Determine version tag
+        run: |
+          COMMIT_HASH=$(git rev-parse --short HEAD)
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            VERSION_TAG="prod-${COMMIT_HASH}"
+          else
+            VERSION_TAG="dev-${COMMIT_HASH}"
+          fi
+          echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
+          echo "Generated VERSION_TAG=$VERSION_TAG"
+
+      - name: OIDC Auth to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_BUILD }}
+          
+      - name: Build docker-compose images
+        run: docker compose -f backend/docker-compose.yml build
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Configure Docker auth
+        run: gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
+
+      - name: Tag & Push images to Artifact Registry
+        run: |
+          REGISTRY="${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO }}"
+
+          IMAGES=(
+            backend-identity-service
+            backend-recruitment-service
+            backend-employee-service
+            backend-finance-service
+            backend-api-gateway
+            backend-discovery-server
+          )
+
+          for SERVICE in "${IMAGES[@]}"; do
+            LOCAL_IMG="${SERVICE}:latest"
+            REMOTE_IMG="${REGISTRY}/${SERVICE}:${VERSION_TAG}"
+            LATEST_REMOTE="${REGISTRY}/${SERVICE}:latest"
+
+            echo "Processing $SERVICE"
+
+            # Tag images
+            docker tag "$LOCAL_IMG" "$REMOTE_IMG"
+            docker tag "$LOCAL_IMG" "$LATEST_REMOTE"
+
+            # Push images
+            docker push "$REMOTE_IMG"
+            docker push "$LATEST_REMOTE"
+          done
+
+      - name: OIDC Auth to Google Cloud (for GKE deploy)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_GKE }}
+
+      - name: Setup GKE gcloud auth plugin
+        uses: "google-github-actions/setup-gcloud@v2"
+        with:
+            install_components: "gke-gcloud-auth-plugin"
+      - name: Deploy to GKE (backend)
+        run: |
+          NAMESPACE=$([ "${{ github.ref_name }}" = "main" ] && echo "production" || echo "staging")
+          gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER }} --region=${{ secrets.GCP_REGION }} --project=${{ secrets.GCP_PROJECT_ID }}
+          kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
+          kubectl config set-context --current --namespace="$NAMESPACE"
+          kubectl apply -f infra/k8s/
