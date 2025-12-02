@@ -26,11 +26,12 @@ public enum Role {
     // High-Level Assignable Roles (HR)
     HR_ASSOCIATE(true, HR_EMP),
     HR_MANAGER(true, HR_EMP, MANAGER),
-    HR_ADMIN(true, HR_EMP),
 
     // High-Level Assignable Roles (Finance)
     ACCOUNTANT(true, FINANCE_EMP),
-    CFO(true, FINANCE_EMP, MANAGER);
+    CFO(true, FINANCE_EMP, MANAGER),
+
+    ADMIN(true, HR_ASSOCIATE, ACCOUNTANT, HR_MANAGER, CFO);
 
     private final boolean assignable;
     private final Set<Role> impliedRoles;

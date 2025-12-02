@@ -193,36 +193,32 @@ services:
             retries: 5
             start_period: 10s
 
-    employee-service:
-        build:
-            context: .
-            dockerfile: ./employee-service/Dockerfile
-        container_name: employee-service
-        environment:
-            - DB_URL=jdbc:postgresql://employee-db:5432/employee_db
-            - DB_USERNAME=postgres
-            - DB_PASSWORD=postgres
-            - EUREKA_SERVER=http://discovery-server:8761/eureka/
-            - JWT_JWK_URI=http://identity-service:8080/api/identity/auth/.well-known/jwks.json
-        depends_on:
-            employee-db:
-                condition: service_healthy
-            discovery-server:
-                condition: service_healthy
-            identity-service:
-                condition: service_healthy
-        networks:
-            - microservices-net
-        healthcheck:
-            test:
-                [
-                    "CMD-SHELL",
-                    "wget --quiet --tries=1 --spider http://localhost:8080/actuator/health || exit 1",
-                ]
-            interval: 30s
-            timeout: 10s
-            retries: 5
-            start_period: 90s
+  employee-service:
+    build:
+      context: .
+      dockerfile: ./employee-service/Dockerfile
+    container_name: employee-service
+    environment:
+      - DB_URL=jdbc:postgresql://employee-db:5432/employee_db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - EUREKA_SERVER=http://discovery-server:8761/eureka/
+      - JWT_JWK_URI=http://identity-service:8080/api/identity/auth/.well-known/jwks.json
+    depends_on:
+      employee-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      identity-service:
+        condition: service_healthy
+    networks:
+      - microservices-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
 
     # === RECRUITMENT SERVICE & DB ===
     recruitment-db:
@@ -243,36 +239,34 @@ services:
             retries: 5
             start_period: 10s
 
-    recruitment-service:
-        build:
-            context: .
-            dockerfile: ./recruitment-service/Dockerfile
-        container_name: recruitment-service
-        environment:
-            - DB_URL=jdbc:postgresql://recruitment-db:5432/recruitment_db
-            - DB_USERNAME=postgres
-            - DB_PASSWORD=postgres
-            - EUREKA_SERVER=http://discovery-server:8761/eureka/
-            - JWT_JWK_URI=http://identity-service:8080/api/identity/auth/.well-known/jwks.json
-        depends_on:
-            recruitment-db:
-                condition: service_healthy
-            discovery-server:
-                condition: service_healthy
-            identity-service:
-                condition: service_healthy
-        networks:
-            - microservices-net
-        healthcheck:
-            test:
-                [
-                    "CMD-SHELL",
-                    "wget --quiet --tries=1 --spider http://localhost:8080/actuator/health || exit 1",
-                ]
-            interval: 30s
-            timeout: 10s
-            retries: 5
-            start_period: 90s
+  recruitment-service:
+    build:
+      context: .
+      dockerfile: ./recruitment-service/Dockerfile
+    container_name: recruitment-service
+    volumes:
+      - cv-storage-volume:/app/uploads/cv
+    environment:
+      - DB_URL=jdbc:postgresql://recruitment-db:5432/recruitment_db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - EUREKA_SERVER=http://discovery-server:8761/eureka/
+      - JWT_JWK_URI=http://identity-service:8080/api/identity/auth/.well-known/jwks.json
+    depends_on:
+      recruitment-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      identity-service:
+        condition: service_healthy
+    networks:
+      - microservices-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
 
     # === FINANCE SERVICE & DB ===
     finance-db:
@@ -293,36 +287,32 @@ services:
             retries: 5
             start_period: 10s
 
-    finance-service:
-        build:
-            context: .
-            dockerfile: ./finance-service/Dockerfile
-        container_name: finance-service
-        environment:
-            - DB_URL=jdbc:postgresql://finance-db:5432/finance_db
-            - DB_USERNAME=postgres
-            - DB_PASSWORD=postgres
-            - EUREKA_SERVER=http://discovery-server:8761/eureka/
-            - JWT_JWK_URI=http://identity-service:8080/api/identity/auth/.well-known/jwks.json
-        depends_on:
-            finance-db:
-                condition: service_healthy
-            discovery-server:
-                condition: service_healthy
-            identity-service:
-                condition: service_healthy
-        networks:
-            - microservices-net
-        healthcheck:
-            test:
-                [
-                    "CMD-SHELL",
-                    "wget --quiet --tries=1 --spider http://localhost:8080/actuator/health || exit 1",
-                ]
-            interval: 30s
-            timeout: 10s
-            retries: 5
-            start_period: 90s
+  finance-service:
+    build:
+      context: .
+      dockerfile: ./finance-service/Dockerfile
+    container_name: finance-service
+    environment:
+      - DB_URL=jdbc:postgresql://finance-db:5432/finance_db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - EUREKA_SERVER=http://discovery-server:8761/eureka/
+      - JWT_JWK_URI=http://identity-service:8080/api/identity/auth/.well-known/jwks.json
+    depends_on:
+      finance-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      identity-service:
+        condition: service_healthy
+    networks:
+      - microservices-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
 
     # === AI CHATBOT SERVICE ===
     ai-chatbot:
@@ -351,13 +341,15 @@ networks:
         driver: bridge
 
 volumes:
-    identity-data:
-        driver: local
-    employee-data:
-        driver: local
-    recruitment-data:
-        driver: local
-    finance-data:
-        driver: local
-    redis-data:
-        driver: local
+  identity-data:
+    driver: local
+  employee-data:
+    driver: local
+  recruitment-data:
+    driver: local
+  finance-data:
+    driver: local
+  redis-data:
+    driver: local
+  cv-storage-volume:
+    driver: local

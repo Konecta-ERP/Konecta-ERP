@@ -12,6 +12,7 @@ import {
     CashSource,
     ProfitLossMapping,
 } from '../../../../core/interfaces/iAccount';
+import { isAdmin } from '../../../../core/constants/roles';
 
 @Component({
     selector: 'app-accounts',
@@ -56,7 +57,7 @@ export class Accounts implements OnInit {
      */
     checkPermissions() {
         const user = this.userService.getUser();
-        this.isCFO = user?.role === 'CFO';
+        this.isCFO = user?.role === 'CFO' || isAdmin(user?.role);
     }
 
     /**

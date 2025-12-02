@@ -31,8 +31,14 @@ public class Applicant {
   @Column(name = "email", nullable = false, unique = true)
   private String email;
 
-  @Column(name = "cv_url")
-  private String cvUrl;
+  @Column(name = "cv_filename")
+  private String cvFileName;
+
+  @Column(name = "cv_file_type")
+  private String cvFileType;
+
+  @Column(name = "cv_file_path")
+  private String cvFilePath;
 
   @Column(name = "cover_letter", columnDefinition = "TEXT")
   private String coverLetter;

@@ -19,9 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -248,5 +246,21 @@ public class UserServiceImpl implements UserService {
 
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+    }
+
+    @Override
+    public String createSeedUser(Map<String, String> request) {
+        User user = userRepository.findByEmail(request.get("email")).orElse(new User());
+
+        user.setEmail(request.get("email"));
+        user.setPhone(request.get("phone"));
+        user.setFirstName(request.get("firstName"));
+        user.setLastName(request.get("lastName"));
+        user.setRole(Role.valueOf(request.get("role")));
+        user.setPasswordHash(passwordEncoder.encode(request.get("password")));
+        user.setActive(true);
+
+        User savedUser = userRepository.save(user);
+        return savedUser.getId().toString();
     }
 }

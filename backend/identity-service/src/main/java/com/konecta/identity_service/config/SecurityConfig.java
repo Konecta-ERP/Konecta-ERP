@@ -47,7 +47,8 @@ public class SecurityConfig {
                                 "/api/identity/auth/login",
                                 "/api/identity/auth/.well-known/jwks.json",
                                 "/api/identity/forgot-password",
-                                "/api/identity/verify-otp"
+                                "/api/identity/verify-otp",
+                                "api/identity/users/seed"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

@@ -6,14 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.konecta.recruitmentservice.dto.CreateRequisitionDto;
 import com.konecta.recruitmentservice.dto.JobRequisitionDto;
@@ -37,7 +30,7 @@ public class RequisitionController {
   }
 
   @PostMapping
-  @PreAuthorize("hasAuthority('HR_ASSOCIATE')")
+  @PreAuthorize("hasAnyAuthority('HR_EMP','MANAGER')")
   public ResponseEntity<ApiResponse<JobRequisitionDto>> createRequisition(
       @Valid @RequestBody CreateRequisitionDto dto) {
     JobRequisitionDto newReq = requisitionService.createRequisition(dto);
@@ -50,7 +43,7 @@ public class RequisitionController {
   }
 
   @GetMapping("/search")
-  @PreAuthorize("hasAuthority('HR_ASSOCIATE') or hasAuthority('HR_MANAGER') or hasAuthority('HR_ADMIN')")
+  @PreAuthorize("hasAnyAuthority('HR_EMP','MANAGER')")
   public ResponseEntity<ApiResponse<List<JobRequisitionDto>>> searchRequisitions(
       @RequestParam(name = "departmentId", required = false) Integer departmentId,
       @RequestParam(name = "status", required = false) RequisitionStatus status) {
@@ -65,7 +58,7 @@ public class RequisitionController {
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAuthority('HR_ASSOCIATE') or hasAuthority('HR_MANAGER') or hasAuthority('HR_ADMIN')")
+  @PreAuthorize("hasAuthority('HR_EMP')")
   public ResponseEntity<ApiResponse<JobRequisitionDto>> getRequisition(
       @PathVariable Integer id) {
     JobRequisitionDto req = requisitionService.getRequisition(id);
@@ -78,7 +71,7 @@ public class RequisitionController {
   }
 
   @PatchMapping("/{id}")
-  @PreAuthorize("hasAuthority('HR_ASSOCIATE')")
+  @PreAuthorize("hasAuthority('HR_EMP')")
   public ResponseEntity<ApiResponse<JobRequisitionDto>> updateRequisition(
       @PathVariable Integer id,
       @Valid @RequestBody UpdateRequisitionDto dto) {
@@ -106,4 +99,16 @@ public class RequisitionController {
         "Requisition " + id + " status set to " + dto.getStatus());
     return ResponseEntity.ok(response);
   }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('HR_MANAGER')")
+    public ResponseEntity<ApiResponse<?>> deleteRequisition(
+            @PathVariable Integer id) {
+        requisitionService.deleteRequisition(id);
+        ApiResponse<JobRequisitionDto> response = ApiResponse.success(
+                204,
+                "Requisition retrieved.",
+                "Successfully retrieved requisition id " + id);
+        return ResponseEntity.ok(response);
+    }
 }

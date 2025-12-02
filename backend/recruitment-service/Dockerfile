@@ -16,6 +16,9 @@ WORKDIR /app
 ENV SPRING_PROFILES_ACTIVE=docker
 EXPOSE 8080
 
+RUN mkdir -p /app/uploads/cv
+RUN chmod -R 777 /app/uploads/cv
+
 ENV JAVA_OPTS="-XX:+UseContainerSupport \
     -XX:MaxRAMPercentage=75.0 \
     -XX:InitialRAMPercentage=50.0 \
