@@ -1,0 +1,38 @@
+{
+  "leave_requests": [
+    {
+      "employee_id": "emp123",
+      "start_date": "12th of november",
+      "end_date": "13th of november",
+      "reason": "sickness",
+      "status": "submitted",
+      "timestamp": "2025-11-01T03:56:39.837005"
+    },
+    {
+      "employee_id": "emp123",
+      "start_date": "2025-12-24",
+      "end_date": "2025-12-26",
+      "reason": "christmas",
+      "status": "submitted",
+      "timestamp": "2025-11-01T04:07:47.463718"
+    },
+    {
+      "employee_id": "emp234",
+      "start_date": "2025-12-24",
+      "end_date": "2025-12-26",
+      "reason": "christmas",
+      "status": "submitted",
+      "timestamp": "2025-11-01T04:11:12.568269"
+    },
+    {
+      "employee_id": "emp124",
+      "start_date": "2025-11-02",
+      "end_date": "2025-11-02",
+      "reason": "sickness",
+      "status": "submitted",
+      "timestamp": "2025-11-01T04:19:09.550452"
+    }
+  ],
+  "expenses": [],
+  "timesheets": []
+}

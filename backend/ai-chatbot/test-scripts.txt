@@ -1,0 +1,108 @@
+--- CHATBOT TEST SCRIPT ---
+
+## 1. RAG (Question-Answering) Scenarios
+
+These test the bot's ability to find and cite information from the PDF.
+
+### A. Standard Questions
+(These should give a correct answer with citations)
+------------------------------------------------------
+What is the policy for annual leave?
+How many days is maternity leave?
+What are the rules for sick leave?
+Can you summarize the policy for paid leave?
+What are the official holidays?
+Are there rules for breastfeeding breaks?
+What is the probation period?
+What are the reasons for terminating an employment contract?
+
+### B. Spelling Correction Test
+(This tests the query correction we added)
+------------------------------------------------------
+what is the meternity leave policy?
+what is the probatoin period?
+
+### C. Guardrail Test (Out-of-Scope)
+(This should result in an "I'm not confident" reply)
+------------------------------------------------------
+What is the company's marketing budget?
+Who is the CEO of Konecta?
+What is the policy for using the company car?
+
+
+## 2. Workflow (Request) Scenarios
+
+These test the bot's ability to detect intent, fill slots, and save to the JSON.
+
+### A. Leave Request Workflow
+------------------------------------------------------
+# Scenario 1: Simple Trigger (Multi-step)
+I want to request a holiday.
+> (Bot should ask for ID)
+emp123
+> (Bot should ask for start date)
+2025-12-01
+> (Bot should ask for end date)
+2025-12-05
+> (Bot should ask for reason)
+Vacation
+
+# Scenario 2: Partial One-Shot (Missing ID)
+request leave from 2025-12-24 to 2025-12-26 reason: christmas
+> (Bot should *only* ask for ID)
+emp456
+> (Bot should confirm submission)
+
+# Scenario 3: Partial One-Shot (Relative Date)
+I want to take leave tomorrow.
+> (Bot should *only* ask for ID)
+emp789
+> (Bot should *only* ask for reason)
+Personal Day
+> (Bot should confirm submission for tomorrow's date)
+
+# Scenario 4: Full One-Shot (All details provided)
+submit leave request for employee id EMP007 from 2025-11-10 to 2025-11-15 reason: family vacation
+> (Bot should confirm submission immediately)
+
+# Scenario 5: Workflow Cancel
+I want to request leave.
+> (Bot should ask for ID)
+cancel
+> (Bot should confirm cancellation)
+
+
+### B. Expense Report Workflow
+------------------------------------------------------
+# Scenario 1: Simple Trigger (Multi-step)
+I need to file an expense report.
+> (Bot should ask for ID)
+emp123
+> (Bot should ask for amount)
+75.50
+> (Bot should ask for reason)
+Client transportation
+> (Bot should confirm submission)
+
+# Scenario 2: Natural Language Trigger
+Can I submit my expense for the team lunch?
+> (Bot should ask for ID)
+... (etc) ...
+
+
+### C. Timesheet Log Workflow
+------------------------------------------------------
+# Scenario 1: Simple Trigger (Multi-step)
+I need to log my hours.
+> (Bot should ask for ID)
+emp456
+> (Bot should ask for date)
+2025-11-01
+> (Bot should ask for hours)
+8
+> (Bot should confirm submission)
+
+# Scenario 2: Natural Language Trigger
+Can you update my timesheet?
+> (Bot should ask for ID)
+... (etc) ...
