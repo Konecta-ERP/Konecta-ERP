@@ -339,7 +339,7 @@ services:
             - ./ai-chatbot/workflow_state.json:/app/workflow_state.json
         environment:
             - FLASK_ENV=production
-            - GOOGLE_API_KEY=AIzaSyCOKacWmRoGLPW055MvoaB7Mj2dIDvVQAY # Best practice: Read from a .env file or shell
+            - GOOGLE_API_KEY= # Best practice: Read from a .env file or shell
         networks:
             - microservices-net
         depends_on:
