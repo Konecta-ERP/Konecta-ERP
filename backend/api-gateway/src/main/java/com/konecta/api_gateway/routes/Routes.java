@@ -87,4 +87,12 @@ public class Routes {
                 .build();
     }
 
+    @Bean
+    public RouterFunction<ServerResponse> documentProcessorRoute() {
+        return route("document-processor")
+                .route(path("/api/documents/**"), http("lb://DOCUMENT-PROCESSOR"))
+                .filter(stripPrefix(2))
+                .build();
+    }
+
 }

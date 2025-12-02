@@ -352,6 +352,27 @@ services:
             timeout: 10s
             retries: 3
 
+    # === DOCUMENT PROCESSOR SERVICE ===
+    document-processor:
+        build:
+            context: ./document-processor
+            dockerfile: Dockerfile
+        container_name: document-processor-instance
+        env_file:
+            - ./document-processor/.env
+        ports:
+            - "8000:8000"
+        networks:
+            - microservices-net
+        depends_on:
+            discovery-server:
+                condition: service_healthy
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+
 networks:
     microservices-net:
         driver: bridge

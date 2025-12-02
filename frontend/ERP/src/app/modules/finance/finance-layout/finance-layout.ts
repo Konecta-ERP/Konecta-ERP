@@ -15,5 +15,6 @@ export class FinanceLayout {
         { label: 'Transactions', icon: 'pi pi-credit-card', route: 'transactions' },
         { label: 'Periods', icon: 'pi pi-calendar-clock', route: 'periods' },
         { label: 'Analytics', icon: 'pi pi-chart-bar', route: 'analytics' },
+        { label: 'Invoices', icon: 'pi pi-receipt', route: 'invoices' },
     ];
 }
