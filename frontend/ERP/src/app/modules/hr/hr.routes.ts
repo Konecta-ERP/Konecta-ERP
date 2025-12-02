@@ -23,6 +23,10 @@ export const hrRoutes: Routes = [
                 path: 'my-team',
                 loadComponent: () => import('./pages/my-team/my-team').then((m) => m.MyTeam),
             },
+            {
+                path: 'payroll',
+                loadComponent: () => import('./pages/payroll/payroll').then((m) => m.Payroll),
+            },
         ],
     },
 ];

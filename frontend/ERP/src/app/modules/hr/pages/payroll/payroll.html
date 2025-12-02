@@ -1,0 +1,442 @@
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 md:p-6">
+    <div class="max-w-7xl mx-auto">
+        <!-- Page Header -->
+        <div class="mb-5">
+            <h1 class="text-4xl font-bold text-900 mb-2">
+                <i class="pi pi-wallet mr-3 text-primary"></i>
+                Payroll Details
+            </h1>
+            <p class="text-600 text-lg">View employee payroll information by month</p>
+        </div>
+
+        <!-- Employee Selection Card -->
+        @if(!selectedEmployee) {
+        <p-card styleClass="shadow-4 border-round-2xl mb-5">
+            <ng-template pTemplate="header">
+                <div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-5 border-round-top-2xl">
+                    <div class="flex align-items-center gap-3">
+                        <i class="pi pi-search text-white text-3xl"></i>
+                        <div>
+                            <h2 class="text-white text-3xl font-bold m-0">Search Employee</h2>
+                            <p class="text-blue-100 text-sm m-0 mt-1">
+                                Find an employee to view their payroll details
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </ng-template>
+
+            <!-- Search Filters -->
+            <div class="grid gap-4 p-4">
+                <!-- Name Input -->
+                <div class="col-12 md:col-4">
+                    <label for="name" class="block text-900 font-semibold mb-2">
+                        <i class="pi pi-user mr-2 text-primary"></i>Name
+                    </label>
+                    <span class="p-input-icon-left w-full">
+                        <input
+                            id="name"
+                            pInputText
+                            type="text"
+                            placeholder="Search by name..."
+                            [(ngModel)]="filters.name"
+                            class="w-full"
+                        />
+                    </span>
+                </div>
+
+                <!-- Position Input -->
+                <div class="col-12 md:col-4">
+                    <label for="position" class="block text-900 font-semibold mb-2">
+                        <i class="pi pi-briefcase mr-2 text-primary"></i>Position
+                    </label>
+                    <span class="p-input-icon-left w-full">
+                        <input
+                            id="position"
+                            pInputText
+                            type="text"
+                            placeholder="Search by position..."
+                            [(ngModel)]="filters.position"
+                            class="w-full"
+                        />
+                    </span>
+                </div>
+
+                <!-- Department Dropdown -->
+                <div class="col-12 md:col-4">
+                    <label for="department" class="block text-900 font-semibold mb-2">
+                        <i class="pi pi-building mr-2 text-primary"></i>Department
+                    </label>
+                    <p-select
+                        id="department"
+                        [options]="dropDownDepartments"
+                        [(ngModel)]="filters.department"
+                        placeholder="Select department..."
+                        styleClass="w-full"
+                        [showClear]="true"
+                    >
+                        <ng-template pTemplate="selectedItem" let-option>
+                            <div class="flex align-items-center gap-2" *ngIf="option">
+                                <i class="pi pi-building"></i>
+                                <span>{{ option.label }}</span>
+                            </div>
+                        </ng-template>
+                        <ng-template pTemplate="item" let-option>
+                            <div class="flex align-items-center gap-2">
+                                <i class="pi pi-building"></i>
+                                <span>{{ option.label }}</span>
+                            </div>
+                        </ng-template>
+                    </p-select>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="col-12">
+                    <div class="flex gap-3 justify-content-center md:justify-content-end">
+                        <p-button
+                            label="Clear Filters"
+                            icon="pi pi-filter-slash"
+                            severity="secondary"
+                            [outlined]="true"
+                            (onClick)="onClearFilters()"
+                        ></p-button>
+                        <p-button
+                            label="Search Employees"
+                            icon="pi pi-search"
+                            severity="primary"
+                            (onClick)="onSearchEmployees()"
+                        ></p-button>
+                    </div>
+                </div>
+            </div>
+        </p-card>
+
+        <!-- Employee List Results -->
+        @if(employeeList.length > 0 && !selectedEmployee) {
+        <p-card styleClass="shadow-4 border-round-2xl mb-5">
+            <ng-template pTemplate="header">
+                <div class="bg-gradient-to-r from-green-600 to-teal-600 p-4 border-round-top-2xl">
+                    <div class="flex align-items-center justify-content-between">
+                        <div class="flex align-items-center gap-3">
+                            <i class="pi pi-users text-white text-2xl"></i>
+                            <h3 class="text-white text-2xl font-bold m-0">Select an Employee</h3>
+                        </div>
+                        <p-tag [value]="employeeList.length + ' Found'" severity="success"></p-tag>
+                    </div>
+                </div>
+            </ng-template>
+
+            <div class="grid gap-4 p-3">
+                @for(employee of employeeList; track employee.employeeId) {
+                <div class="col-12 md:col-6 lg:col-4">
+                    <p-card
+                        styleClass="cursor-pointer transition-all transition-duration-300 hover:shadow-5 h-full"
+                        (click)="onSelectEmployee(employee)"
+                    >
+                        <div class="flex flex-column align-items-center text-center gap-3">
+                            <img
+                                [src]="employee.profilePictureUrl || 'placeholderProfile.png'"
+                                [alt]="employee.firstName + ' ' + employee.lastName"
+                                class="border-circle w-6rem h-6rem shadow-3"
+                                style="object-fit: cover"
+                            />
+                            <div>
+                                <h4 class="text-xl font-bold text-900 m-0 mb-2">
+                                    {{ employee.firstName }} {{ employee.lastName }}
+                                </h4>
+                                <p class="text-primary font-semibold mb-2">
+                                    {{ employee.position }}
+                                </p>
+                                <p-tag
+                                    [value]="employee.departmentName"
+                                    severity="info"
+                                    [rounded]="true"
+                                >
+                                    <ng-template pTemplate="icon">
+                                        <i class="pi pi-building mr-2"></i>
+                                    </ng-template>
+                                </p-tag>
+                            </div>
+                        </div>
+                    </p-card>
+                </div>
+                }
+            </div>
+        </p-card>
+        } }
+
+        <!-- Selected Employee & Payroll Query Card -->
+        @if(selectedEmployee) {
+        <p-card styleClass="shadow-4 border-round-2xl mb-5">
+            <ng-template pTemplate="header">
+                <div class="bg-gradient-to-r from-purple-600 to-pink-600 p-5 border-round-top-2xl">
+                    <div class="flex align-items-center justify-content-between">
+                        <div class="flex align-items-center gap-3">
+                            <i class="pi pi-user text-white text-3xl"></i>
+                            <div>
+                                <h2 class="text-white text-3xl font-bold m-0">Selected Employee</h2>
+                                <p class="text-purple-100 text-sm m-0 mt-1">
+                                    Choose a period to view payroll details
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </ng-template>
+
+            <div class="p-4">
+                <!-- Employee Info -->
+                <div class="mb-4 p-4 bg-blue-50 border-round-xl">
+                    <div class="flex align-items-center gap-4">
+                        <img
+                            [src]="selectedEmployee.profilePictureUrl || 'placeholderProfile.png'"
+                            [alt]="selectedEmployee.firstName + ' ' + selectedEmployee.lastName"
+                            class="border-circle w-5rem h-5rem shadow-3"
+                            style="object-fit: cover"
+                        />
+                        <div class="flex-1">
+                            <h3 class="text-2xl font-bold text-900 m-0 mb-1">
+                                {{ selectedEmployee.firstName }} {{ selectedEmployee.lastName }}
+                            </h3>
+                            <p class="text-primary font-semibold m-0 mb-2">
+                                {{ selectedEmployee.position }}
+                            </p>
+                            <div class="flex gap-2">
+                                <p-tag
+                                    [value]="selectedEmployee.departmentName"
+                                    severity="info"
+                                    [rounded]="true"
+                                >
+                                    <ng-template pTemplate="icon">
+                                        <i class="pi pi-building mr-2"></i>
+                                    </ng-template>
+                                </p-tag>
+                                <p-tag
+                                    [value]="'ID: ' + selectedEmployee.employeeId"
+                                    severity="secondary"
+                                    [rounded]="true"
+                                ></p-tag>
+                            </div>
+                        </div>
+                        <p-button
+                            icon="pi pi-times"
+                            [rounded]="true"
+                            [outlined]="true"
+                            severity="secondary"
+                            (onClick)="onClearEmployeeSelection()"
+                        ></p-button>
+                    </div>
+                </div>
+
+                <!-- Period Selection -->
+                <div class="grid gap-3 align-items-end">
+                    <div class="col-12 md:col-6">
+                        <label for="yearMonth" class="block text-900 font-semibold mb-2">
+                            <i class="pi pi-calendar mr-2 text-primary"></i>Select Month
+                        </label>
+                        <input
+                            id="yearMonth"
+                            type="month"
+                            pInputText
+                            [(ngModel)]="yearMonth"
+                            class="w-full"
+                        />
+                    </div>
+                    <div class="col-12 md:col-6">
+                        <p-button
+                            label="Get Payroll Details"
+                            icon="pi pi-dollar"
+                            severity="primary"
+                            styleClass="w-full"
+                            (onClick)="onGetPayroll()"
+                        ></p-button>
+                    </div>
+                </div>
+            </div>
+        </p-card>
+
+        <!-- Payroll Results -->
+        @if(showPayrollResults && payrollData) {
+        <p-card styleClass="shadow-4 border-round-2xl">
+            <ng-template pTemplate="header">
+                <div
+                    class="bg-gradient-to-r from-green-600 to-emerald-600 p-5 border-round-top-2xl"
+                >
+                    <div class="flex align-items-center gap-3">
+                        <i class="pi pi-money-bill text-white text-3xl"></i>
+                        <div>
+                            <h2 class="text-white text-3xl font-bold m-0">Payroll Summary</h2>
+                            <p class="text-green-100 text-sm m-0 mt-1">
+                                {{ selectedEmployee!.firstName }} {{ selectedEmployee!.lastName }} -
+                                {{ payrollData.yearMonth }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </ng-template>
+
+            <div class="p-4">
+                <!-- Summary Cards -->
+                <div class="grid mb-4">
+                    <div class="col-12 md:col-6 lg:col-3">
+                        <div class="bg-blue-50 p-4 border-round-xl">
+                            <div class="flex align-items-center gap-3">
+                                <div
+                                    class="bg-blue-500 text-white border-circle w-3rem h-3rem flex align-items-center justify-content-center"
+                                >
+                                    <i class="pi pi-dollar text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="text-600 text-sm m-0 mb-1">Basic Pay</p>
+                                    <p class="text-900 text-2xl font-bold m-0">
+                                        {{ formatCurrency(payrollData.basicPay) }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 md:col-6 lg:col-3">
+                        <div class="bg-purple-50 p-4 border-round-xl">
+                            <div class="flex align-items-center gap-3">
+                                <div
+                                    class="bg-purple-500 text-white border-circle w-3rem h-3rem flex align-items-center justify-content-center"
+                                >
+                                    <i class="pi pi-clock text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="text-600 text-sm m-0 mb-1">Overtime Pay</p>
+                                    <p class="text-900 text-2xl font-bold m-0">
+                                        {{ formatCurrency(payrollData.overtimePay) }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 md:col-6 lg:col-3">
+                        <div class="bg-red-50 p-4 border-round-xl">
+                            <div class="flex align-items-center gap-3">
+                                <div
+                                    class="bg-red-500 text-white border-circle w-3rem h-3rem flex align-items-center justify-content-center"
+                                >
+                                    <i class="pi pi-minus text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="text-600 text-sm m-0 mb-1">Deductions</p>
+                                    <p class="text-900 text-2xl font-bold m-0">
+                                        {{ formatCurrency(payrollData.deductions) }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 md:col-6 lg:col-3">
+                        <div class="bg-green-50 p-4 border-round-xl">
+                            <div class="flex align-items-center gap-3">
+                                <div
+                                    class="bg-green-500 text-white border-circle w-3rem h-3rem flex align-items-center justify-content-center"
+                                >
+                                    <i class="pi pi-wallet text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="text-600 text-sm m-0 mb-1">Net Pay</p>
+                                    <p class="text-900 text-2xl font-bold m-0">
+                                        {{ formatCurrency(payrollData.netPay) }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Breakdown -->
+                <p-divider></p-divider>
+
+                <h3 class="text-2xl font-bold text-900 mb-4">
+                    <i class="pi pi-list mr-2 text-primary"></i>
+                    Detailed Breakdown
+                </h3>
+
+                <div class="grid gap-4">
+                    <!-- Basic Pay Details -->
+                    @if(getDetailsByType('BASIC').length > 0) {
+                    <div class="col-12">
+                        <p-card styleClass="bg-blue-50">
+                            <ng-template pTemplate="header">
+                                <div class="p-3 bg-blue-500 text-white">
+                                    <h4 class="m-0 font-bold">
+                                        <i class="pi pi-dollar mr-2"></i>Basic Pay Details
+                                    </h4>
+                                </div>
+                            </ng-template>
+                            @for(detail of getDetailsByType('BASIC'); track $index) {
+                            <div
+                                class="flex justify-content-between align-items-center py-2 border-bottom-1 border-blue-200"
+                            >
+                                <span class="text-900">{{ detail.description }}</span>
+                                <span class="font-semibold text-blue-700">
+                                    {{ formatCurrency(detail.amount) }}
+                                </span>
+                            </div>
+                            }
+                        </p-card>
+                    </div>
+                    }
+
+                    <!-- Overtime Details -->
+                    @if(getDetailsByType('OVERTIME').length > 0) {
+                    <div class="col-12">
+                        <p-card styleClass="bg-purple-50">
+                            <ng-template pTemplate="header">
+                                <div class="p-3 bg-purple-500 text-white">
+                                    <h4 class="m-0 font-bold">
+                                        <i class="pi pi-clock mr-2"></i>Overtime Details
+                                    </h4>
+                                </div>
+                            </ng-template>
+                            @for(detail of getDetailsByType('OVERTIME'); track $index) {
+                            <div
+                                class="flex justify-content-between align-items-center py-2 border-bottom-1 border-purple-200"
+                            >
+                                <span class="text-900">{{ detail.description }}</span>
+                                <span class="font-semibold text-purple-700">
+                                    {{ formatCurrency(detail.amount) }}
+                                </span>
+                            </div>
+                            }
+                        </p-card>
+                    </div>
+                    }
+
+                    <!-- Deductions Details -->
+                    @if(getDetailsByType('DEDUCTION').length > 0) {
+                    <div class="col-12">
+                        <p-card styleClass="bg-red-50">
+                            <ng-template pTemplate="header">
+                                <div class="p-3 bg-red-500 text-white">
+                                    <h4 class="m-0 font-bold">
+                                        <i class="pi pi-minus mr-2"></i>Deductions
+                                    </h4>
+                                </div>
+                            </ng-template>
+                            @for(detail of getDetailsByType('DEDUCTION'); track $index) {
+                            <div
+                                class="flex justify-content-between align-items-center py-2 border-bottom-1 border-red-200"
+                            >
+                                <span class="text-900">{{ detail.description }}</span>
+                                <span class="font-semibold text-red-700">
+                                    {{ formatCurrency(detail.amount) }}
+                                </span>
+                            </div>
+                            }
+                        </p-card>
+                    </div>
+                    }
+                </div>
+            </div>
+        </p-card>
+        } }
+    </div>
+</div>
