@@ -17,8 +17,17 @@ from .generator import (
 from .guardrails import check_response_confidence, filter_content
 from .workflows import handle_workflow_step
 
+import py_eureka_client.eureka_client as eureka_client
+
+eureka_client.init(
+    eureka_server="http://discovery-server:8761/eureka", # URL from docker-compose
+    app_name="AI-CHATBOT",                               # Service Name (Uppercase)
+    instance_port=5000,                                  # The port Flask runs on
+    instance_host="chatbot-instance"                     # The docker container name
+)
+
 app = Flask(__name__, template_folder='../templates', static_folder='../static')
-CORS(app)  # Enable Cross-Origin Resource Sharing
+# CORS(app)  # Enable Cross-Origin Resource Sharing
 
 # --- GLOBAL INITIALIZATION ---
 try:
@@ -111,7 +120,7 @@ def chat():
 
 def run_app():
     """Runs the Flask application."""
-    app.run(host='127.0.0.1', port=5000, debug=True, use_reloader=False)
+    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)
 
 if __name__ == '__main__':
     run_app()

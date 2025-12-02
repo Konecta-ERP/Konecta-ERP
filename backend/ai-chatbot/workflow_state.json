@@ -31,6 +31,14 @@
       "reason": "sickness",
       "status": "submitted",
       "timestamp": "2025-11-01T04:19:09.550452"
+    },
+    {
+      "employee_id": "5",
+      "start_date": "2025-12-05",
+      "end_date": "2025-12-12",
+      "reason": "Vacation",
+      "status": "submitted",
+      "timestamp": "2025-12-02T10:28:40.344952"
     }
   ],
   "expenses": [],

@@ -1,0 +1,77 @@
+<p-button
+    icon="pi pi-comments"
+    [rounded]="true"
+    size="large"
+    styleClass="chat-fab"
+    (onClick)="toggleChat()"
+>
+</p-button>
+
+<p-dialog
+    [(visible)]="visible"
+    [position]="'bottomright'"
+    [style]="{ width: '500px', height: '700px', 'max-height': '90vh' }"
+    header="ERP Assistant"
+    [draggable]="false"
+    [resizable]="false"
+    [modal]="false"
+>
+    <div class="chat-layout">
+        <div class="messages-container" #scrollContainer>
+            <div *ngFor="let msg of messages" class="message-wrapper" [ngClass]="msg.sender">
+                <p-avatar
+                    [icon]="msg.sender === 'bot' ? 'pi pi-android' : 'pi pi-user'"
+                    [styleClass]="
+                        msg.sender === 'bot' ? 'avatar-circle bot-icon' : 'avatar-circle user-icon'
+                    "
+                    shape="circle"
+                >
+                </p-avatar>
+
+                <div class="message-bubble">
+                    <div class="text" [innerHTML]="msg.text"></div>
+
+                    <div *ngIf="msg.sources && msg.sources.length" class="sources">
+                        <small><strong>References:</strong></small>
+                        <ul>
+                            <li *ngFor="let src of msg.sources">
+                                {{ src.name }} (p. {{ src.page }})
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="time">{{ msg.timestamp | date : 'shortTime' }}</div>
+                </div>
+            </div>
+
+            <div *ngIf="isLoading" class="message-wrapper bot">
+                <p-avatar
+                    icon="pi pi-spin pi-spinner"
+                    styleClass="avatar-circle"
+                    shape="circle"
+                ></p-avatar>
+                <div class="message-bubble loading">Thinking...</div>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <input
+                type="text"
+                pInputText
+                [(ngModel)]="userInput"
+                (keyup.enter)="sendMessage()"
+                placeholder="Type your request..."
+                [disabled]="isLoading"
+                class="chat-input"
+            />
+
+            <p-button
+                icon="pi pi-send"
+                [rounded]="true"
+                [text]="true"
+                (onClick)="sendMessage()"
+                [disabled]="isLoading || !userInput.trim()"
+            >
+            </p-button>
+        </div>
+    </div>
+</p-dialog>
