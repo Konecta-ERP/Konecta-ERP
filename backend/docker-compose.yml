@@ -337,9 +337,10 @@ services:
         volumes:
             # Maps a file in your local 'ai-chatbot' folder to the container's working dir (/app)
             - ./ai-chatbot/workflow_state.json:/app/workflow_state.json
+        env_file:
+            - ./ai-chatbot/.env
         environment:
             - FLASK_ENV=production
-            - GOOGLE_API_KEY= # Best practice: Read from a .env file or shell
         networks:
             - microservices-net
         depends_on:
