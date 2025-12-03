@@ -80,7 +80,7 @@ public class DataSeeder implements CommandLineRunner {
         assignManagerToDepartment(financeDept, cfo);
 
         // --- Accountant ---
-        createFullEmployeeFlow(
+        Employee accountant = createFullEmployeeFlow(
                 "accountant@email.com", "David", "Miller", "+01234567893", "ACCOUNTANT", "password",
                 "Junior Accountant", new BigDecimal("60000.00"), new BigDecimal("40000.00"), financeDept
         );
@@ -100,12 +100,24 @@ public class DataSeeder implements CommandLineRunner {
 
         System.out.println("\n--- Seeding Attendance and Leave Data for Payroll ---");
         
-        // Seed attendance and leave data for October and November 2024
+        // Seed attendance and leave data for October and November 2025 for all employees
+        if (adminUser != null) {
+            seedPayrollDataForEmployee(adminUser, "System Admin");
+        }
         if (hrManager != null) {
             seedPayrollDataForEmployee(hrManager, "Jane Smith (HR Manager)");
         }
         if (hrAssociate != null) {
             seedPayrollDataForEmployee(hrAssociate, "Robert Jones (HR Associate)");
+        }
+        if (cfo != null) {
+            seedPayrollDataForEmployee(cfo, "Martha King (CFO)");
+        }
+        if (accountant != null) {
+            seedPayrollDataForEmployee(accountant, "David Miller (Accountant)");
+        }
+        if (engManager != null) {
+            seedPayrollDataForEmployee(engManager, "John Doe (Engineering Manager)");
         }
         if (softwareEngineer != null) {
             seedPayrollDataForEmployee(softwareEngineer, "Sarah Connor (Software Engineer)");
