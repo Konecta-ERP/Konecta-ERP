@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 
 import com.konecta.employeeservice.dto.CreateEmployeeRequestDto;
 import com.konecta.employeeservice.dto.EmployeeDetailsDto;
-import com.konecta.employeeservice.dto.PayrollCalculationRequest;
 import com.konecta.employeeservice.dto.PayrollSummaryDto;
 import com.konecta.employeeservice.dto.UpdateEmployeeRequestDto;
 import com.konecta.employeeservice.dto.response.ApiResponse;
@@ -125,7 +124,7 @@ public class EmployeeController {
   @PreAuthorize("hasAuthority('EMP')")
   public ResponseEntity<ApiResponse<PayrollSummaryDto>> getPayrollForEmployee(
       @PathVariable(name = "id") Integer id,
-      @RequestBody PayrollCalculationRequest request,
+      @RequestParam(name = "yearMonth") String yearMonth,
       Authentication authentication) {
 
     // Allow managers and admins to access any employee payroll
@@ -149,12 +148,12 @@ public class EmployeeController {
       }
     }
 
-    PayrollSummaryDto payroll = payrollService.retrieveOrCalculate(id, request.getYearMonth());
+    PayrollSummaryDto payroll = payrollService.retrieveOrCalculate(id, yearMonth);
     ApiResponse<PayrollSummaryDto> response = ApiResponse.success(
         payroll,
         HttpStatus.OK.value(),
         "Payroll retrieved.",
-        "Payroll for employee " + id + " for " + request.getYearMonth());
+        "Payroll for employee " + id + " for " + yearMonth);
     return ResponseEntity.ok(response);
   }
 }
