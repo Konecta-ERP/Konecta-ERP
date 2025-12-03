@@ -44,12 +44,11 @@ export class Payroll implements OnInit {
         this.loadDepartments();
         this.setDefaultYearMonth();
 
-        // If user cannot search (not HR_MANAGER or ADMIN), auto-select their own employee record
-        if (!this.canSearchEmployees()) {
-            this.loadCurrentEmployeeData();
-        }
+        // Auto-load current employee data for all users
+        // - Regular employees: Only see their own data (no search option)
+        // - HR_MANAGER/ADMIN: See their own data by default, can also search for others
+        this.loadCurrentEmployeeData();
     }
-
     setDefaultYearMonth(): void {
         const now = new Date();
         const year = now.getFullYear();

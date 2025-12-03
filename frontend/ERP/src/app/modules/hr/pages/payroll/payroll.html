@@ -25,6 +25,22 @@
         </p-card>
         }
 
+        <!-- Info Message for HR Managers/Admins -->
+        @if(canSearchEmployees() && selectedEmployee) {
+        <p-card styleClass="shadow-3 border-round-xl mb-5 bg-green-50">
+            <div class="flex align-items-center gap-3">
+                <i class="pi pi-info-circle text-green-600 text-3xl"></i>
+                <div>
+                    <h3 class="text-900 font-semibold m-0 mb-2">Viewing Your Payroll</h3>
+                    <p class="text-600 m-0">
+                        Your employee record is shown by default. To view another employee's
+                        payroll, clear the selection below and use the search feature.
+                    </p>
+                </div>
+            </div>
+        </p-card>
+        }
+
         <!-- Employee Selection Card -->
         @if(!selectedEmployee && canSearchEmployees()) {
         <p-card styleClass="shadow-4 border-round-2xl mb-5">
