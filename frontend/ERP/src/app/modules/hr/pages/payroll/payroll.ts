@@ -3,12 +3,14 @@ import { SharedModule } from '../../../../shared/module/shared/shared-module';
 import { EmployeeService } from '../../../../core/services/employee.service';
 import { PayrollService } from '../../../../core/services/payroll.service';
 import { DepartmentService } from '../../../../core/services/department.service';
+import { UserService } from '../../../../core/services/user.service';
 import { MessageService } from 'primeng/api';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { IEmployeeSearchFilter } from '../../../../core/interfaces/iEmployeeSearchFilter';
 import { IDepartment } from '../../../../core/interfaces/iDepartment';
 import { User } from '../../../../core/interfaces/iUser';
 import { IPayrollSummary } from '../../../../core/interfaces/iPayrollSummary';
+import { canApproveRequisitions } from '../../../../core/constants/roles';
 
 @Component({
     selector: 'app-payroll',
@@ -26,18 +28,26 @@ export class Payroll implements OnInit {
     yearMonth: string = '';
     payrollData: IPayrollSummary | null = null;
     showPayrollResults = false;
+    currentUser: User | null = null;
 
     constructor(
         private _employeeService: EmployeeService,
         private _payrollService: PayrollService,
         private _departmentService: DepartmentService,
+        private _userService: UserService,
         private _messageService: MessageService,
         private _NgxSpinnerService: NgxSpinnerService
     ) {}
 
     ngOnInit(): void {
+        this.currentUser = this._userService.getUser();
         this.loadDepartments();
         this.setDefaultYearMonth();
+
+        // If user cannot search (not HR_MANAGER or ADMIN), auto-select their own employee record
+        if (!this.canSearchEmployees()) {
+            this.loadCurrentEmployeeData();
+        }
     }
 
     setDefaultYearMonth(): void {
@@ -164,6 +174,56 @@ export class Payroll implements OnInit {
         detail: string = 'Message Content'
     ): void {
         this._messageService.add({ severity, summary, detail, life: 3000 });
+    }
+
+    /**
+     * Check if current user can search for other employees
+     * Only HR_MANAGER and ADMIN can search
+     */
+    canSearchEmployees(): boolean {
+        return canApproveRequisitions(this.currentUser?.role);
+    }
+
+    /**
+     * Load current user's employee data automatically
+     * Called for non-HR_MANAGER/ADMIN users
+     */
+    loadCurrentEmployeeData(): void {
+        if (!this.currentUser?.employeeId) {
+            this.show('error', 'Error', 'Employee ID not found for current user');
+            return;
+        }
+
+        this._NgxSpinnerService.show();
+        this._employeeService.getEmployeeById(String(this.currentUser.employeeId)).subscribe({
+            next: (res) => {
+                this._NgxSpinnerService.hide();
+                if (res.status === 200 && res.data) {
+                    // Convert EmployeeDetailsDto to User format for selectedEmployee
+                    this.selectedEmployee = {
+                        id: res.data.userId,
+                        employeeId: res.data.employeeId,
+                        firstName: res.data.firstName || '',
+                        lastName: res.data.lastName || '',
+                        email: res.data.email || '',
+                        role: res.data.role || '',
+                        position: res.data.positionTitle,
+                        departmentName: res.data.departmentName,
+                        departmentId: res.data.departmentId,
+                    };
+                } else {
+                    this.show('error', 'Error', 'Failed to load employee data');
+                }
+            },
+            error: (err) => {
+                this._NgxSpinnerService.hide();
+                this.show(
+                    'error',
+                    'Error',
+                    err?.error?.cMessage || 'An error occurred while loading employee data'
+                );
+            },
+        });
     }
 
     loadDepartments(): void {

@@ -9,8 +9,24 @@
             <p class="text-600 text-lg">View employee payroll information by month</p>
         </div>
 
+        <!-- Info Message for Regular Employees -->
+        @if(!canSearchEmployees()) {
+        <p-card styleClass="shadow-3 border-round-xl mb-5 bg-blue-50">
+            <div class="flex align-items-center gap-3">
+                <i class="pi pi-info-circle text-blue-600 text-3xl"></i>
+                <div>
+                    <h3 class="text-900 font-semibold m-0 mb-2">Your Payroll Information</h3>
+                    <p class="text-600 m-0">
+                        You are viewing your own payroll details. Select a month below to view your
+                        payroll breakdown.
+                    </p>
+                </div>
+            </div>
+        </p-card>
+        }
+
         <!-- Employee Selection Card -->
-        @if(!selectedEmployee) {
+        @if(!selectedEmployee && canSearchEmployees()) {
         <p-card styleClass="shadow-4 border-round-2xl mb-5">
             <ng-template pTemplate="header">
                 <div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-5 border-round-top-2xl">
@@ -112,7 +128,7 @@
         </p-card>
 
         <!-- Employee List Results -->
-        @if(employeeList.length > 0 && !selectedEmployee) {
+        @if(employeeList.length > 0 && !selectedEmployee && canSearchEmployees()) {
         <p-card styleClass="shadow-4 border-round-2xl mb-5">
             <ng-template pTemplate="header">
                 <div class="bg-gradient-to-r from-green-600 to-teal-600 p-4 border-round-top-2xl">
@@ -218,6 +234,7 @@
                                 ></p-tag>
                             </div>
                         </div>
+                        @if(canSearchEmployees()) {
                         <p-button
                             icon="pi pi-times"
                             [rounded]="true"
@@ -225,6 +242,7 @@
                             severity="secondary"
                             (onClick)="onClearEmployeeSelection()"
                         ></p-button>
+                        }
                     </div>
                 </div>
 
