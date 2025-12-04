@@ -1,0 +1,140 @@
+{
+  "status": 200,
+  "data": {
+    "employeeId": 2,
+    "yearMonth": "2025-11",
+    "basicPay": 4200.00,
+    "overtimePay": 150.00,
+    "deductions": 100.00,
+    "netPay": 4250.00,
+    "details": [
+      {
+        "type": "BASIC",
+        "description": "Work: 2025-11-01 (hrs=8.0)",
+        "amount": 161.54
+      },
+      {
+        "type": "BASIC",
+        "description": "Work: 2025-11-02 (hrs=8.0)",
+        "amount": 161.54
+      },
+      {
+        "type": "BASIC",
+        "description": "Work: 2025-11-03 (hrs=8.5)",
+        "amount": 171.63
+      },
+      {
+        "type": "OVERTIME",
+        "description": "Overtime: 2025-11-03 (hrs=0.5)",
+        "amount": 30.29
+      },
+      {
+        "type": "BASIC",
+        "description": "Work: 2025-11-05 (hrs=8.0)",
+        "amount": 161.54
+      },
+      {
+        "type": "BASIC",
+        "description": "Work: 2025-11-06 (hrs=8.0)",
+        "amount": 161.54
+      },
+      {
+        "type": "BASIC",
+        "description": "Work: 2025-11-07 (hrs=7.0)",
+        "amount": 141.35
+      },
+      {
+        "type": "OVERTIME",
+        "description": "Weekend work: 2025-11-08 (hrs=4.0)",
+        "amount": 121.15
+      },
+      {
+        "type": "BASIC",
+        "description": "Work: 2025-11-09 (hrs=8.0)",
+        "amount": 161.54
+      },
+      {
+        "type": "BASIC",
+        "description": "Work: 2025-11-10 (hrs=8.0)",
+        "amount": 161.54
+      },
+      {
+        "type": "BASIC",
+        "description": "Paid leave: 2025-11-12",
+        "amount": 161.54
+      },
+      {
+        "type": "BASIC",
+        "description": "Work: 2025-11-13 (hrs=8.0)",
+        "amount": 161.54
+      },
+      {
+        "type": "BASIC",
+        "description": "Work: 2025-11-14 (hrs=8.0)",
+        "amount": 161.54
+      },
+      {
+        "type": "DEDUCTION",
+        "description": "Half-day deduction: 2025-11-16",
+        "amount": -80.77
+      },
+      {
+        "type": "BASIC",
+        "description": "Work: 2025-11-16 (hrs=3.5)",
+        "amount": 70.67
+      },
+      {
+        "type": "BASIC",
+        "description": "Work: 2025-11-17 (hrs=8.0)",
+        "amount": 161.54
+      },
+      {
+        "type": "DEDUCTION",
+        "description": "Unauthorized absence: 2025-11-19",
+        "amount": -161.54
+      },
+      {
+        "type": "BASIC",
+        "description": "Work: 2025-11-20 (hrs=8.0)",
+        "amount": 161.54
+      },
+      {
+        "type": "BASIC",
+        "description": "Work: 2025-11-21 (hrs=8.0)",
+        "amount": 161.54
+      },
+      {
+        "type": "BASIC",
+        "description": "Work: 2025-11-23 (hrs=8.0)",
+        "amount": 161.54
+      },
+      {
+        "type": "BASIC",
+        "description": "Work: 2025-11-24 (hrs=8.0)",
+        "amount": 161.54
+      },
+      {
+        "type": "BASIC",
+        "description": "Work: 2025-11-26 (hrs=8.0)",
+        "amount": 161.54
+      },
+      {
+        "type": "BASIC",
+        "description": "Work: 2025-11-27 (hrs=8.0)",
+        "amount": 161.54
+      },
+      {
+        "type": "BASIC",
+        "description": "Work: 2025-11-28 (hrs=8.0)",
+        "amount": 161.54
+      },
+      {
+        "type": "BASIC",
+        "description": "Work: 2025-11-30 (hrs=8.0)",
+        "amount": 161.54
+      }
+    ]
+  },
+  "message": "Payroll retrieved.",
+  "cMessage": "Payroll for employee 2 for 2025-11"
+}
