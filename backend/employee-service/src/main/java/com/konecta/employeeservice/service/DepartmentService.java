@@ -135,9 +135,9 @@ public class DepartmentService {
       throw new EntityNotFoundException("Department not found with id: " + departmentId);
     }
 
-    java.time.YearMonth nextMonth = java.time.YearMonth.now().plusMonths(1);
-    java.time.LocalDate start = nextMonth.atDay(1);
-    java.time.LocalDate end = nextMonth.atEndOfMonth();
+    java.time.YearMonth currentMonth = java.time.YearMonth.now();
+    java.time.LocalDate start = currentMonth.atDay(1);
+    java.time.LocalDate end = currentMonth.atEndOfMonth();
 
     List<Employee> employees = employeeRepository.findByDepartmentId(departmentId);
 
