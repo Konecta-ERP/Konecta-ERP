@@ -22,6 +22,10 @@ export const financeRoutes: Routes = [
                 path: 'analytics',
                 loadComponent: () => import('./pages/analytics/analytics').then((m) => m.Analytics),
             },
+            {
+                path: 'invoices',
+                loadComponent: () => import('./pages/invoices/invoices').then((m) => m.Invoices),
+            },
         ],
     },
 ];

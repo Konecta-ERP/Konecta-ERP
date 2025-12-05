@@ -1,0 +1,11 @@
+flask
+flask-cors
+langchain
+langchain-google-genai
+langchain-community
+langchain-huggingface  # <-- THIS IS THE NEW PACKAGE
+sentence-transformers
+faiss-cpu
+pymupdf
+tiktoken
+py-eureka-client
