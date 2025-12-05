@@ -9,7 +9,9 @@ import { UserService } from '../../../core/services/user.service';
     styleUrl: './hr-layout.css',
 })
 export class HrLayout {
-    constructor(private _userService:UserService) {}
+    constructor(private _userService:UserService) {
+        this.addroles();
+    }
     userRole = 'hr';
     sidebarItems = [
         { label: 'Payroll', icon: 'pi pi-wallet', route: 'payroll' },
@@ -19,6 +21,7 @@ export class HrLayout {
         const user = this._userService.getUser();
         if(user)
         {
+            console.log(user.role);
             if(user.role == 'ADMIN'|| user.role == 'HR_MANAGER')
             {
                 this.sidebarItems.unshift(
@@ -35,7 +38,7 @@ export class HrLayout {
                 );
             }
 
-            if(user.role == 'HR_EMP')
+            if(user.role == 'HR_ASSOCIATE')
             {
                 this.sidebarItems.unshift(
                     { label: 'Recruitment', icon: 'pi pi-briefcase', route: 'recruitment' })
