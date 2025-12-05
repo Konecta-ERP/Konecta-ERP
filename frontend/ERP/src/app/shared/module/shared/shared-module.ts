@@ -31,6 +31,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { ChartModule } from 'primeng/chart';
 import { TabsModule } from 'primeng/tabs';
 import { PanelModule } from 'primeng/panel';
+import { DividerModule } from 'primeng/divider';
 @NgModule({
     declarations: [],
     imports: [
@@ -65,6 +66,7 @@ import { PanelModule } from 'primeng/panel';
         ChartModule,
         TabsModule,
         PanelModule,
+        DividerModule,
     ],
     exports: [
         MessageModule,
@@ -98,6 +100,7 @@ import { PanelModule } from 'primeng/panel';
         ChartModule,
         TabsModule,
         PanelModule,
+        DividerModule,
     ],
     providers: [MessageService],
 })

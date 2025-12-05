@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
-import { Sidebar } from "./../../../components/sidebar/sidebar";
+import { Sidebar } from './../../../components/sidebar/sidebar';
 import { RouterOutlet } from '@angular/router';
 import { UserService } from '../../../core/services/user.service';
 @Component({
-  selector: 'app-hr-layout',
-  imports: [Sidebar,RouterOutlet],
-  templateUrl: './hr-layout.html',
-  styleUrl: './hr-layout.css',
+    selector: 'app-hr-layout',
+    imports: [Sidebar, RouterOutlet],
+    templateUrl: './hr-layout.html',
+    styleUrl: './hr-layout.css',
 })
 export class HrLayout {
     constructor(private _userService:UserService) {}

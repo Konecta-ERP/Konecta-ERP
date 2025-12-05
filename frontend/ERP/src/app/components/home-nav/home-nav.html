@@ -29,7 +29,20 @@
             </a>
         </ng-template>
         <ng-template #end>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-3">
+                <!-- Clock In/Out Button -->
+                <p-button
+                    [label]="isClockedIn ? 'Clock Out' : 'Clock In'"
+                    [icon]="isClockedIn ? 'pi pi-sign-out' : 'pi pi-sign-in'"
+                    [severity]="isClockedIn ? 'danger' : 'success'"
+                    [loading]="isCheckingStatus"
+                    [outlined]="true"
+                    [rounded]="true"
+                    (onClick)="onClockAction()"
+                    [pTooltip]="isClockedIn ? 'Click to clock out' : 'Click to clock in'"
+                    tooltipPosition="bottom"
+                ></p-button>
+
                 <p-avatar
                     image="https://primefaces.org/cdn/primeng/images/demo/avatar/amyelsner.png"
                     shape="circle"
