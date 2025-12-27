@@ -46,40 +46,56 @@ public class DataSeeder implements CommandLineRunner {
             return;
         }
 
-        // 1. Create Periods (Open and Closed)
-        Period junePeriod = createPeriod("June 2025", LocalDate.of(2025, 6, 1), LocalDate.of(2025, 6, 30), PeriodStatus.CLOSED);
+        System.out.println("\n--- Creating Financial Periods (2025) ---");
+
+        // 1. Create Historical Closed Periods (Jan - June)
+        createPeriod("January 2025", LocalDate.of(2025, 1, 1), LocalDate.of(2025, 1, 31), PeriodStatus.CLOSED);
+        createPeriod("February 2025", LocalDate.of(2025, 2, 1), LocalDate.of(2025, 2, 28), PeriodStatus.CLOSED);
+        createPeriod("March 2025", LocalDate.of(2025, 3, 1), LocalDate.of(2025, 3, 31), PeriodStatus.CLOSED);
+        createPeriod("April 2025", LocalDate.of(2025, 4, 1), LocalDate.of(2025, 4, 30), PeriodStatus.CLOSED);
+        createPeriod("May 2025", LocalDate.of(2025, 5, 1), LocalDate.of(2025, 5, 31), PeriodStatus.CLOSED);
+        createPeriod("June 2025", LocalDate.of(2025, 6, 1), LocalDate.of(2025, 6, 30), PeriodStatus.CLOSED);
+
+        // 2. Create Current Active Period (July)
+        // We capture this variable to assign the transactions below to this specific period
         Period julyPeriod = createPeriod("July 2025", LocalDate.of(2025, 7, 1), LocalDate.of(2025, 7, 31), PeriodStatus.OPEN);
 
-        System.out.println("\n--- Creating Chart of Accounts ---");
+        // 3. Create Future Periods (Aug - Dec)
+        createPeriod("August 2025", LocalDate.of(2025, 8, 1), LocalDate.of(2025, 8, 31), PeriodStatus.OPEN);
+        createPeriod("September 2025", LocalDate.of(2025, 9, 1), LocalDate.of(2025, 9, 30), PeriodStatus.OPEN);
+        createPeriod("October 2025", LocalDate.of(2025, 10, 1), LocalDate.of(2025, 10, 31), PeriodStatus.OPEN);
+        createPeriod("November 2025", LocalDate.of(2025, 11, 1), LocalDate.of(2025, 11, 30), PeriodStatus.OPEN);
+        createPeriod("December 2025", LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 31), PeriodStatus.OPEN);
 
-        // 2. Create Accounts (Diverse Enums)
+
+        System.out.println("\n--- Creating Chart of Accounts ---");
 
         // ASSETS
         Account cash = createAccount("1000", "Cash", AccountType.ASSET, ProfitLossMapping.NONE, CashSource.CFO, true, true, AccountStatus.ACTIVE);
         Account accountsReceivable = createAccount("1100", "Accounts Receivable", AccountType.ASSET, ProfitLossMapping.NONE, CashSource.NONE, false, true, AccountStatus.ACTIVE);
         Account officeSupplies = createAccount("1200", "Office Supplies", AccountType.ASSET, ProfitLossMapping.NONE, CashSource.NONE, false, true, AccountStatus.ACTIVE);
-        Account computerEquipment = createAccount("1500", "Computer Equipment", AccountType.ASSET, ProfitLossMapping.NONE, CashSource.CFI, false, false, AccountStatus.ACTIVE); // CFI example
-        Account investmentFund = createAccount("1600", "Strategic Investments", AccountType.ASSET, ProfitLossMapping.NONE, CashSource.CFF, false, false, AccountStatus.ACTIVE); // CFF example
+        Account computerEquipment = createAccount("1500", "Computer Equipment", AccountType.ASSET, ProfitLossMapping.NONE, CashSource.CFI, false, false, AccountStatus.ACTIVE);
+        Account investmentFund = createAccount("1600", "Strategic Investments", AccountType.ASSET, ProfitLossMapping.NONE, CashSource.CFF, false, false, AccountStatus.ACTIVE);
 
         // LIABILITIES
         Account accountsPayable = createAccount("2000", "Accounts Payable", AccountType.LIABILITY, ProfitLossMapping.NONE, CashSource.NONE, false, true, AccountStatus.ACTIVE);
         Account accruedExpenses = createAccount("2100", "Accrued Expenses", AccountType.LIABILITY, ProfitLossMapping.NONE, CashSource.NONE, false, true, AccountStatus.ACTIVE);
-        Account oldLoan = createAccount("2500", "Old Bank Loan", AccountType.LIABILITY, ProfitLossMapping.NONE, CashSource.NONE, false, false, AccountStatus.INACTIVE); // INACTIVE example
+        Account oldLoan = createAccount("2500", "Old Bank Loan", AccountType.LIABILITY, ProfitLossMapping.NONE, CashSource.NONE, false, false, AccountStatus.INACTIVE);
 
         // EQUITY
         Account ownersCapital = createAccount("3000", "Owner's Capital", AccountType.EQUITY, ProfitLossMapping.NONE, CashSource.CFF, false, false, AccountStatus.ACTIVE);
 
         // REVENUE
         Account serviceRevenue = createAccount("4000", "Service Revenue", AccountType.REVENUE, ProfitLossMapping.REVENUE, CashSource.NONE, false, false, AccountStatus.ACTIVE);
-        Account interestIncome = createAccount("4100", "Interest Income", AccountType.REVENUE, ProfitLossMapping.OTHER_INCOME, CashSource.NONE, false, false, AccountStatus.ACTIVE); // OTHER_INCOME example
+        Account interestIncome = createAccount("4100", "Interest Income", AccountType.REVENUE, ProfitLossMapping.OTHER_INCOME, CashSource.NONE, false, false, AccountStatus.ACTIVE);
 
         // EXPENSES
         Account rentExpense = createAccount("5000", "Rent Expense", AccountType.EXPENSE, ProfitLossMapping.OPEX, CashSource.NONE, false, false, AccountStatus.ACTIVE);
         Account salariesExpense = createAccount("5100", "Salaries Expense", AccountType.EXPENSE, ProfitLossMapping.OPEX, CashSource.NONE, false, false, AccountStatus.ACTIVE);
         Account advertisingExpense = createAccount("5200", "Advertising Expense", AccountType.EXPENSE, ProfitLossMapping.OPEX, CashSource.NONE, false, false, AccountStatus.ACTIVE);
         Account utilitiesExpense = createAccount("5300", "Utilities Expense", AccountType.EXPENSE, ProfitLossMapping.OPEX, CashSource.NONE, false, false, AccountStatus.ACTIVE);
-        Account cogs = createAccount("5400", "Cost of Goods Sold", AccountType.EXPENSE, ProfitLossMapping.COGS, CashSource.NONE, false, false, AccountStatus.ACTIVE); // COGS example
-        Account penalties = createAccount("5900", "Penalties & Fines", AccountType.EXPENSE, ProfitLossMapping.OTHER_EXPENSE, CashSource.NONE, false, false, AccountStatus.ACTIVE); // OTHER_EXPENSE example
+        Account cogs = createAccount("5400", "Cost of Goods Sold", AccountType.EXPENSE, ProfitLossMapping.COGS, CashSource.NONE, false, false, AccountStatus.ACTIVE);
+        Account penalties = createAccount("5900", "Penalties & Fines", AccountType.EXPENSE, ProfitLossMapping.OTHER_EXPENSE, CashSource.NONE, false, false, AccountStatus.ACTIVE);
 
         System.out.println("\n--- Posting Journal Entries (July 2025) ---");
 
@@ -145,7 +161,6 @@ public class DataSeeder implements CommandLineRunner {
         );
 
         // Transaction 11: July 25 - Owner Withdrawal [cite: 9]
-        // Note: Using Capital account directly as a "Drawings" account wasn't explicitly created
         createTransaction(julyPeriod, LocalDate.of(2025, 7, 25), "Owner's withdrawal for personal use",
                 new EntryRequest(ownersCapital, 1500.00, 0),
                 new EntryRequest(cash, 0, 1500.00)
@@ -170,7 +185,7 @@ public class DataSeeder implements CommandLineRunner {
         period.setStatus(status);
         period.setCreatedByUserId(SYSTEM_USER_ID);
 
-
+        // Simple default budgets for all seeded periods
         period.setRevenueBudget(new BigDecimal("15000.00"));
         period.setCogsBudget(new BigDecimal("2000.00"));
         period.setOpexBudget(new BigDecimal("8000.00"));
