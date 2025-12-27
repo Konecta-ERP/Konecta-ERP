@@ -12,6 +12,10 @@ import static org.springframework.cloud.gateway.server.mvc.handler.GatewayRouter
 import static org.springframework.cloud.gateway.server.mvc.handler.HandlerFunctions.http;
 import static org.springframework.cloud.gateway.server.mvc.predicate.GatewayRequestPredicates.path;
 
+import static org.springframework.cloud.gateway.server.mvc.filter.FilterFunctions.stripPrefix;
+
+import java.net.URI;
+
 @Configuration
 public class Routes {
 
@@ -72,6 +76,22 @@ public class Routes {
     public RouterFunction<ServerResponse> financeServiceRoute() {
         return route("finance-service")
                 .route(path("/api/finance/**"), http("lb://finance-service"))
+                .build();
+    }
+
+    @Bean
+    public RouterFunction<ServerResponse> chatbotServiceRoute() {
+        return route("ai-chatbot")
+                .route(path("/api/chatbot/**"), http("lb://AI-CHATBOT"))
+                .filter(stripPrefix(2))
+                .build();
+    }
+
+    @Bean
+    public RouterFunction<ServerResponse> documentProcessorRoute() {
+        return route("document-processor")
+                .route(path("/api/documents/**"), http("lb://DOCUMENT-PROCESSOR"))
+                .filter(stripPrefix(2))
                 .build();
     }
 

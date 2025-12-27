@@ -1,6 +1,4 @@
 <p-toast></p-toast>
-
-<!-- Header -->
 <div class="grid mb-4">
     <div class="col-12">
         <p-card
@@ -21,23 +19,18 @@
 </div>
 
 <div class="card" *ngIf="canView">
-    <!-- Updated to new p-tabs structure -->
-    <p-tabs [(value)]="activeTab">
+    <p-tabs value="0">
         <p-tablist>
-            <p-tab value="0">
-                <i class="pi pi-building mr-2"></i>
-                Balance Sheet
-            </p-tab>
-            <p-tab value="1">
-                <i class="pi pi-list mr-2"></i>
-                General Ledger
+            <p-tab value="0"> <i class="pi pi-building mr-2"></i> Balance Sheet </p-tab>
+            <p-tab value="1"> <i class="pi pi-list mr-2"></i> General Ledger </p-tab>
+            <p-tab value="2">
+                <i class="pi pi-chart-bar mr-2"></i> Revenue Forecast
+                <p-tag value="AI" severity="success" class="ml-2"></p-tag>
             </p-tab>
         </p-tablist>
 
         <p-tabpanels>
-            <!-- TAB 1: BALANCE SHEET -->
             <p-tabpanel value="0">
-                <!-- Toolbar -->
                 <div class="flex flex-wrap align-items-end gap-3 mb-4 p-3 bg-blue-50 border-round">
                     <div class="flex-1">
                         <label class="block font-bold mb-2 text-700">As Of Date</label>
@@ -75,7 +68,6 @@
                     </div>
                 </div>
 
-                <!-- Report View -->
                 <div *ngIf="bsReport" class="fade-in">
                     <div class="flex justify-content-between align-items-center mb-3">
                         <span class="text-2xl font-bold text-900">Balance Sheet</span>
@@ -87,14 +79,9 @@
                             class="text-lg"
                         ></p-tag>
                     </div>
-
                     <div class="grid">
-                        <!-- Assets Column -->
                         <div class="col-12 md:col-6">
-                            <p-panel header="Assets" styleClass="mb-3">
-                                <div class="font-bold text-lg mb-2 text-blue-600">
-                                    Current Assets
-                                </div>
+                            <p-panel header="Assets">
                                 <div
                                     *ngFor="let row of bsReport.assetsCurrent"
                                     class="flex justify-content-between py-1 border-bottom-1 surface-border"
@@ -104,20 +91,6 @@
                                         row.signedBalance | currency : 'USD'
                                     }}</span>
                                 </div>
-
-                                <div class="font-bold text-lg mb-2 mt-4 text-blue-600">
-                                    Non-Current Assets
-                                </div>
-                                <div
-                                    *ngFor="let row of bsReport.assetsNonCurrent"
-                                    class="flex justify-content-between py-1 border-bottom-1 surface-border"
-                                >
-                                    <span>{{ row.accountName }}</span>
-                                    <span class="font-medium">{{
-                                        row.signedBalance | currency : 'USD'
-                                    }}</span>
-                                </div>
-
                                 <div
                                     class="flex justify-content-between mt-4 pt-3 border-top-2 border-blue-600"
                                 >
@@ -128,13 +101,8 @@
                                 </div>
                             </p-panel>
                         </div>
-
-                        <!-- Liabilities & Equity Column -->
                         <div class="col-12 md:col-6">
                             <p-panel header="Liabilities & Equity">
-                                <div class="font-bold text-lg mb-2 text-orange-600">
-                                    Current Liabilities
-                                </div>
                                 <div
                                     *ngFor="let row of bsReport.liabilitiesCurrent"
                                     class="flex justify-content-between py-1 border-bottom-1 surface-border"
@@ -144,31 +112,6 @@
                                         row.signedBalance | currency : 'USD'
                                     }}</span>
                                 </div>
-
-                                <div class="font-bold text-lg mb-2 mt-4 text-orange-600">
-                                    Non-Current Liabilities
-                                </div>
-                                <div
-                                    *ngFor="let row of bsReport.liabilitiesNonCurrent"
-                                    class="flex justify-content-between py-1 border-bottom-1 surface-border"
-                                >
-                                    <span>{{ row.accountName }}</span>
-                                    <span class="font-medium">{{
-                                        row.signedBalance | currency : 'USD'
-                                    }}</span>
-                                </div>
-
-                                <div class="font-bold text-lg mb-2 mt-4 text-green-600">Equity</div>
-                                <div
-                                    *ngFor="let row of bsReport.equity"
-                                    class="flex justify-content-between py-1 border-bottom-1 surface-border"
-                                >
-                                    <span>{{ row.accountName }}</span>
-                                    <span class="font-medium">{{
-                                        row.signedBalance | currency : 'USD'
-                                    }}</span>
-                                </div>
-
                                 <div
                                     class="flex justify-content-between mt-4 pt-3 border-top-2 border-orange-600"
                                 >
@@ -184,12 +127,10 @@
                 </div>
             </p-tabpanel>
 
-            <!-- TAB 2: GENERAL LEDGER -->
             <p-tabpanel value="1">
-                <!-- Toolbar -->
                 <div class="flex flex-wrap align-items-end gap-3 mb-4 p-3 bg-blue-50 border-round">
                     <div class="flex-1">
-                        <label class="block font-bold mb-2 text-700">From Date</label>
+                        <label class="block font-bold mb-2 text-700">From</label>
                         <p-datepicker
                             [(ngModel)]="glStartDate"
                             dateFormat="yy-mm-dd"
@@ -199,7 +140,7 @@
                         ></p-datepicker>
                     </div>
                     <div class="flex-1">
-                        <label class="block font-bold mb-2 text-700">To Date</label>
+                        <label class="block font-bold mb-2 text-700">To</label>
                         <p-datepicker
                             [(ngModel)]="glEndDate"
                             dateFormat="yy-mm-dd"
@@ -215,26 +156,8 @@
                             icon="pi pi-search"
                             (click)="loadGL()"
                         ></button>
-                        <button
-                            pButton
-                            label="PDF"
-                            icon="pi pi-file-pdf"
-                            class="p-button-danger p-button-outlined"
-                            (click)="exportGL('pdf')"
-                            [disabled]="!glReport"
-                        ></button>
-                        <button
-                            pButton
-                            label="Excel"
-                            icon="pi pi-file-excel"
-                            class="p-button-success p-button-outlined"
-                            (click)="exportGL('excel')"
-                            [disabled]="!glReport"
-                        ></button>
                     </div>
                 </div>
-
-                <!-- GL Table -->
                 <p-table
                     *ngIf="glReport"
                     [value]="glReport.entries"
@@ -245,18 +168,16 @@
                     <ng-template pTemplate="header">
                         <tr>
                             <th>Date</th>
-                            <th>Transaction ID</th>
                             <th>Account</th>
                             <th>Description</th>
                             <th class="text-right">Debit</th>
                             <th class="text-right">Credit</th>
-                            <th class="text-right font-bold">Balance</th>
+                            <th class="text-right">Balance</th>
                         </tr>
                     </ng-template>
                     <ng-template pTemplate="body" let-entry>
                         <tr>
                             <td>{{ entry.transactionDate | date }}</td>
-                            <td>#{{ entry.transactionId }}</td>
                             <td class="font-bold">{{ entry.accountName }}</td>
                             <td>{{ entry.description }}</td>
                             <td class="text-right text-green-700">
@@ -275,6 +196,86 @@
                         </tr>
                     </ng-template>
                 </p-table>
+            </p-tabpanel>
+
+            <p-tabpanel value="2">
+                <div class="grid">
+                    <div class="col-12 md:col-4">
+                        <p-card header="Forecast Input" styleClass="h-full shadow-2">
+                            <div class="flex flex-column gap-4">
+                                <div class="field">
+                                    <label class="font-bold block mb-2 text-700"
+                                        >Revenue (2 Quarters Ago)</label
+                                    >
+                                    <p-inputNumber
+                                        [(ngModel)]="revenueT2"
+                                        mode="currency"
+                                        currency="USD"
+                                        locale="en-US"
+                                        placeholder="$0.00"
+                                        class="w-full"
+                                        styleClass="w-full"
+                                    ></p-inputNumber>
+                                </div>
+                                <div class="field">
+                                    <label class="font-bold block mb-2 text-700"
+                                        >Revenue (Last Quarter)</label
+                                    >
+                                    <p-inputNumber
+                                        [(ngModel)]="revenueT1"
+                                        mode="currency"
+                                        currency="USD"
+                                        locale="en-US"
+                                        placeholder="$0.00"
+                                        class="w-full"
+                                        styleClass="w-full"
+                                    ></p-inputNumber>
+                                </div>
+                                <button
+                                    pButton
+                                    label="Run AI Forecast"
+                                    icon="pi pi-sparkles"
+                                    class="p-button-primary w-full"
+                                    [loading]="loading"
+                                    (click)="runForecast()"
+                                ></button>
+                            </div>
+                        </p-card>
+                    </div>
+                    <div class="col-12 md:col-8">
+                        <p-card header="Projection Model" styleClass="h-full shadow-2">
+                            <div
+                                *ngIf="!prediction"
+                                class="flex flex-column align-items-center justify-content-center h-20rem text-500"
+                            >
+                                <i class="pi pi-chart-line text-6xl mb-3"></i>
+                                <span class="text-xl"
+                                    >Enter historical data to generate a forecast.</span
+                                >
+                            </div>
+                            <div *ngIf="prediction" class="fade-in">
+                                <div class="text-center mb-5 p-4 surface-50 border-round-xl">
+                                    <span class="block text-600 font-semibold mb-2"
+                                        >Predicted Revenue (Next Quarter)</span
+                                    >
+                                    <span class="text-5xl font-bold text-green-600">{{
+                                        prediction | currency : 'USD' : 'symbol' : '1.0-0'
+                                    }}</span>
+                                </div>
+                                <div class="h-20rem w-full relative overflow-hidden">
+                                    <p-chart
+                                        type="line"
+                                        [data]="chartData"
+                                        [options]="chartOptions"
+                                        width="100%"
+                                        height="100%"
+                                    >
+                                    </p-chart>
+                                </div>
+                            </div>
+                        </p-card>
+                    </div>
+                </div>
             </p-tabpanel>
         </p-tabpanels>
     </p-tabs>

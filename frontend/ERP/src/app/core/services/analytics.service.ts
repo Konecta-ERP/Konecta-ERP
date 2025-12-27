@@ -9,7 +9,8 @@ import { baseURL } from '../apiRoot/baseURL';
 export class AnalyticsService {
     private analyticsUrl = `${baseURL}/finance/analytics`;
     private pdfUrl = `${baseURL}/finance/pdf`;
-    private excelUrl = `${baseURL}/finance/excel`; // Assuming you have/will have GL export routes here
+    private excelUrl = `${baseURL}/finance/excel`;
+    private forecastUrl = `${baseURL}/finance/forecast`;
 
     constructor(private _httpClient: HttpClient) {}
 
@@ -17,7 +18,6 @@ export class AnalyticsService {
         return this._httpClient.get(`${this.analyticsUrl}/balance-sheet/${asOfDate}`);
     }
 
-    // FIX: Using Array.reduce and initial HttpParams object to safely build parameters
     getGeneralLedger(fromDate: string, toDate: string, accountPKs?: number[]): Observable<any> {
         let params = new HttpParams().set('fromDate', fromDate).set('toDate', toDate);
 
@@ -41,7 +41,6 @@ export class AnalyticsService {
         });
     }
 
-    // FIX: Updated export functions to use safe HttpParams building logic
     exportGLPdf(fromDate: string, toDate: string, accountPKs?: number[]): Observable<Blob> {
         let params = new HttpParams().set('fromDate', fromDate).set('toDate', toDate);
         if (accountPKs && accountPKs.length > 0) {
@@ -56,5 +55,12 @@ export class AnalyticsService {
             params = accountPKs.reduce((p, id) => p.append('accountPKs', id.toString()), params);
         }
         return this._httpClient.get(`${this.excelUrl}/gl`, { params, responseType: 'blob' });
+    }
+
+    forecastRevenue(revT2: number, revT1: number) {
+        return this._httpClient.post(this.forecastUrl, {
+            revenueTwoQuartersAgo: revT2,
+            revenueLastQuarter: revT1,
+        });
     }
 }
