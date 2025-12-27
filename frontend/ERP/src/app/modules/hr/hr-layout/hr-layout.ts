@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 import { Sidebar } from './../../../components/sidebar/sidebar';
 import { RouterOutlet } from '@angular/router';
 import { UserService } from '../../../core/services/user.service';
-import { UserService } from '../../../core/services/user.service';
 @Component({
     selector: 'app-hr-layout',
     imports: [Sidebar, RouterOutlet],
