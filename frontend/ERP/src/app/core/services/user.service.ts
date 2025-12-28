@@ -65,7 +65,7 @@ export class UserService {
 
     fromFinanceDepartment(): boolean {
         const user = this.getUser();
-        return user?.role === 'Finance';
+        return user?.role === 'CFO'|| user?.role === 'ACCOUNTANT';
     }
 
     fromHRDepartment(): boolean {
