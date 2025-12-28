@@ -27,6 +27,7 @@ export class Profile {
     isHR = false;
     canViewSalary = false;
     canGiveFeedback = true;
+    canAddGoals = false;
 
     // Dialog states
     showUserEditDialog = false;
@@ -133,7 +134,9 @@ export class Profile {
 
         this.isHR = (this.loggedInUser.role === 'HR_MANAGER' ||
                      this.loggedInUser.role === 'ADMIN'
-                    || this.loggedInUser.role === 'MANAGER') && this.loggedInUser.employeeId !== this.user?.employeeId;
+                    ) && this.loggedInUser.employeeId !== this.user?.employeeId;
+
+        this.canAddGoals = (this.loggedInUser.role === 'MANAGER' ||(this.loggedInUser.role === 'HR_MANAGER' && this.user?.departmentName === this.loggedInUser.departmentName))
 
         // Can view salary if: own profile OR HR
         this.canViewSalary = (this.isHR ||

@@ -34,6 +34,10 @@ export class HomeNav implements OnInit {
             {
                 label: 'Dashboard',
                 path: 'dashboard'
+            },
+            {
+                label: 'HR',
+                path: 'hr'
             }
         ];
 
@@ -50,19 +54,12 @@ export class HomeNav implements OnInit {
             },
         ];
 
-        if (this._userService.fromFinanceDepartment()||true) {
+        if (this._userService.fromFinanceDepartment()) {
             this.items.push({
                 label: 'Finance',
                 path: 'finance'
             });
         }
-        if (this._userService.fromHRDepartment()||true) {
-            this.items.push({
-                label: 'HR',
-                path: 'hr'
-            });
-        }
-
 
     }
 
