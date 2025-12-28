@@ -1,0 +1,26 @@
+/* Calendar container styles */
+:host ::ng-deep .fc {
+    height: 100%;
+    max-height: 100%;
+}
+
+:host ::ng-deep .fc-view-harness {
+    height: 100% !important;
+    max-height: 100%;
+}
+
+:host ::ng-deep .fc-scrollgrid {
+    height: 100%;
+}
+
+:host ::ng-deep .fc-scroller {
+    overflow: hidden !important;
+}
+
+:host ::ng-deep .fc-daygrid-body {
+    width: 100% !important;
+}
+
+:host ::ng-deep .fc-scrollgrid-sync-table {
+    height: 100% !important;
+}

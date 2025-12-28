@@ -121,6 +121,7 @@ export class MyTeam implements OnInit {
 
     calculateLeaveCounts(): void {
         this.leaveCounts = {};
+        const todayStr = new Date().toISOString().split('T')[0];
 
         // Get all unique dates from leave requests
         const allDates = new Set<string>();
@@ -141,6 +142,7 @@ export class MyTeam implements OnInit {
         allDates.forEach(date => {
             const employeesOnApprovedLeave = new Set<string>();
             const employeesOnPendingLeave = new Set<string>();
+            const isPastDate = date < todayStr;
 
             this.employeesLeaves.forEach(empLeave => {
                 let hasApprovedLeave = false;
@@ -154,14 +156,17 @@ export class MyTeam implements OnInit {
                         if (leave.status.toLowerCase() === 'approved') {
                             hasApprovedLeave = true;
                         } else if (leave.status.toLowerCase() === 'pending') {
-                            hasPendingLeave = true;
+                            // Only count as pending if the date is today or in the future
+                            if (!isPastDate) {
+                                hasPendingLeave = true;
+                            }
+                            // For past dates, pending requests are ignored (employee counted as available)
                         }
                     }
                 });
 
                 if (hasApprovedLeave) {
                     employeesOnApprovedLeave.add(empLeave.employee.id);
-
                 } else if (hasPendingLeave) {
                     employeesOnPendingLeave.add(empLeave.employee.id);
                 }
@@ -205,13 +210,33 @@ export class MyTeam implements OnInit {
 
     getLeavesForDate(date: Date): IEmployeesLeaves[]{
         const dateStr = date.toISOString().split('T')[0];
-        this.employeesLeavesOnDate = this.employeesLeaves.filter(empLeave =>
-            empLeave.leaveRequests.some(leave => {
-                const start = new Date(leave.startDate).toISOString().split('T')[0];
-                const end = new Date(leave.endDate).toISOString().split('T')[0];
-                return dateStr >= start && dateStr <= end;
+        const todayStr = new Date().toISOString().split('T')[0];
+        const isPastDate = dateStr < todayStr;
+
+        this.employeesLeavesOnDate = this.employeesLeaves
+            .map(empLeave => {
+                // Filter only leave requests that include the selected date
+                const filteredLeaves = empLeave.leaveRequests.filter(leave => {
+                    const start = new Date(leave.startDate).toISOString().split('T')[0];
+                    const end = new Date(leave.endDate).toISOString().split('T')[0];
+                    const isInDateRange = dateStr >= start && dateStr <= end;
+
+                    // For past dates, don't show pending requests
+                    // (they weren't approved, so employee was expected to be available)
+                    if (isPastDate && leave.status.toLowerCase() === 'pending') {
+                        return false;
+                    }
+
+                    return isInDateRange;
+                });
+                // Return a new object with only the matching leave requests
+                return {
+                    ...empLeave,
+                    leaveRequests: filteredLeaves
+                };
             })
-        );
+            // Only include employees who have at least one leave on this date
+            .filter(empLeave => empLeave.leaveRequests.length > 0);
         return this.employeesLeavesOnDate;
     }
 

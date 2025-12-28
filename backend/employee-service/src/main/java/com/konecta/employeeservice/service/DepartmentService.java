@@ -136,8 +136,8 @@ public class DepartmentService {
     }
 
     java.time.YearMonth currentMonth = java.time.YearMonth.now();
-    java.time.LocalDate start = currentMonth.atDay(1);
-    java.time.LocalDate end = currentMonth.atEndOfMonth();
+    java.time.LocalDate start = currentMonth.minusMonths(1).atDay(1);
+    java.time.LocalDate end = currentMonth.plusMonths(1).atEndOfMonth();
 
     List<Employee> employees = employeeRepository.findByDepartmentId(departmentId);
 
