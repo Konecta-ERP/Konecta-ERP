@@ -90,16 +90,17 @@
                     <label class="text-sm font-semibold text-gray-500 uppercase"
                         >Total Amount</label
                     >
-                    <div class="p-inputgroup">
-                        <span class="p-inputgroup-addon font-bold text-gray-700">{{
-                            invoice.currency || '$'
-                        }}</span>
-                        <input
-                            pInputText
-                            [(ngModel)]="invoice.total_amount"
-                            class="w-full font-bold text-blue-700 text-lg"
-                        />
-                    </div>
+
+                    <p-inputNumber
+                        [(ngModel)]="invoice.total_amount"
+                        [mode]="'currency'"
+                        [currency]="invoice.currency || 'USD'"
+                        locale="en-US"
+                        styleClass="w-full"
+                        [inputStyleClass]="'w-full font-bold text-blue-700 text-lg'"
+                        [minFractionDigits]="2"
+                    >
+                    </p-inputNumber>
                 </div>
             </div>
 
